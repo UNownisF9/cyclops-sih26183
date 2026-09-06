@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
-const API_BASE = 'https://cyclops-sih26183.onrender.com'; // Paste your Render URL here
+
+// API Base URL - Points to live Render backend with localhost fallback
+const API_BASE = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://cyclops-backend.onrender.com'
+    : 'http://localhost:8000';
+
 
 // ==================== MULTI-CHAIN DATASETS (REALISTIC VARIATION) ====================
 const CHAIN_DATASETS = {
@@ -312,6 +317,39 @@ function CyberBackground() {
     );
 }
 
+// ==================== CYBERNETIC EYE EMBLEM COMPONENT ====================
+function CyclopsEyeEmblem() {
+    return (
+        <div style={{ position: 'relative', width: '76px', height: '76px', margin: '0 auto 12px auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {/* Outer Glow Halo */}
+            <div style={{ position: 'absolute', width: '68px', height: '68px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(37, 99, 235, 0) 70%)', filter: 'blur(10px)', animation: 'pulseGlow 2.5s infinite' }} />
+
+            <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ zIndex: 2, filter: 'drop-shadow(0 0 14px rgba(56, 189, 248, 0.7))' }}>
+                {/* Outer Tech Radar Ring */}
+                <circle cx="50" cy="50" r="46" stroke="#1e3a8a" strokeWidth="1.5" strokeDasharray="6 4" />
+                <circle cx="50" cy="50" r="41" stroke="#38bdf8" strokeWidth="1" opacity="0.5" strokeDasharray="30 10 15 10" />
+
+                {/* Cyber Eye Outline (Diamond / Eye Contour) */}
+                <path d="M10 50 Q 50 16 90 50 Q 50 84 10 50 Z" stroke="#38bdf8" strokeWidth="2.5" fill="rgba(14, 165, 233, 0.08)" />
+
+                {/* Inner Tech Reticle Lines */}
+                <line x1="50" y1="18" x2="50" y2="28" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8" />
+                <line x1="50" y1="72" x2="50" y2="82" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8" />
+                <line x1="12" y1="50" x2="22" y2="50" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8" />
+                <line x1="78" y1="50" x2="88" y2="50" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8" />
+
+                {/* Iris / Glowing Aperture */}
+                <circle cx="50" cy="50" r="19" stroke="#60a5fa" strokeWidth="2" fill="rgba(30, 58, 138, 0.45)" />
+                <circle cx="50" cy="50" r="13" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="4 2" />
+
+                {/* Core Pupil with Laser Glow */}
+                <circle cx="50" cy="50" r="7.5" fill="#38bdf8" />
+                <circle cx="52" cy="48" r="2.5" fill="#ffffff" />
+            </svg>
+        </div>
+    );
+}
+
 export default function GraphViewer() {
     // Responsive Mobile Detection Hook
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 960 : false);
@@ -501,7 +539,7 @@ export default function GraphViewer() {
         };
 
         try {
-            const res = await fetch('${API_BASE}/api/trace', {
+            const res = await fetch(`${API_BASE}/api/trace`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -765,115 +803,117 @@ Cyber Crime Division`;
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', background: '#050811', color: '#f1f5f9', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
 
-            {/* 1. TOP COMMAND BAR */}
-            <header style={{ height: isMobile ? 'auto' : '62px', minHeight: '56px', background: '#0a0f1d', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '8px 12px' : '0 20px', zIndex: 20, flexWrap: 'wrap', gap: '8px' }}>
+            {/* 1. TOP COMMAND BAR (STRICTLY HIDDEN ON LANDING PAGE) */}
+            {currentPortal !== 'landing' && (
+                <header style={{ height: isMobile ? 'auto' : '62px', minHeight: '56px', background: '#0a0f1d', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '8px 12px' : '0 20px', zIndex: 20, flexWrap: 'wrap', gap: '8px' }}>
 
-                {/* Left: Branding & Role Toggle */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'linear-gradient(135deg, #2563eb, #38bdf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px', color: '#fff', boxShadow: '0 0 15px rgba(37,99,235,0.5)' }}>
-                            👁️
-                        </div>
-                        <div>
-                            <div style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                CYCLOPS
-                                <span style={{ fontSize: '10px', background: '#1e293b', color: '#38bdf8', padding: '2px 6px', borderRadius: '4px', border: '1px solid #334155' }}>SIH26183</span>
+                    {/* Left: Branding & Role Toggle */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'linear-gradient(135deg, #2563eb, #38bdf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px', color: '#fff', boxShadow: '0 0 15px rgba(37,99,235,0.5)' }}>
+                                👁️
                             </div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>Ministry of Home Affairs | NCRP & SAHYOG Automated Intelligence Grid</div>
+                            <div>
+                                <div style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    CYCLOPS
+                                    <span style={{ fontSize: '10px', background: '#1e293b', color: '#38bdf8', padding: '2px 6px', borderRadius: '4px', border: '1px solid #334155' }}>SIH26183</span>
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#64748b' }}>Ministry of Home Affairs | NCRP & SAHYOG Automated Intelligence Grid</div>
+                            </div>
+                        </div>
+
+                        {/* DUAL PORTAL ROLE TOGGLE */}
+                        <button
+                            onClick={() => setCurrentPortal('landing')}
+                            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #334155', background: '#0a0f1d', color: '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            🏠 Home
+                        </button>
+                        <div style={{ display: 'flex', background: '#111827', borderRadius: '8px', border: '1px solid #1e293b', padding: '3px' }}>
+                            <button
+                                onClick={() => setCurrentPortal('police')}
+                                style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: currentPortal === 'police' ? '#2563eb' : 'transparent', color: currentPortal === 'police' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            >
+                                🛡️ Police Admin Grid
+                            </button>
+                            <button
+                                onClick={() => setCurrentPortal('citizen')}
+                                style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: currentPortal === 'citizen' ? '#10b981' : 'transparent', color: currentPortal === 'citizen' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            >
+                                👤 Citizen 1930 Portal
+                            </button>
                         </div>
                     </div>
 
-                    {/* DUAL PORTAL ROLE TOGGLE */}
-                    <button
-                        onClick={() => setCurrentPortal('landing')}
-                        style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #334155', background: '#0a0f1d', color: '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                    >
-                        🏠 Home
-                    </button>
-                    <div style={{ display: 'flex', background: '#111827', borderRadius: '8px', border: '1px solid #1e293b', padding: '3px' }}>
-                        <button
-                            onClick={() => setCurrentPortal('police')}
-                            style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: currentPortal === 'police' ? '#2563eb' : 'transparent', color: currentPortal === 'police' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                        >
-                            🛡️ Police Admin Grid
-                        </button>
-                        <button
-                            onClick={() => setCurrentPortal('citizen')}
-                            style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: currentPortal === 'citizen' ? '#10b981' : 'transparent', color: currentPortal === 'citizen' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                        >
-                            👤 Citizen 1930 Portal
-                        </button>
-                    </div>
-                </div>
-
-                {/* Center: Layer Switcher (Only visible when Police is Authenticated) */}
-                {currentPortal === 'police' && isPoliceAuth && (
-                    <div style={{ display: 'flex', background: '#111827', borderRadius: '8px', border: '1px solid #1e293b', padding: '3px', gap: '4px' }}>
-                        <button
-                            onClick={() => setActiveLayer('forensics')}
-                            style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: activeLayer === 'forensics' ? '#2563eb' : 'transparent', color: activeLayer === 'forensics' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                            🕸️ Forensics Canvas
-                        </button>
-                        <button
-                            onClick={() => setActiveLayer('dashboard')}
-                            style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: activeLayer === 'dashboard' ? '#2563eb' : 'transparent', color: activeLayer === 'dashboard' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                            📊 Intelligence Grid
-                        </button>
-                        <button
-                            onClick={() => setActiveLayer('dossier')}
-                            style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: activeLayer === 'dossier' ? '#2563eb' : 'transparent', color: activeLayer === 'dossier' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                            📋 Court Dossier
-                        </button>
-                    </div>
-                )}
-
-                {/* Right Action Buttons - Streamlined & Minimal */}
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {/* Center: Layer Switcher (Only visible when Police is Authenticated) */}
                     {currentPortal === 'police' && isPoliceAuth && (
-                        <>
+                        <div style={{ display: 'flex', background: '#111827', borderRadius: '8px', border: '1px solid #1e293b', padding: '3px', gap: '4px' }}>
                             <button
-                                onClick={handleLaunchDispatch}
-                                style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #dc2626, #b91c1c)', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                onClick={() => setActiveLayer('forensics')}
+                                style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: activeLayer === 'forensics' ? '#2563eb' : 'transparent', color: activeLayer === 'forensics' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
                             >
-                                🚨 Freeze VASP
+                                🕸️ Forensics Canvas
                             </button>
                             <button
-                                onClick={handleExportPDF}
-                                style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #1d4ed8, #2563eb)', border: 'none', color: '#ffffff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                onClick={() => setActiveLayer('dashboard')}
+                                style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: activeLayer === 'dashboard' ? '#2563eb' : 'transparent', color: activeLayer === 'dashboard' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
                             >
-                                📄 PDF Dossier
+                                📊 Intelligence Grid
                             </button>
                             <button
-                                onClick={() => {
-                                    setDemoActive(true);
-                                    setDemoStep(0);
-                                    setActiveLayer('forensics');
-                                    handleSelectChain('ethereum');
-                                }}
-                                style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                                onClick={() => setActiveLayer('dossier')}
+                                style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: activeLayer === 'dossier' ? '#2563eb' : 'transparent', color: activeLayer === 'dossier' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
                             >
-                                ▶️ Demo Tour
+                                📋 Court Dossier
                             </button>
-                            <div style={{ fontSize: '11px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px', background: '#0a0f1d', padding: '4px 8px', borderRadius: '6px', border: '1px solid #1e293b' }}>
-                                <span>🟢</span> <span>IO-9921</span>
-                                <button onClick={handlePoliceLogout} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '10px', marginLeft: '4px' }}>[Exit]</button>
-                            </div>
-                        </>
+                        </div>
                     )}
 
-                    {currentPortal === 'citizen' && (
-                        <button
-                            onClick={() => setCurrentPortal('police')}
-                            style={{ padding: '8px 16px', background: '#2563eb', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                            Access Police Admin Grid →
-                        </button>
-                    )}
-                </div>
-            </header>
+                    {/* Right Action Buttons - Streamlined & Minimal */}
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {currentPortal === 'police' && isPoliceAuth && (
+                            <>
+                                <button
+                                    onClick={handleLaunchDispatch}
+                                    style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #dc2626, #b91c1c)', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                >
+                                    🚨 Freeze VASP
+                                </button>
+                                <button
+                                    onClick={handleExportPDF}
+                                    style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #1d4ed8, #2563eb)', border: 'none', color: '#ffffff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                >
+                                    📄 PDF Dossier
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setDemoActive(true);
+                                        setDemoStep(0);
+                                        setActiveLayer('forensics');
+                                        handleSelectChain('ethereum');
+                                    }}
+                                    style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                    ▶️ Demo Tour
+                                </button>
+                                <div style={{ fontSize: '11px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px', background: '#0a0f1d', padding: '4px 8px', borderRadius: '6px', border: '1px solid #1e293b' }}>
+                                    <span>🟢</span> <span>IO-9921</span>
+                                    <button onClick={handlePoliceLogout} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '10px', marginLeft: '4px' }}>[Exit]</button>
+                                </div>
+                            </>
+                        )}
+
+                        {currentPortal === 'citizen' && (
+                            <button
+                                onClick={() => setCurrentPortal('police')}
+                                style={{ padding: '8px 16px', background: '#2563eb', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                                Access Police Admin Grid →
+                            </button>
+                        )}
+                    </div>
+                </header>
+            )}
 
             {/* 2. REAL-TIME LIVE 1930 HELPLINE COMPLAINT STREAM TICKER */}
             {/* ========================================================================= */}
@@ -886,20 +926,26 @@ Cyber Crime Division`;
                     <CyberBackground />
 
                     {/* Hero Header */}
-                    <div style={{ textAlign: 'center', marginBottom: '36px', maxWidth: '880px', zIndex: 10, animation: 'fadeIn 0.6s ease-out' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '22px', maxWidth: '880px', zIndex: 10, animation: 'fadeIn 0.6s ease-out' }}>
+
+                        {/* Cybernetic Eye Emblem */}
+                        <CyclopsEyeEmblem />
 
                         {/* National Insignia Badge */}
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(30, 58, 138, 0.3)', border: '1px solid #1e40af', padding: '6px 16px', borderRadius: '30px', marginBottom: '14px', backdropFilter: 'blur(8px)' }}>
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 10px #38bdf8' }} />
-                            <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#93c5fd', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(30, 58, 138, 0.25)', border: '1px solid #1e40af', padding: '5px 14px', borderRadius: '30px', marginBottom: '10px', backdropFilter: 'blur(8px)' }}>
+                            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 8px #38bdf8' }} />
+                            <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#93c5fd', letterSpacing: '1px', textTransform: 'uppercase' }}>
                                 सत्यमेव जयते • Government of India • Ministry of Home Affairs • I4C Grid
                             </span>
                         </div>
 
-                        {/* Gradient Main Heading */}
-                        <h1 style={{ fontSize: '32px', fontWeight: '900', lineHeight: '1.25', margin: '0 0 12px 0', background: 'linear-gradient(135deg, #ffffff 0%, #38bdf8 50%, #818cf8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.5px' }}>
-                            NATIONAL CRYPTOCURRENCY FRAUD ATTRIBUTION & ASSET RECOVERY GRID
+                        {/* Futuristic CYCLOPS Title */}
+                        <h1 style={{ fontSize: 'clamp(38px, 5.5vw, 54px)', fontWeight: '900', letterSpacing: '8px', margin: '0 0 4px 0', background: 'linear-gradient(135deg, #ffffff 0%, #38bdf8 45%, #818cf8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 0 35px rgba(56, 189, 248, 0.45)' }}>
+                            CYCLOPS
                         </h1>
+                        <div style={{ fontSize: '12px', fontWeight: '800', letterSpacing: '3px', color: '#38bdf8', textTransform: 'uppercase', marginBottom: '12px' }}>
+                            Autonomous Blockchain Forensics & VASP Attribution Grid
+                        </div>
 
                         <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: '0 0 20px 0', maxWidth: '780px' }}>
                             Automated blockchain intelligence platform connecting victim-reported scam wallets, multi-hop forensic traversal, and statutory VASP asset freezing within the critical <strong>Golden Hour</strong> window.
@@ -929,7 +975,7 @@ Cyber Crime Division`;
                                 background: 'linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(10, 15, 29, 0.9) 100%)',
                                 border: '2px solid #10b981',
                                 borderRadius: '16px',
-                                padding: '36px 30px',
+                                padding: '24px 22px',
                                 cursor: 'pointer',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 display: 'flex',
@@ -973,7 +1019,7 @@ Cyber Crime Division`;
                                 </p>
 
                                 {/* Features list */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '26px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
                                     <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> Instant Incident Lodging & Docket Number Generation
                                     </div>
@@ -992,7 +1038,7 @@ Cyber Crime Division`;
                             <button
                                 style={{
                                     width: '100%',
-                                    padding: '14px',
+                                    padding: '12px',
                                     background: 'linear-gradient(135deg, #10b981, #059669)',
                                     border: 'none',
                                     color: '#ffffff',
@@ -1018,7 +1064,7 @@ Cyber Crime Division`;
                                 background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.08) 0%, rgba(10, 15, 29, 0.9) 100%)',
                                 border: '2px solid #2563eb',
                                 borderRadius: '16px',
-                                padding: '36px 30px',
+                                padding: '24px 22px',
                                 cursor: 'pointer',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 display: 'flex',
@@ -1062,7 +1108,7 @@ Cyber Crime Division`;
                                 </p>
 
                                 {/* Features list */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '26px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
                                     <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>✓</span> Multi-Chain Graph Traversal (Ethereum, Tron TRC-20, Bitcoin)
                                     </div>
@@ -1081,7 +1127,7 @@ Cyber Crime Division`;
                             <button
                                 style={{
                                     width: '100%',
-                                    padding: '14px',
+                                    padding: '12px',
                                     background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                                     border: 'none',
                                     color: '#ffffff',
@@ -1447,7 +1493,7 @@ Cyber Crime Division`;
                                     <button onClick={() => setShowDispatchModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer' }}>✕</button>
                                 </div>
 
-                                <div style={{ background: '#030712', border: '1px solid #1f2937', padding: '14px', borderRadius: '6px', height: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
+                                <div style={{ background: '#030712', border: '1px solid #1f2937', padding: '12px', borderRadius: '6px', height: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
                                     {dispatchLogs.map((log, i) => (
                                         <div key={i} style={{ color: log.includes('SUCCESS') || log.includes('FROZEN') ? '#10b981' : '#cbd5e1' }}>
                                             {log}
@@ -1724,7 +1770,7 @@ Cyber Crime Division`;
                                         <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto' }}>
                                             <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>Selected Wallet Entity</div>
                                             {selectedNode ? (
-                                                <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                                     <div>
                                                         <div style={{ fontSize: '11px', color: '#64748b' }}>Entity Name</div>
                                                         <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#f8fafc' }}>{selectedNode.entity_name}</div>
@@ -1959,7 +2005,7 @@ Cyber Crime Division`}
                                 </table>
 
                                 <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '8px' }}>2. STATUTORY DIRECTIVE UNDER SECTION 91 Cr.P.C. / BNSS 2023</div>
-                                <div style={{ fontSize: '11px', lineHeight: '1.6', background: '#f8fafc', border: '1px solid #cbd5e1', padding: '14px', borderRadius: '4px', marginBottom: '30px' }}>
+                                <div style={{ fontSize: '11px', lineHeight: '1.6', background: '#f8fafc', border: '1px solid #cbd5e1', padding: '12px', borderRadius: '4px', marginBottom: '30px' }}>
                                     <strong>TO: Compliance Officer, {primaryAttr?.entity_name}</strong><br />
                                     WHEREAS an official investigation is underway regarding cyber fraud registered under NCRP Docket {activeDataset.caseMeta.docket_no}.
                                     The cryptographic assets listed in Table 1 have been traced as direct proceeds of crime entering your liquidity pool.<br />
