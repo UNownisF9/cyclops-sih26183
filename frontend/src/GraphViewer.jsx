@@ -210,10 +210,16 @@ const CHAIN_DATASETS = {
 
 // Stream of simulated live 1930 Helpline citizen complaints
 const LIVE_COMPLAINT_STREAM = [
-    { victim: 'Priya Narang', amount: '₹8,50,000 (3.4 ETH)', type: 'Task-Based Telegram Scam', wallet: '0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1', chain: 'ethereum' },
-    { victim: 'Sunil Deshmukh', amount: '₹20,50,000 (25k USDT)', type: 'Fake Forex App', wallet: 'TScam9999a3b2e5f8841a0e889b41a91e1d092', chain: 'tron' },
-    { victim: 'Dr. S. K. Roy', amount: '₹25,00,000 (10 ETH)', type: 'Hospital Ransomware', wallet: '0x1111a2b3c4d5e6f708192a3b4c5d6e7f8a9b0c1d', chain: 'ethereum' },
-    { victim: 'Rohit Aggarwal', amount: '₹14,20,000 (0.28 BTC)', type: 'Sextortion Extortion', wallet: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', chain: 'bitcoin' }
+    { victim: 'Sunil Deshmukh', amount: '₹20,50,000 (25,000 USDT)', type: 'Fake Forex Trading Platform (Tron USDT)', wallet: 'TScam9999a3b2e5f8841a0e889b41a91e1d092', chain: 'tron' },
+    { victim: 'Priya Narang', amount: '₹12,12,500 (4.85 ETH)', type: 'Task-Based Telegram Part-Time Scam', wallet: '0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1', chain: 'ethereum' },
+    { victim: 'Deepak Chawla', amount: '₹15,50,000 (6.20 ETH)', type: 'Cross-Chain Bridge Stealer (Polygon Hop)', wallet: '0x8888a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9', chain: 'multichain' },
+    { victim: 'Dr. S. K. Roy', amount: '₹25,00,000 (10.00 ETH)', type: 'Hospital Enterprise Ransomware', wallet: '0x1111a2b3c4d5e6f708192a3b4c5d6e7f8a9b0c1d', chain: 'ethereum' },
+    { victim: 'Rohit Aggarwal', amount: '₹18,40,000 (0.35 BTC)', type: 'Sextortion / Darknet Bitcoin Extortion', wallet: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', chain: 'bitcoin' },
+    { victim: 'Ananya Sengupta', amount: '₹7,80,000 (9,500 USDT)', type: 'WhatsApp Part-Time YouTube Like Scam', wallet: 'TScam9999a3b2e5f8841a0e889b41a91e1d092', chain: 'tron' },
+    { victim: 'Kavita Reddy', amount: '₹34,00,000 (13.60 ETH)', type: 'Fake SEBI Registered Stock Advisory App', wallet: '0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1', chain: 'ethereum' },
+    { victim: 'Col. R. K. Joshi', amount: '₹16,75,000 (20,000 USDT)', type: 'Fake P2P Crypto Arbitrage Bot', wallet: 'TScam9999a3b2e5f8841a0e889b41a91e1d092', chain: 'tron' },
+    { victim: 'Manish Malhotra', amount: '₹9,20,000 (0.17 BTC)', type: 'FedEx Digital Arrest Blackmail', wallet: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', chain: 'bitcoin' },
+    { victim: 'Sneha Kulkarni', amount: '₹11,40,000 (4.56 ETH)', type: 'Phishing Signature Permit2 Drainer', wallet: '0x8888a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9', chain: 'multichain' }
 ];
 
 
@@ -397,7 +403,7 @@ export default function GraphViewer() {
         const streamTimer = setInterval(() => {
             setStreamIndex((prev) => (prev + 1) % LIVE_COMPLAINT_STREAM.length);
             setShowStreamAlert(true);
-        }, 16000);
+        }, 3000);
         return () => clearInterval(streamTimer);
     }, []);
 
