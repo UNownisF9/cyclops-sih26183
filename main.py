@@ -637,3 +637,11 @@ def download_pdf(address: str = '0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1'):
         media_type='application/pdf',
         headers={'Content-Disposition': f'attachment; filename=LEA_Dossier_{address[:8]}.pdf'}
     )
+@app.get("/")
+def root():
+  return {
+      "service": "PROJECT CYCLOPS: Autonomous Blockchain Forensics API",
+      "status": "ONLINE",
+      "docs": "/docs",
+      "sih_problem": "SIH26183",
+  }
