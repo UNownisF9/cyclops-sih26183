@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
+const API_BASE = 'https://cyclops-sih26183.onrender.com'; // Paste your Render URL here
 
 // ==================== MULTI-CHAIN DATASETS (REALISTIC VARIATION) ====================
 const CHAIN_DATASETS = {
@@ -500,7 +501,7 @@ export default function GraphViewer() {
         };
 
         try {
-            const res = await fetch('http://localhost:8000/api/trace', {
+            const res = await fetch('${API_BASE}/api/trace', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -651,7 +652,7 @@ export default function GraphViewer() {
 
     const handleExportPDF = async () => {
         try {
-            const res = await fetch(`http://localhost:8000/api/report/pdf?address=${suspectInput}`);
+            const res = await fetch(`${API_BASE}/api/report/pdf?address=${suspectInput}`);
             if (res.ok) {
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
