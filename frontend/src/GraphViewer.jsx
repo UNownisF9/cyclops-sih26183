@@ -6,6 +6,20 @@ const API_BASE = typeof window !== 'undefined' && window.location.hostname !== '
     ? 'https://cyclops-backend.onrender.com'
     : 'http://localhost:8000';
 
+// Node/edge colors used by the Cytoscape canvas. Cytoscape styles are JS,
+// not CSS, so this palette is kept in one place and mirrored by the CSS
+// variables of the same name in index.css.
+const GRAPH_COLORS = {
+    ink: '#14140f',
+    rust: '#a8391c',
+    rustDark: '#7a2a14',
+    green: '#21603f',
+    greenDark: '#164a30',
+    navy: '#3b5a86',
+    slate: '#5b5e6b',
+    line: '#40434f',
+    paper: '#f4f2ec',
+};
 
 // ==================== MULTI-CHAIN DATASETS (REALISTIC VARIATION) ====================
 const CHAIN_DATASETS = {
@@ -222,136 +236,67 @@ const LIVE_COMPLAINT_STREAM = [
     { victim: 'Sneha Kulkarni', amount: '₹11,40,000 (4.56 ETH)', type: 'Phishing Signature Permit2 Drainer', wallet: '0x8888a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9', chain: 'multichain' }
 ];
 
+const CHAIN_TABS = [
+    { key: 'ethereum', label: 'Ethereum' },
+    { key: 'tron', label: 'Tron (TRC-20)' },
+    { key: 'bitcoin', label: 'Bitcoin (Esplora)' },
+    { key: 'multichain', label: 'Multi-Chain (Bridge)' }
+];
 
-// ==================== CANVAS CYBER MATRIX PARTICLE ANIMATION ====================
-function CyberBackground() {
-    const canvasRef = useRef(null);
+const DEMO_STEPS = [
+    {
+        title: 'Step 1: Live Citizen Complaint Intake (1930 / NCRP)',
+        desc: 'Citizen reports a crypto fraud loss. The live Golden Hour countdown clock initiates to prevent off-ramp liquidation.'
+    },
+    {
+        title: 'Step 2: Automated Multi-Hop Graph Traversal with Live Current',
+        desc: 'The animated flow lines trace fund movement across intermediary mule accounts (Hop 1 & Hop 2), detecting peel-chain laundering.'
+    },
+    {
+        title: 'Step 3: Instant VASP Attribution (Binance)',
+        desc: 'The trace terminates at Hop 3, matching against the FIU-IND / VASP Ground Truth Registry with 94.2% attribution confidence.'
+    },
+    {
+        title: 'Step 4: AI / ML Topological Classification',
+        desc: 'The ML Random Forest classifier categorizes unknown nodes into Mules and Exchanges using 5 topological feature weights with court explainability.'
+    },
+    {
+        title: 'Step 5: Statutory Enforcement & Court-Admissible Dossier',
+        desc: 'One-click generation of the Section 91 Cr.P.C. freeze notice to the VASP compliance desk and exportable official investigation PDF report.'
+    }
+];
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let animationFrameId;
-
-        let width = (canvas.width = window.innerWidth);
-        let height = (canvas.height = window.innerHeight);
-
-        const handleResize = () => {
-            if (!canvas) return;
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        };
-        window.addEventListener('resize', handleResize);
-
-        const numParticles = 65;
-        const particles = [];
-        for (let i = 0; i < numParticles; i++) {
-            particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 0.7,
-                vy: (Math.random() - 0.5) * 0.7,
-                radius: Math.random() * 2 + 1.2,
-                alpha: Math.random() * 0.6 + 0.2
-            });
-        }
-
-        const draw = () => {
-            ctx.clearRect(0, 0, width, height);
-
-            // Draw particle connections
-            for (let i = 0; i < numParticles; i++) {
-                for (let j = i + 1; j < numParticles; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 130) {
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(56, 189, 248, ${0.2 * (1 - dist / 130)})`;
-                        ctx.lineWidth = 0.8;
-                        ctx.stroke();
-                    }
-                }
-            }
-
-            // Draw floating particles
-            particles.forEach((p) => {
-                p.x += p.vx;
-                p.y += p.vy;
-
-                if (p.x < 0) p.x = width;
-                if (p.x > width) p.x = 0;
-                if (p.y < 0) p.y = height;
-                if (p.y > height) p.y = 0;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = '#38bdf8';
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            });
-
-            animationFrameId = requestAnimationFrame(draw);
-        };
-
-        draw();
-
-        return () => {
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
-
+// ==================== EMBLEM ====================
+function CyclopsEmblem() {
     return (
-        <canvas
-            ref={canvasRef}
-            style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                pointerEvents: 'none',
-                zIndex: 0
-            }}
-        />
+        <svg className="brand-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="3" />
+            <path d="M12 50 Q 50 18 88 50 Q 50 82 12 50 Z" stroke="currentColor" strokeWidth="3.5" fill="none" />
+            <circle cx="50" cy="50" r="16" fill="currentColor" />
+            <circle cx="53" cy="47" r="3" fill="var(--paper)" />
+        </svg>
     );
 }
 
-// ==================== CYBERNETIC EYE EMBLEM COMPONENT ====================
-function CyclopsEyeEmblem() {
+function RiskRing({ score }) {
+    const radius = 30;
+    const circumference = 2 * Math.PI * radius;
+    const color = score > 75 ? '#e0654a' : (score > 50 ? '#d9a441' : '#4caf7d');
     return (
-        <div style={{ position: 'relative', width: '76px', height: '76px', margin: '0 auto 12px auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {/* Outer Glow Halo */}
-            <div style={{ position: 'absolute', width: '68px', height: '68px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(37, 99, 235, 0) 70%)', filter: 'blur(10px)', animation: 'pulseGlow 2.5s infinite' }} />
-
-            <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ zIndex: 2, filter: 'drop-shadow(0 0 14px rgba(56, 189, 248, 0.7))' }}>
-                {/* Outer Tech Radar Ring */}
-                <circle cx="50" cy="50" r="46" stroke="#1e3a8a" strokeWidth="1.5" strokeDasharray="6 4" />
-                <circle cx="50" cy="50" r="41" stroke="#38bdf8" strokeWidth="1" opacity="0.5" strokeDasharray="30 10 15 10" />
-
-                {/* Cyber Eye Outline (Diamond / Eye Contour) */}
-                <path d="M10 50 Q 50 16 90 50 Q 50 84 10 50 Z" stroke="#38bdf8" strokeWidth="2.5" fill="rgba(14, 165, 233, 0.08)" />
-
-                {/* Inner Tech Reticle Lines */}
-                <line x1="50" y1="18" x2="50" y2="28" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8" />
-                <line x1="50" y1="72" x2="50" y2="82" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8" />
-                <line x1="12" y1="50" x2="22" y2="50" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8" />
-                <line x1="78" y1="50" x2="88" y2="50" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8" />
-
-                {/* Iris / Glowing Aperture */}
-                <circle cx="50" cy="50" r="19" stroke="#60a5fa" strokeWidth="2" fill="rgba(30, 58, 138, 0.45)" />
-                <circle cx="50" cy="50" r="13" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="4 2" />
-
-                {/* Core Pupil with Laser Glow */}
-                <circle cx="50" cy="50" r="7.5" fill="#38bdf8" />
-                <circle cx="52" cy="48" r="2.5" fill="#ffffff" />
+        <div className="risk-ring-wrap">
+            <svg width="68" height="68" style={{ transform: 'rotate(-90deg)' }}>
+                <circle cx="34" cy="34" r={radius} stroke="#262838" strokeWidth="6" fill="transparent" />
+                <circle
+                    cx="34" cy="34" r={radius}
+                    stroke={color}
+                    strokeWidth="6"
+                    fill="transparent"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={circumference - (circumference * score) / 100}
+                    strokeLinecap="round"
+                />
             </svg>
+            <div className="risk-ring-num">{score}</div>
         </div>
     );
 }
@@ -398,7 +343,7 @@ export default function GraphViewer() {
     const [streamIndex, setStreamIndex] = useState(0);
     const [showStreamAlert, setShowStreamAlert] = useState(true);
 
-    // Cycle incoming citizen complaints every 16 seconds
+    // Cycle incoming citizen complaints every 3 seconds
     useEffect(() => {
         const streamTimer = setInterval(() => {
             setStreamIndex((prev) => (prev + 1) % LIVE_COMPLAINT_STREAM.length);
@@ -451,29 +396,6 @@ export default function GraphViewer() {
     // Guided Autopilot State
     const [demoActive, setDemoActive] = useState(false);
     const [demoStep, setDemoStep] = useState(0);
-
-    const DEMO_STEPS = [
-        {
-            title: 'Step 1: Live Citizen Complaint Intake (1930 / NCRP)',
-            desc: 'Citizen reports a crypto fraud loss. The live Golden Hour countdown clock initiates to prevent off-ramp liquidation.'
-        },
-        {
-            title: 'Step 2: Automated Multi-Hop Graph Traversal with Live Current',
-            desc: 'Notice the animated dashed vectors tracing fund flow across intermediary mule accounts (Hop 1 & Hop 2) detecting peel-chain laundering.'
-        },
-        {
-            title: 'Step 3: Instant VASP Attribution (Binance)',
-            desc: 'The trace terminates at Hop 3 matching against the FIU-IND / VASP Ground Truth Registry with 94.2% attribution confidence.'
-        },
-        {
-            title: 'Step 4: AI / ML Topological Classification',
-            desc: 'The ML Random Forest classifier categorizes unknown nodes into Mules and Exchanges using 5 topological feature weights with court explainability.'
-        },
-        {
-            title: 'Step 5: Statutory Enforcement & Court-Admissible Dossier',
-            desc: 'One-click generation of the Section 91 Cr.P.C. freeze notice to the VASP compliance desk and exportable official investigation PDF report.'
-        }
-    ];
 
     const handlePoliceLogin = (e) => {
         e.preventDefault();
@@ -606,79 +528,60 @@ export default function GraphViewer() {
                     selector: 'node',
                     style: {
                         'label': 'data(label)',
-                        'color': '#f8fafc',
+                        'color': GRAPH_COLORS.paper,
                         'font-size': '11px',
-                        'font-family': 'system-ui, -apple-system, sans-serif',
-                        'font-weight': '600',
+                        'font-family': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        'font-weight': '700',
                         'text-valign': 'bottom',
                         'text-margin-y': 7,
-                        'text-background-opacity': 0.88,
-                        'text-background-color': '#070b14',
+                        'text-background-opacity': 1,
+                        'text-background-color': '#14161f',
                         'text-background-padding': '4px',
                         'text-background-shape': 'roundrectangle',
                         'border-width': 2,
-                        'border-color': '#ffffff',
+                        'border-color': GRAPH_COLORS.line,
                         'background-color': (ele) => {
                             const type = ele.data('entity_type');
-                            if (type === 'SUSPECT') return '#ef4444';
-                            if (type === 'CEX') return '#10b981';
-                            if (type === 'MIXER') return '#a855f7';
-                            if (type === 'BRIDGE') return '#06b6d4';
-                            return '#38bdf8';
+                            if (type === 'SUSPECT') return GRAPH_COLORS.rust;
+                            if (type === 'CEX') return GRAPH_COLORS.green;
+                            if (type === 'MIXER') return GRAPH_COLORS.rust;
+                            if (type === 'BRIDGE') return GRAPH_COLORS.navy;
+                            return GRAPH_COLORS.slate;
                         },
-                        'width': 52,
-                        'height': 52
+                        'width': 46,
+                        'height': 46
                     }
                 },
                 {
                     selector: 'node[entity_type = "SUSPECT"]',
-                    style: {
-                        'border-color': '#fca5a5',
-                        'border-width': 4,
-                        'width': 60,
-                        'height': 60,
-                        'shadow-blur': 25,
-                        'shadow-color': '#ef4444',
-                        'shadow-opacity': 0.8
-                    }
+                    style: { 'border-color': GRAPH_COLORS.rustDark, 'border-width': 3, 'width': 52, 'height': 52 }
                 },
                 {
                     selector: 'node[entity_type = "CEX"]',
-                    style: {
-                        'border-color': '#6ee7b7',
-                        'border-width': 4,
-                        'width': 60,
-                        'height': 60,
-                        'shadow-blur': 25,
-                        'shadow-color': '#10b981',
-                        'shadow-opacity': 0.8
-                    }
+                    style: { 'border-color': GRAPH_COLORS.greenDark, 'border-width': 3, 'width': 52, 'height': 52 }
                 },
                 {
                     selector: 'edge',
                     style: {
-                        'width': 3.5,
-                        'line-color': '#38bdf8',
-                        'target-arrow-color': '#38bdf8',
+                        'width': 2.5,
+                        'line-color': '#5b5e6b',
+                        'target-arrow-color': GRAPH_COLORS.paper,
                         'target-arrow-shape': 'triangle',
-                        'arrow-scale': 1.4,
+                        'arrow-scale': 1.3,
                         'curve-style': 'bezier',
                         'line-style': 'dashed',
                         'label': (ele) => `${ele.data('value_eth')} ${ele.data('token') || 'ETH'}`,
-                        'font-size': '9px',
-                        'color': '#cbd5e1',
-                        'text-background-color': '#070b14',
-                        'text-background-opacity': 0.95,
+                        'font-size': '10px',
+                        'font-weight': '600',
+                        'color': GRAPH_COLORS.paper,
+                        'text-background-color': '#14161f',
+                        'text-background-opacity': 1,
                         'text-background-padding': '3px',
                         'text-rotation': 'autorotate'
                     }
                 }
             ],
-            layout: {
-                name: 'preset',
-                fit: true,
-                padding: 60
-            }
+            layout: { name: 'preset', fit: true, padding: 60 }
         });
 
         cyRef.current.on('tap', 'node', (evt) => {
@@ -748,8 +651,8 @@ Cyber Crime Division`;
             '[14:25:02] Cryptographic Evidence Package Formed (SHA-256 Checksum Verified).',
             `[14:25:03] Transmitting Statutory Section 91 Requisition to ${activeDataset.attributions[0]?.entity_name} Compliance Node...`,
             `[14:25:04] Secure Handshake with ${activeDataset.attributions[0]?.compliance_contact} Established.`,
-            '[14:25:05] 🟢 SUCCESS: Requisition Ticket #IND-I4C-2026-9821 Acknowledged by VASP.',
-            '[14:25:05] 🔒 BENEFICIARY ACCOUNT STATUS: TEMPORARY DEBIT RESTRICTION APPLIED.'
+            '[14:25:05] SUCCESS: Requisition Ticket #IND-I4C-2026-9821 Acknowledged by VASP.',
+            '[14:25:05] BENEFICIARY ACCOUNT STATUS: TEMPORARY DEBIT RESTRICTION APPLIED.'
         ];
         steps.forEach((log, index) => {
             setTimeout(() => {
@@ -799,6 +702,7 @@ Cyber Crime Division`;
 
     useEffect(() => {
         renderCytoscapeGraph(CHAIN_DATASETS.ethereum.elements);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const risk = activeDataset.risk_assessment;
@@ -807,435 +711,200 @@ Cyber Crime Division`;
     const currentStreamItem = LIVE_COMPLAINT_STREAM[streamIndex];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', background: '#050811', color: '#f1f5f9', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+        <div className="app">
 
-            {/* 1. TOP COMMAND BAR (STRICTLY HIDDEN ON LANDING PAGE) */}
+            {/* TOP COMMAND BAR — hidden on the landing screen only */}
             {currentPortal !== 'landing' && (
-                <header style={{ height: isMobile ? 'auto' : '62px', minHeight: '56px', background: '#0a0f1d', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '8px 12px' : '0 20px', zIndex: 20, flexWrap: 'wrap', gap: '8px' }}>
-
-                    {/* Left: Branding & Role Toggle */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'linear-gradient(135deg, #2563eb, #38bdf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px', color: '#fff', boxShadow: '0 0 15px rgba(37,99,235,0.5)' }}>
-                                👁️
-                            </div>
+                <header className="topbar">
+                    <div className="topbar-left">
+                        <div className="brand">
+                            <CyclopsEmblem />
                             <div>
-                                <div style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    CYCLOPS
-                                    <span style={{ fontSize: '10px', background: '#1e293b', color: '#38bdf8', padding: '2px 6px', borderRadius: '4px', border: '1px solid #334155' }}>SIH26183</span>
-                                </div>
-                                <div style={{ fontSize: '11px', color: '#64748b' }}>Ministry of Home Affairs | NCRP & SAHYOG Automated Intelligence Grid</div>
+                                <div className="brand-name">CYCLOPS <span style={{ opacity: 0.5, fontWeight: 600 }}>SIH26183</span></div>
+                                <div className="brand-sub">Ministry of Home Affairs — NCRP &amp; SAHYOG Intelligence Grid</div>
                             </div>
                         </div>
 
-                        {/* DUAL PORTAL ROLE TOGGLE */}
-                        <button
-                            onClick={() => setCurrentPortal('landing')}
-                            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #334155', background: '#0a0f1d', color: '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                        >
-                            🏠 Home
-                        </button>
-                        <div style={{ display: 'flex', background: '#111827', borderRadius: '8px', border: '1px solid #1e293b', padding: '3px' }}>
+                        <button className="btn-plain-dark" onClick={() => setCurrentPortal('landing')}>Home</button>
+
+                        <div className="segmented">
                             <button
+                                className={currentPortal === 'police' ? 'active on-navy' : ''}
                                 onClick={() => setCurrentPortal('police')}
-                                style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: currentPortal === 'police' ? '#2563eb' : 'transparent', color: currentPortal === 'police' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                             >
-                                🛡️ Police Admin Grid
+                                Police Admin Grid
                             </button>
                             <button
+                                className={currentPortal === 'citizen' ? 'active on-green' : ''}
                                 onClick={() => setCurrentPortal('citizen')}
-                                style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: currentPortal === 'citizen' ? '#10b981' : 'transparent', color: currentPortal === 'citizen' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                             >
-                                👤 Citizen 1930 Portal
+                                Citizen 1930 Portal
                             </button>
                         </div>
                     </div>
 
-                    {/* Center: Layer Switcher (Only visible when Police is Authenticated) */}
                     {currentPortal === 'police' && isPoliceAuth && (
-                        <div style={{ display: 'flex', background: '#111827', borderRadius: '8px', border: '1px solid #1e293b', padding: '3px', gap: '4px' }}>
-                            <button
-                                onClick={() => setActiveLayer('forensics')}
-                                style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: activeLayer === 'forensics' ? '#2563eb' : 'transparent', color: activeLayer === 'forensics' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                            >
-                                🕸️ Forensics Canvas
-                            </button>
-                            <button
-                                onClick={() => setActiveLayer('dashboard')}
-                                style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: activeLayer === 'dashboard' ? '#2563eb' : 'transparent', color: activeLayer === 'dashboard' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                            >
-                                📊 Intelligence Grid
-                            </button>
-                            <button
-                                onClick={() => setActiveLayer('dossier')}
-                                style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: activeLayer === 'dossier' ? '#2563eb' : 'transparent', color: activeLayer === 'dossier' ? '#fff' : '#94a3b8', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                            >
-                                📋 Court Dossier
-                            </button>
+                        <div className="segmented">
+                            <button className={activeLayer === 'forensics' ? 'active on-navy' : ''} onClick={() => setActiveLayer('forensics')}>Forensics Canvas</button>
+                            <button className={activeLayer === 'dashboard' ? 'active on-navy' : ''} onClick={() => setActiveLayer('dashboard')}>Intelligence Grid</button>
+                            <button className={activeLayer === 'dossier' ? 'active on-navy' : ''} onClick={() => setActiveLayer('dossier')}>Court Dossier</button>
                         </div>
                     )}
 
-                    {/* Right Action Buttons - Streamlined & Minimal */}
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div className="row-gap" style={{ alignItems: 'center' }}>
                         {currentPortal === 'police' && isPoliceAuth && (
                             <>
+                                <button className="btn btn-rust btn-sm" onClick={handleLaunchDispatch}>Freeze VASP</button>
+                                <button className="btn btn-navy btn-sm" onClick={handleExportPDF}>PDF Dossier</button>
                                 <button
-                                    onClick={handleLaunchDispatch}
-                                    style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #dc2626, #b91c1c)', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                    className="btn btn-outline-invert btn-sm"
+                                    onClick={() => { setDemoActive(true); setDemoStep(0); setActiveLayer('forensics'); handleSelectChain('ethereum'); }}
                                 >
-                                    🚨 Freeze VASP
+                                    Demo Tour
                                 </button>
-                                <button
-                                    onClick={handleExportPDF}
-                                    style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #1d4ed8, #2563eb)', border: 'none', color: '#ffffff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                >
-                                    📄 PDF Dossier
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setDemoActive(true);
-                                        setDemoStep(0);
-                                        setActiveLayer('forensics');
-                                        handleSelectChain('ethereum');
-                                    }}
-                                    style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                                >
-                                    ▶️ Demo Tour
-                                </button>
-                                <div style={{ fontSize: '11px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px', background: '#0a0f1d', padding: '4px 8px', borderRadius: '6px', border: '1px solid #1e293b' }}>
-                                    <span>🟢</span> <span>IO-9921</span>
-                                    <button onClick={handlePoliceLogout} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '10px', marginLeft: '4px' }}>[Exit]</button>
+                                <div className="session-chip">
+                                    <span className="dot" /> <span>IO-9921</span>
+                                    <button onClick={handlePoliceLogout}>Exit</button>
                                 </div>
                             </>
                         )}
 
                         {currentPortal === 'citizen' && (
-                            <button
-                                onClick={() => setCurrentPortal('police')}
-                                style={{ padding: '8px 16px', background: '#2563eb', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                            >
-                                Access Police Admin Grid →
+                            <button className="btn btn-navy" onClick={() => setCurrentPortal('police')}>
+                                Access Police Admin Grid
                             </button>
                         )}
                     </div>
                 </header>
             )}
 
-            {/* 2. REAL-TIME LIVE 1930 HELPLINE COMPLAINT STREAM TICKER */}
-            {/* ========================================================================= */}
-            {/* 1. MASTERPIECE LANDING SCREEN: TWO BIG INTERACTIVE CARDS + CYBER PARTICLES */}
-            {/* ========================================================================= */}
+            {/* ===================== LANDING ===================== */}
             {currentPortal === 'landing' && (
-                <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', overflowY: 'auto', background: 'radial-gradient(ellipse at 50% 20%, #0d1b3e 0%, #040711 75%)' }}>
+                <div className="landing">
+                    <span className="landing-flag">सत्यमेव जयते &nbsp;·&nbsp; Government of India &nbsp;·&nbsp; I4C</span>
+                    <h1 className="landing-title">CYCLOPS</h1>
+                    <div className="landing-kicker">Federal Cryptocurrency Forensics &amp; VASP Attribution Terminal</div>
+                    <p className="landing-lede">
+                        A financial intelligence terminal connecting victim-reported scam wallets, multi-hop blockchain
+                        analytics, and statutory Section 91 Cr.P.C. / BNSS asset freezes inside the critical Golden Hour.
+                    </p>
 
-                    {/* Animated Background Canvas */}
-                    <CyberBackground />
-
-                    {/* Hero Header */}
-                    <div style={{ textAlign: 'center', marginBottom: '22px', maxWidth: '880px', zIndex: 10, animation: 'fadeIn 0.6s ease-out' }}>
-
-                        {/* Cybernetic Eye Emblem */}
-                        <CyclopsEyeEmblem />
-
-                        {/* National Insignia Badge */}
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(30, 58, 138, 0.25)', border: '1px solid #1e40af', padding: '5px 14px', borderRadius: '30px', marginBottom: '10px', backdropFilter: 'blur(8px)' }}>
-                            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 8px #38bdf8' }} />
-                            <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#93c5fd', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                                सत्यमेव जयते • Government of India • Ministry of Home Affairs • I4C Grid
-                            </span>
-                        </div>
-
-                        {/* Futuristic CYCLOPS Title */}
-                        <h1 style={{ fontSize: 'clamp(38px, 5.5vw, 54px)', fontWeight: '900', letterSpacing: '8px', margin: '0 0 4px 0', background: 'linear-gradient(135deg, #ffffff 0%, #38bdf8 45%, #818cf8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 0 35px rgba(56, 189, 248, 0.45)' }}>
-                            CYCLOPS
-                        </h1>
-                        <div style={{ fontSize: '12px', fontWeight: '800', letterSpacing: '3px', color: '#38bdf8', textTransform: 'uppercase', marginBottom: '12px' }}>
-                            Autonomous Blockchain Forensics & VASP Attribution Grid
-                        </div>
-
-                        <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: '0 0 20px 0', maxWidth: '780px' }}>
-                            Automated blockchain intelligence platform connecting victim-reported scam wallets, multi-hop forensic traversal, and statutory VASP asset freezing within the critical <strong>Golden Hour</strong> window.
-                        </p>
-
-                        {/* Live Operational Badges */}
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '11px', background: 'rgba(16, 185, 129, 0.12)', border: '1px solid #059669', color: '#34d399', padding: '4px 12px', borderRadius: '20px', fontWeight: '600' }}>
-                                🟢 NCRP & 1930 Gateway Active
-                            </span>
-                            <span style={{ fontSize: '11px', background: 'rgba(56, 189, 248, 0.12)', border: '1px solid #0284c7', color: '#38bdf8', padding: '4px 12px', borderRadius: '20px', fontWeight: '600' }}>
-                                ⚡ FIU-IND Compliant VASPs Indexed
-                            </span>
-                            <span style={{ fontSize: '11px', background: 'rgba(168, 85, 247, 0.12)', border: '1px solid #9333ea', color: '#c084fc', padding: '4px 12px', borderRadius: '20px', fontWeight: '600' }}>
-                                ⚖️ Section 91 Cr.P.C. / BNSS Automated
-                            </span>
-                        </div>
+                    <div className="status-row">
+                        <span className="pill pill-green">1930 Citizen Helpline Gateway Online</span>
+                        <span className="pill pill-navy">FIU-IND Compliant VASPs Indexed (28 Registered)</span>
+                        <span className="pill pill-rust">Section 91 Cr.P.C. / BNSS Requisitions Automated</span>
                     </div>
 
-                    {/* TWO BIG INTERACTIVE PORTAL BOXES */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', width: '960px', maxWidth: '100%', zIndex: 10 }}>
-
-                        {/* BOX 1: CITIZEN 1930 PORTAL */}
-                        <div
-                            onClick={() => setCurrentPortal('citizen')}
-                            style={{
-                                background: 'linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(10, 15, 29, 0.9) 100%)',
-                                border: '2px solid #10b981',
-                                borderRadius: '16px',
-                                padding: '24px 22px',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                backdropFilter: 'blur(16px)',
-                                boxShadow: '0 20px 40px rgba(16, 185, 129, 0.15)',
-                                position: 'relative',
-                                overflow: 'hidden'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-6px)';
-                                e.currentTarget.style.boxShadow = '0 25px 60px rgba(16, 185, 129, 0.35)';
-                                e.currentTarget.style.borderColor = '#34d399';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.15)';
-                                e.currentTarget.style.borderColor = '#10b981';
-                            }}
-                        >
+                    <div className="portal-grid">
+                        {/* CITIZEN PORTAL CARD */}
+                        <div className="portal-card" onClick={() => setCurrentPortal('citizen')}>
                             <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                    <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' }}>
-                                        👤
+                                <div className="portal-card-head">
+                                    <div>
+                                        <h2>Citizen 1930 Helpline Portal</h2>
+                                        <div className="sub" style={{ color: 'var(--green)' }}>Public complaint intake &amp; freeze tracker</div>
                                     </div>
-                                    <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold', letterSpacing: '0.5px' }}>
-                                        PUBLIC ACCESS
-                                    </span>
+                                    <span className="pill pill-green">Public</span>
                                 </div>
-
-                                <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#ffffff', marginBottom: '8px' }}>
-                                    Citizen 1930 Helpline Portal
-                                </h2>
-                                <div style={{ fontSize: '12px', color: '#34d399', fontWeight: '600', marginBottom: '14px' }}>
-                                    Victim Fraud Lodging & Real-Time Recovery Tracker
-                                </div>
-
-                                <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '20px' }}>
-                                    Direct portal for citizens defrauded via Telegram task jobs, fake investment apps, or sextortion. Lodge your complaint, trigger instant wallet tracking, and watch live investigating officer actions.
+                                <p>
+                                    For anyone defrauded through Telegram tasks, fake forex platforms, or extortion.
+                                    File a complaint, trigger automated on-chain tracing, and track officer action in real time.
                                 </p>
-
-                                {/* Features list */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                                    <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> Instant Incident Lodging & Docket Number Generation
-                                    </div>
-                                    <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> Live 5-Stage Investigation Lifecycle with Timestamps
-                                    </div>
-                                    <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> Assigned Investigating Officer Telemetry (IO Badge)
-                                    </div>
-                                    <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>✓</span> Golden Hour Protection Against Cash Off-Ramping
-                                    </div>
+                                <div className="check-list">
+                                    <div><span className="mark">✓</span> Instant incident lodging &amp; NCRP docket number</div>
+                                    <div><span className="mark">✓</span> Five-stage investigation timeline with timestamps</div>
+                                    <div><span className="mark">✓</span> Assigned investigating officer details</div>
+                                    <div><span className="mark">✓</span> Golden Hour emergency asset-freeze protection</div>
                                 </div>
                             </div>
-
-                            <button
-                                style={{
-                                    width: '100%',
-                                    padding: '12px',
-                                    background: 'linear-gradient(135deg, #10b981, #059669)',
-                                    border: 'none',
-                                    color: '#ffffff',
-                                    borderRadius: '8px',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px',
-                                    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)'
-                                }}
-                            >
-                                Lodge Incident / Track Case →
-                            </button>
+                            <button className="btn btn-green btn-block">Lodge incident / track case</button>
                         </div>
 
-                        {/* BOX 2: POLICE ADMIN GRID */}
-                        <div
-                            onClick={() => setCurrentPortal('police')}
-                            style={{
-                                background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.08) 0%, rgba(10, 15, 29, 0.9) 100%)',
-                                border: '2px solid #2563eb',
-                                borderRadius: '16px',
-                                padding: '24px 22px',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                backdropFilter: 'blur(16px)',
-                                boxShadow: '0 20px 40px rgba(37, 99, 235, 0.2)',
-                                position: 'relative',
-                                overflow: 'hidden'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-6px)';
-                                e.currentTarget.style.boxShadow = '0 25px 60px rgba(37, 99, 235, 0.45)';
-                                e.currentTarget.style.borderColor = '#38bdf8';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 20px 40px rgba(37, 99, 235, 0.2)';
-                                e.currentTarget.style.borderColor = '#2563eb';
-                            }}
-                        >
+                        {/* POLICE PORTAL CARD */}
+                        <div className="portal-card" onClick={() => setCurrentPortal('police')}>
                             <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                    <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(37, 99, 235, 0.2)', border: '1px solid #2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' }}>
-                                        🛡️
+                                <div className="portal-card-head">
+                                    <div>
+                                        <h2>Law Enforcement &amp; Police Grid</h2>
+                                        <div className="sub" style={{ color: 'var(--navy)' }}>I4C &amp; state cyber cell operations</div>
                                     </div>
-                                    <span style={{ fontSize: '10px', background: 'rgba(37, 99, 235, 0.2)', color: '#38bdf8', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold', letterSpacing: '0.5px' }}>
-                                        RESTRICTED • LEO ONLY
-                                    </span>
+                                    <span className="pill pill-rust">Restricted</span>
                                 </div>
-
-                                <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#ffffff', marginBottom: '8px' }}>
-                                    Law Enforcement & Police Admin Grid
-                                </h2>
-                                <div style={{ fontSize: '12px', color: '#38bdf8', fontWeight: '600', marginBottom: '14px' }}>
-                                    I4C & State Cyber Cell Forensic Command Operations
-                                </div>
-
-                                <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '20px' }}>
-                                    Gated operational center for authorized cybercrime officers. High-speed multi-hop graph analytics, AI topological feature extraction, SAHYOG VASP emergency freeze dispatcher, and statutory court dossiers.
+                                <p>
+                                    Gated operational centre for verified cybercrime officers: multi-hop graph analytics
+                                    across Ethereum, Tron &amp; Bitcoin, AI topological heuristics, and SAHYOG VASP freeze notices.
                                 </p>
-
-                                {/* Features list */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                                    <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>✓</span> Multi-Chain Graph Traversal (Ethereum, Tron TRC-20, Bitcoin)
-                                    </div>
-                                    <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>✓</span> Automated VASP Attribution (Binance, CoinDCX, WazirX)
-                                    </div>
-                                    <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>✓</span> AI/ML Topological Heuristics & Anomaly Detection Engine
-                                    </div>
-                                    <div style={{ fontSize: '12px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>✓</span> SAHYOG Freeze Notice & Tamper-Proof PDF Court Dossier
-                                    </div>
+                                <div className="check-list">
+                                    <div><span className="mark">✓</span> Multi-chain graph traversal (ETH, Tron USDT, BTC, bridges)</div>
+                                    <div><span className="mark">✓</span> Automated VASP attribution (Binance, CoinDCX, WazirX)</div>
+                                    <div><span className="mark">✓</span> AI / ML topological heuristics &amp; anomaly detection</div>
+                                    <div><span className="mark">✓</span> SAHYOG freeze notice &amp; tamper-proof court PDF dossier</div>
                                 </div>
                             </div>
-
-                            <button
-                                style={{
-                                    width: '100%',
-                                    padding: '12px',
-                                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                                    border: 'none',
-                                    color: '#ffffff',
-                                    borderRadius: '8px',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px',
-                                    boxShadow: '0 4px 15px rgba(37, 99, 235, 0.4)'
-                                }}
-                            >
-                                🔐 Officer Login & Access Grid →
-                            </button>
+                            <button className="btn btn-navy btn-block">Officer verification &amp; access</button>
                         </div>
-
                     </div>
 
-                    {/* Bottom Telemetry Bar */}
-                    <div style={{ marginTop: '36px', display: 'flex', gap: '30px', color: '#64748b', fontSize: '12px', zIndex: 10 }}>
-                        <span><strong>142</strong> Active Dockets Monitored</span>
-                        <span>•</span>
-                        <span><strong>₹48.87M</strong> In Stolen Assets Traced</span>
-                        <span>•</span>
-                        <span><strong>1.2s</strong> Avg VASP Attribution Speed</span>
-                        <span>•</span>
-                        <span><strong>87.4%</strong> Golden Hour Freeze Success</span>
+                    <div className="telemetry-row">
+                        <span><strong>142</strong> active dockets monitored</span>
+                        <span>·</span>
+                        <span><strong>₹48.87M</strong> in stolen assets traced</span>
+                        <span>·</span>
+                        <span><strong>1.2s</strong> avg. VASP attribution speed</span>
+                        <span>·</span>
+                        <span><strong>87.4%</strong> Golden Hour freeze success rate</span>
                     </div>
-
                 </div>
             )}
 
-
+            {/* Live 1930 stream ticker — only inside the authenticated police grid */}
             {currentPortal === 'police' && isPoliceAuth && showStreamAlert && (
-                <div style={{ background: 'rgba(30, 58, 138, 0.25)', borderBottom: '1px solid #1e3a8a', padding: '8px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', zIndex: 15 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', boxShadow: '0 0 8px #ef4444' }} />
-                        <span style={{ color: '#94a3b8' }}>LIVE 1930 DISPATCH INCOMING:</span>
-                        <strong style={{ color: '#38bdf8' }}>{currentStreamItem.victim}</strong>
-                        <span style={{ color: '#cbd5e1' }}>reported loss of {currentStreamItem.amount} ({currentStreamItem.type})</span>
-                        <code style={{ color: '#93c5fd', fontSize: '11px', background: '#090d16', padding: '2px 6px', borderRadius: '4px' }}>{currentStreamItem.wallet.slice(0, 14)}...</code>
+                <div className="ticker">
+                    <div className="left">
+                        <span className="pulse" />
+                        <span className="ws-muted">Live 1930 dispatch:</span>
+                        <strong>{currentStreamItem.victim}</strong>
+                        <span className="ws-muted">reported a loss of {currentStreamItem.amount} ({currentStreamItem.type})</span>
+                        <code className="mono" style={{ fontSize: 11, background: '#0f1117', padding: '2px 6px', borderRadius: 4 }}>{currentStreamItem.wallet.slice(0, 14)}...</code>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <button
-                            onClick={() => handleAutoTrace(currentStreamItem)}
-                            style={{ padding: '4px 10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                            ⚡ Click to Auto-Trace
-                        </button>
-                        <button onClick={() => setShowStreamAlert(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                    <div className="row-gap" style={{ alignItems: 'center' }}>
+                        <button className="btn btn-navy btn-sm" onClick={() => handleAutoTrace(currentStreamItem)}>Auto-trace this case</button>
+                        <button onClick={() => setShowStreamAlert(false)} style={{ background: 'none', border: 'none', color: '#6d6f7d', fontSize: 14 }}>✕</button>
                     </div>
                 </div>
             )}
 
-            {/* 3. CITIZEN 1930 REPORTING PORTAL */}
+            {/* ===================== CITIZEN PORTAL ===================== */}
             {currentPortal === 'citizen' && (
-                <div style={{ flex: 1, padding: '40px', overflowY: 'auto', background: '#050811', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ width: '700px', background: '#0a0f1d', border: '1px solid #1e293b', borderRadius: '10px', padding: '30px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
-                        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16,185,129,0.15)', border: '1px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', fontSize: '24px' }}>
-                                🛡️
-                            </div>
-                            <h2 style={{ margin: '0 0 6px 0', fontSize: '20px', color: '#f8fafc' }}>National Cybercrime Citizen Helpline (1930)</h2>
-                            <p style={{ margin: 0, color: '#94a3b8', fontSize: '13px' }}>Direct Incident Filing & Automated Emergency Asset Freeze Protocol</p>
+                <div className="form-shell">
+                    <div className="form-card">
+                        <div className="form-head">
+                            <h2>National Cybercrime Citizen Helpline (1930)</h2>
+                            <p>Direct incident filing &amp; automated emergency asset-freeze protocol</p>
                         </div>
 
                         {!citizenSubmitted ? (
-                            <form onSubmit={handleCitizenSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                            <form onSubmit={handleCitizenSubmit} className="stack">
+                                <div className="form-grid-2">
                                     <div>
-                                        <label style={{ fontSize: '12px', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>Your Full Name</label>
+                                        <label className="field-label">Your full name</label>
                                         <input
-                                            type="text"
-                                            placeholder="e.g. Vikramaditya Sen"
-                                            value={citizenName}
-                                            onChange={(e) => setCitizenName(e.target.value)}
-                                            style={{ width: '100%', padding: '10px', background: '#111827', border: '1px solid #374151', color: '#fff', borderRadius: '6px', fontSize: '13px' }}
-                                            required
+                                            className="field-input" type="text" placeholder="e.g. Vikramaditya Sen"
+                                            value={citizenName} onChange={(e) => setCitizenName(e.target.value)} required
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '12px', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>Registered Mobile Number</label>
+                                        <label className="field-label">Registered mobile number</label>
                                         <input
-                                            type="tel"
-                                            placeholder="+91 98765-XXXXX"
-                                            value={citizenPhone}
-                                            onChange={(e) => setCitizenPhone(e.target.value)}
-                                            style={{ width: '100%', padding: '10px', background: '#111827', border: '1px solid #374151', color: '#fff', borderRadius: '6px', fontSize: '13px' }}
-                                            required
+                                            className="field-input" type="tel" placeholder="+91 98765-XXXXX"
+                                            value={citizenPhone} onChange={(e) => setCitizenPhone(e.target.value)} required
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label style={{ fontSize: '12px', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>Scam Category</label>
-                                    <select
-                                        value={citizenScamType}
-                                        onChange={(e) => setCitizenScamType(e.target.value)}
-                                        style={{ width: '100%', padding: '10px', background: '#111827', border: '1px solid #374151', color: '#fff', borderRadius: '6px', fontSize: '13px' }}
-                                    >
+                                    <label className="field-label">Scam category</label>
+                                    <select className="field-input" value={citizenScamType} onChange={(e) => setCitizenScamType(e.target.value)}>
                                         <option value="Task-Based Telegram Part-Time Scam">Task-Based Telegram Part-Time Scam</option>
                                         <option value="Fake Forex / Crypto Investment Scam">Fake Forex / Crypto Investment Scam</option>
                                         <option value="Hospital / Enterprise Ransomware">Hospital / Enterprise Ransomware</option>
@@ -1244,30 +913,22 @@ Cyber Crime Division`;
                                 </div>
 
                                 <div>
-                                    <label style={{ fontSize: '12px', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>Suspect Wallet Address (Where you sent crypto)</label>
+                                    <label className="field-label">Suspect wallet address (where you sent crypto)</label>
                                     <input
-                                        type="text"
-                                        placeholder="0x... or Tron/BTC address"
-                                        value={citizenWallet}
-                                        onChange={(e) => setCitizenWallet(e.target.value)}
-                                        style={{ width: '100%', padding: '10px', background: '#111827', border: '1px solid #374151', color: '#fff', borderRadius: '6px', fontSize: '13px', fontFamily: 'monospace' }}
-                                        required
+                                        className="field-input mono" type="text" placeholder="0x... or Tron/BTC address"
+                                        value={citizenWallet} onChange={(e) => setCitizenWallet(e.target.value)} required
                                     />
                                 </div>
 
                                 <div>
-                                    <label style={{ fontSize: '12px', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>Amount Defrauded (INR & Crypto)</label>
+                                    <label className="field-label">Amount defrauded (INR &amp; crypto)</label>
                                     <input
-                                        type="text"
-                                        placeholder="e.g. ₹6,50,000 (2.50 ETH)"
-                                        value={citizenLoss}
-                                        onChange={(e) => setCitizenLoss(e.target.value)}
-                                        style={{ width: '100%', padding: '10px', background: '#111827', border: '1px solid #374151', color: '#fff', borderRadius: '6px', fontSize: '13px' }}
-                                        required
+                                        className="field-input" type="text" placeholder="e.g. ₹6,50,000 (2.50 ETH)"
+                                        value={citizenLoss} onChange={(e) => setCitizenLoss(e.target.value)} required
                                     />
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                                <div className="demo-fill-row">
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -1277,115 +938,95 @@ Cyber Crime Division`;
                                             setCitizenWallet('0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1');
                                             setCitizenLoss('₹12,12,500 (4.85 ETH)');
                                         }}
-                                        style={{ flex: 1, padding: '8px', background: '#1e293b', color: '#38bdf8', border: '1px solid #334155', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
                                     >
-                                        ⚡ Demo Fill: Telegram Task Fraud
+                                        Demo fill: Telegram task fraud
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setCitizenName('Suresh Menon');
                                             setCitizenPhone('+91 94451-22301');
-                                            setCitizenScamType('Fake Forex / High-Yield Crypto Investment');
+                                            setCitizenScamType('Fake Forex / Crypto Investment Scam');
                                             setCitizenWallet('TScam9999a3b2e5f8841a0e889b41a91e1d092');
                                             setCitizenLoss('₹20,50,000 (25,000 USDT)');
                                         }}
-                                        style={{ flex: 1, padding: '8px', background: '#1e293b', color: '#10b981', border: '1px solid #334155', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
                                     >
-                                        ⚡ Demo Fill: Tron USDT Forex Scam
+                                        Demo fill: Tron USDT forex scam
                                     </button>
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    style={{ marginTop: '10px', padding: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}
-                                >
-                                    🚀 Submit Complaint & Start Emergency Freeze
+                                <button type="submit" className="btn btn-green btn-block" style={{ marginTop: 4 }}>
+                                    Submit complaint &amp; start emergency freeze
                                 </button>
                             </form>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
-                                    <div style={{ fontSize: '14px', color: '#10b981', fontWeight: 'bold' }}>INCIDENT LODGED SUCCESSFULLY</div>
-                                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#fff', margin: '6px 0' }}>{citizenDocket}</div>
-                                    <div style={{ fontSize: '12px', color: '#cbd5e1' }}>Automated On-Chain Attribution Pipeline Initiated within Golden Hour Window.</div>
+                            <div className="stack">
+                                <div className="case-summary">
+                                    <div className="label">Incident lodged successfully</div>
+                                    <div className="docket">{citizenDocket}</div>
+                                    <div className="note">Automated on-chain attribution pipeline initiated within the Golden Hour window.</div>
                                 </div>
 
-                                {/* Citizen Live Progress Bar & Officer Action Feedback */}
-                                <div style={{ background: '#111827', borderRadius: '10px', padding: '20px', border: '1px solid #1f2937' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #1e293b', paddingBottom: '12px' }}>
+                                <div className="officer-card">
+                                    <div className="officer-card-head">
                                         <div>
-                                            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold' }}>ASSIGNED INVESTIGATING OFFICER</div>
-                                            <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#38bdf8', marginTop: '2px' }}>Insp. R. Sharma (Badge: IO-I4C-9921)</div>
-                                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>Cyber Crime Police Station, Special Cell, New Delhi</div>
+                                            <div className="label">Assigned investigating officer</div>
+                                            <div className="value">Insp. R. Sharma (Badge: IO-I4C-9921)</div>
+                                            <div style={{ fontSize: 11, color: 'var(--ink-soft)' }}>Cyber Crime Police Station, Special Cell, New Delhi</div>
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
-                                            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold' }}>ESTIMATED RESOLUTION DATE</div>
-                                            <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#10b981', marginTop: '2px' }}>Within 48-72 Hours (Est. Sep 08, 2026)</div>
-                                            <div style={{ fontSize: '11px', color: '#f59e0b' }}>🟢 Golden Hour Freeze Requisition Active</div>
+                                            <div className="label">Estimated resolution</div>
+                                            <div className="value" style={{ color: 'var(--green)' }}>Within 48–72 hours</div>
+                                            <div style={{ fontSize: 11, color: 'var(--amber)' }}>Golden Hour freeze requisition active</div>
                                         </div>
                                     </div>
 
-                                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#94a3b8', marginBottom: '12px' }}>INVESTIGATION LIFECYCLE & VERIFIED TIMESTAMPS</div>
+                                    <div className="eyebrow" style={{ marginBottom: 12 }}>Investigation lifecycle &amp; verified timestamps</div>
 
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                            <span style={{ fontSize: '11px', background: '#10b981', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>14:32:05 IST</span>
+                                    <div className="timeline">
+                                        <div className="timeline-item">
+                                            <span className="timeline-time" style={{ background: 'var(--green)' }}>14:32:05 IST</span>
                                             <div>
-                                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#10b981' }}>✓ Stage 1: Incident Registered on NCRP / 1930 Helpline</div>
-                                                <div style={{ fontSize: '11px', color: '#cbd5e1' }}>Complaint verified. Cryptographic evidence hash sealed on national docket.</div>
+                                                <div className="t-title">Stage 1 · Incident registered on NCRP / 1930 Helpline</div>
+                                                <div className="t-desc">Complaint verified. Cryptographic evidence hash sealed on the national docket.</div>
                                             </div>
                                         </div>
-
-                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                            <span style={{ fontSize: '11px', background: '#10b981', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>14:32:08 IST</span>
+                                        <div className="timeline-item">
+                                            <span className="timeline-time" style={{ background: 'var(--green)' }}>14:32:08 IST</span>
                                             <div>
-                                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#10b981' }}>✓ Stage 2: Automated Multi-Hop Blockchain Tracing Completed</div>
-                                                <div style={{ fontSize: '11px', color: '#cbd5e1' }}>Algorithm identified 3 intermediary mule accounts layering funds via automated peel chain.</div>
+                                                <div className="t-title">Stage 2 · Automated multi-hop blockchain tracing completed</div>
+                                                <div className="t-desc">Three intermediary mule accounts identified layering funds via a peel chain.</div>
                                             </div>
                                         </div>
-
-                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                            <span style={{ fontSize: '11px', background: '#2563eb', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>14:32:11 IST</span>
+                                        <div className="timeline-item">
+                                            <span className="timeline-time" style={{ background: 'var(--navy)' }}>14:32:11 IST</span>
                                             <div>
-                                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#38bdf8' }}>✓ Stage 3: Off-Ramp VASP Identified (Binance Hot Wallet 14)</div>
-                                                <div style={{ fontSize: '11px', color: '#cbd5e1' }}>Ground-Truth Registry matched terminal depository (VASP Registry Match: 99.4%).</div>
+                                                <div className="t-title">Stage 3 · Off-ramp VASP identified (Binance Hot Wallet 14)</div>
+                                                <div className="t-desc">Ground-truth registry matched the terminal depository (99.4% match).</div>
                                             </div>
                                         </div>
-
-                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                            <span style={{ fontSize: '11px', background: '#f59e0b', color: '#000', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>14:40:12 IST</span>
+                                        <div className="timeline-item">
+                                            <span className="timeline-time" style={{ background: 'var(--amber)' }}>14:40:12 IST</span>
                                             <div>
-                                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f59e0b' }}>⏳ Stage 4: Officer Action - Emergency Sec 91 Cr.P.C. Freeze Dispatched</div>
-                                                <div style={{ fontSize: '11px', color: '#cbd5e1' }}>Insp. R. Sharma served emergency freeze notice to VASP Compliance Desk via SAHYOG Gateway.</div>
+                                                <div className="t-title">Stage 4 · Emergency Sec. 91 Cr.P.C. freeze dispatched</div>
+                                                <div className="t-desc">Insp. R. Sharma served the freeze notice via the SAHYOG gateway.</div>
                                             </div>
                                         </div>
-
-                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                            <span style={{ fontSize: '11px', background: '#10b981', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>14:45:00 IST</span>
+                                        <div className="timeline-item">
+                                            <span className="timeline-time" style={{ background: 'var(--green)' }}>14:45:00 IST</span>
                                             <div>
-                                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#10b981' }}>🔒 Stage 5: VASP Compliance Acknowledged (Beneficiary Account Frozen)</div>
-                                                <div style={{ fontSize: '11px', color: '#cbd5e1' }}>VASP confirmed receipt of Ticket #IND-I4C-9821. Beneficiary debit facility restricted within Golden Hour.</div>
+                                                <div className="t-title">Stage 5 · VASP compliance acknowledged, account frozen</div>
+                                                <div className="t-desc">Ticket #IND-I4C-9821 confirmed. Beneficiary debit restricted within the Golden Hour.</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button
-                                        onClick={() => {
-                                            setCurrentPortal('police');
-                                        }}
-                                        style={{ flex: 1, padding: '12px', background: '#2563eb', border: 'none', color: '#fff', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
-                                    >
-                                        Authenticate as Police Officer to View Forensics →
+                                <div className="row-gap">
+                                    <button className="btn btn-navy" style={{ flex: 1 }} onClick={() => setCurrentPortal('police')}>
+                                        Authenticate as police officer to view forensics
                                     </button>
-                                    <button
-                                        onClick={() => setCitizenSubmitted(false)}
-                                        style={{ padding: '12px 18px', background: '#1e293b', border: '1px solid #374151', color: '#cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
-                                    >
-                                        File Another Report
-                                    </button>
+                                    <button className="btn btn-outline" onClick={() => setCitizenSubmitted(false)}>File another report</button>
                                 </div>
                             </div>
                         )}
@@ -1393,469 +1034,282 @@ Cyber Crime Division`;
                 </div>
             )}
 
-            {/* 4. POLICE ADMIN LOGIN SCREEN (Gated Authentication) */}
+            {/* ===================== POLICE LOGIN ===================== */}
             {currentPortal === 'police' && !isPoliceAuth && (
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at center, #0a1329 0%, #030611 100%)' }}>
-                    <div style={{ width: '460px', background: '#0a0f1d', border: '1px solid #1e293b', borderRadius: '12px', padding: '32px', boxShadow: '0 25px 60px rgba(0,0,0,0.9)' }}>
-                        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                            <div style={{ width: '54px', height: '54px', borderRadius: '14px', background: 'rgba(37,99,235,0.15)', border: '1px solid #2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', fontSize: '26px' }}>
-                                🛡️
-                            </div>
-                            <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#f8fafc' }}>I4C Cybercrime Forensic Grid</h2>
-                            <p style={{ margin: 0, color: '#94a3b8', fontSize: '12px' }}>Ministry of Home Affairs | Law Enforcement Officer (LEO) Authentication</p>
+                <div className="form-shell">
+                    <div className="form-card" style={{ maxWidth: 440 }}>
+                        <div className="form-head">
+                            <h2>I4C Cybercrime Forensic Grid</h2>
+                            <p>Ministry of Home Affairs — Law Enforcement Officer (LEO) authentication</p>
                         </div>
 
-                        {authError && (
-                            <div style={{ padding: '10px', background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', borderRadius: '6px', color: '#fca5a5', fontSize: '12px', marginBottom: '14px' }}>
-                                {authError}
-                            </div>
-                        )}
+                        {authError && <div className="notice-banner error">{authError}</div>}
 
-                        <form onSubmit={handlePoliceLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <form onSubmit={handlePoliceLogin} className="stack">
                             <div>
-                                <label style={{ fontSize: '12px', color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>Officer Badge ID</label>
+                                <label className="field-label">Officer badge ID</label>
                                 <input
-                                    type="text"
-                                    placeholder="e.g. IO-I4C-9921"
-                                    value={officerId}
-                                    onChange={(e) => setOfficerId(e.target.value)}
-                                    style={{ width: '100%', padding: '10px 12px', background: '#111827', border: '1px solid #374151', color: '#fff', borderRadius: '6px', fontSize: '13px', outline: 'none' }}
-                                    required
+                                    className="field-input" type="text" placeholder="e.g. IO-I4C-9921"
+                                    value={officerId} onChange={(e) => setOfficerId(e.target.value)} required
                                 />
                             </div>
-
                             <div>
-                                <label style={{ fontSize: '12px', color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>Security Passcode</label>
+                                <label className="field-label">Security passcode</label>
                                 <input
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={officerPass}
-                                    onChange={(e) => setOfficerPass(e.target.value)}
-                                    style={{ width: '100%', padding: '10px 12px', background: '#111827', border: '1px solid #374151', color: '#fff', borderRadius: '6px', fontSize: '13px', outline: 'none' }}
-                                    required
+                                    className="field-input" type="password" placeholder="••••••••"
+                                    value={officerPass} onChange={(e) => setOfficerPass(e.target.value)} required
                                 />
                             </div>
 
                             <button
                                 type="button"
-                                onClick={() => {
-                                    setOfficerId('IO-I4C-9921');
-                                    setOfficerPass('cybercell');
-                                }}
-                                style={{ padding: '8px', background: '#1e293b', color: '#38bdf8', border: '1px solid #334155', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', fontWeight: '600' }}
+                                onClick={() => { setOfficerId('IO-I4C-9921'); setOfficerPass('cybercell'); }}
+                                style={{ padding: 9, background: 'var(--paper)', color: 'var(--ink-soft)', border: '1px dashed var(--line-strong)', borderRadius: 'var(--radius)', fontSize: 11, fontWeight: 600 }}
                             >
-                                ⚡ Auto-Fill Demo Credentials (Insp. R. Sharma)
+                                Auto-fill demo credentials (Insp. R. Sharma)
                             </button>
 
-                            <button
-                                type="submit"
-                                style={{ marginTop: '6px', padding: '12px', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', border: 'none', color: '#fff', borderRadius: '6px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 14px rgba(37,99,235,0.4)' }}
-                            >
-                                🔐 Verify Credentials & Access Grid
+                            <button type="submit" className="btn btn-navy btn-block" style={{ marginTop: 4 }}>
+                                Verify credentials &amp; access grid
                             </button>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* 5. AUTHENTICATED POLICE FORENSIC GRID */}
+            {/* ===================== AUTHENTICATED POLICE GRID ===================== */}
             {currentPortal === 'police' && isPoliceAuth && (
                 <>
-                    {/* GUIDED DEMO OVERLAY (FOR JUDGES) */}
                     {demoActive && (
-                        <div style={{ background: 'linear-gradient(90deg, #1e3a8a, #0f172a)', borderBottom: '2px solid #38bdf8', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 30 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                <span style={{ background: '#38bdf8', color: '#090d16', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold' }}>
-                                    DEMO STEP {demoStep + 1} / 5
-                                </span>
+                        <div className="demo-bar">
+                            <div className="row-gap" style={{ alignItems: 'center' }}>
+                                <span className="badge">Demo step {demoStep + 1} / 5</span>
                                 <div>
-                                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>{DEMO_STEPS[demoStep].title}</div>
-                                    <div style={{ fontSize: '12px', color: '#cbd5e1' }}>{DEMO_STEPS[demoStep].desc}</div>
+                                    <div className="title">{DEMO_STEPS[demoStep].title}</div>
+                                    <div className="desc">{DEMO_STEPS[demoStep].desc}</div>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                                <button
-                                    onClick={handleNextDemoStep}
-                                    style={{ padding: '8px 16px', background: '#38bdf8', color: '#090d16', border: 'none', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}
-                                >
-                                    {demoStep === 4 ? 'Finish Demo' : 'Next Step →'}
-                                </button>
-                                <button
-                                    onClick={() => setDemoActive(false)}
-                                    style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}
-                                >
-                                    Exit
-                                </button>
+                            <div className="row-gap">
+                                <button className="btn btn-navy btn-sm" onClick={handleNextDemoStep}>{demoStep === 4 ? 'Finish demo' : 'Next step'}</button>
+                                <button className="btn btn-outline-invert btn-sm" onClick={() => setDemoActive(false)}>Exit</button>
                             </div>
                         </div>
                     )}
 
-                    {/* VASP FREEZE DISPATCH TERMINAL MODAL */}
                     {showDispatchModal && (
-                        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}>
-                            <div style={{ width: 'min(600px, 94vw)', background: '#070b14', border: '1px solid #dc2626', borderRadius: '8px', padding: '24px', boxShadow: '0 20px 60px rgba(220,38,38,0.4)', fontFamily: 'monospace' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #1e293b', paddingBottom: '10px' }}>
-                                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#ef4444' }}>🚨 SAHYOG GATEWAY | STATUTORY VASP FREEZE TRANSMISSION</span>
-                                    <button onClick={() => setShowDispatchModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer' }}>✕</button>
+                        <div className="modal-overlay">
+                            <div className="modal-card">
+                                <div className="modal-head">
+                                    <span className="title">SAHYOG Gateway — Statutory VASP Freeze Transmission</span>
+                                    <button onClick={() => setShowDispatchModal(false)}>✕</button>
                                 </div>
-
-                                <div style={{ background: '#030712', border: '1px solid #1f2937', padding: '12px', borderRadius: '6px', height: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
+                                <div className="terminal-log">
                                     {dispatchLogs.map((log, i) => (
-                                        <div key={i} style={{ color: log.includes('SUCCESS') || log.includes('FROZEN') ? '#10b981' : '#cbd5e1' }}>
-                                            {log}
-                                        </div>
+                                        <div key={i} className={log.includes('SUCCESS') || log.includes('APPLIED') ? 'ok' : ''}>{log}</div>
                                     ))}
                                 </div>
-
                                 {dispatchComplete && (
-                                    <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: '6px', textAlign: 'center' }}>
-                                        <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#10b981' }}>LEGAL NOTICE DELIVERED & ACKNOWLEDGED</div>
-                                        <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-                                            Freeze order active on beneficiary depository under Section 91 Cr.P.C. / BNSS. Golden Hour preserved.
-                                        </div>
+                                    <div className="modal-result">
+                                        <div className="t">Legal notice delivered &amp; acknowledged</div>
+                                        <div className="d">Freeze order active on the beneficiary depository under Section 91 Cr.P.C. / BNSS. Golden Hour preserved.</div>
                                     </div>
                                 )}
-
-                                <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-                                    <button
-                                        onClick={() => setShowDispatchModal(false)}
-                                        style={{ padding: '8px 18px', background: '#1e293b', color: '#fff', border: '1px solid #374151', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                                    >
-                                        Close Gateway Terminal
-                                    </button>
+                                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button className="btn-plain-dark" style={{ padding: '8px 18px' }} onClick={() => setShowDispatchModal(false)}>Close gateway terminal</button>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* LAYER 1: FORENSICS CANVAS VIEW */}
+                    {/* LAYER 1: FORENSICS CANVAS */}
                     {activeLayer === 'forensics' && (
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-
-                            {/* Mobile View Switcher (Only appears on smartphones/tablets < 960px) */}
                             {isMobile && (
-                                <div style={{ display: 'flex', background: '#0a0f1d', borderBottom: '1px solid #1e293b', padding: '6px 10px', gap: '6px', zIndex: 25 }}>
+                                <div className="mobile-tabs">
+                                    <button className={mobileViewTab === 'threat' ? 'active' : ''} onClick={() => setMobileViewTab('threat')}>Threat &amp; case</button>
                                     <button
-                                        onClick={() => { setMobileViewTab('threat'); }}
-                                        style={{ flex: 1, padding: '8px 4px', borderRadius: '6px', border: 'none', background: mobileViewTab === 'threat' ? '#1e293b' : 'transparent', color: mobileViewTab === 'threat' ? '#38bdf8' : '#94a3b8', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                                        className={mobileViewTab === 'canvas' ? 'active' : ''}
+                                        onClick={() => { setMobileViewTab('canvas'); setTimeout(() => { if (cyRef.current) { cyRef.current.resize(); cyRef.current.fit(undefined, 30); } }, 60); }}
                                     >
-                                        📊 Threat & Case
+                                        Graph canvas
                                     </button>
-                                    <button
-                                        onClick={() => {
-                                            setMobileViewTab('canvas');
-                                            setTimeout(() => { if (cyRef.current) { cyRef.current.resize(); cyRef.current.fit(undefined, 30); } }, 60);
-                                        }}
-                                        style={{ flex: 1, padding: '8px 4px', borderRadius: '6px', border: 'none', background: mobileViewTab === 'canvas' ? '#2563eb' : 'transparent', color: mobileViewTab === 'canvas' ? '#fff' : '#94a3b8', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                                    >
-                                        🕸️ Graph Canvas
-                                    </button>
-                                    <button
-                                        onClick={() => { setMobileViewTab('inspector'); }}
-                                        style={{ flex: 1, padding: '8px 4px', borderRadius: '6px', border: 'none', background: mobileViewTab === 'inspector' ? '#1e293b' : 'transparent', color: mobileViewTab === 'inspector' ? '#38bdf8' : '#94a3b8', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                                    >
-                                        🔍 Inspector & ML
-                                    </button>
+                                    <button className={mobileViewTab === 'inspector' ? 'active' : ''} onClick={() => setMobileViewTab('inspector')}>Inspector &amp; ML</button>
                                 </div>
                             )}
 
-                            <div style={{ display: 'flex', flex: 1, overflow: 'hidden', flexDirection: isMobile ? 'column' : 'row' }}>
+                            <div className="workspace" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
 
-                                {/* LEFT SIDEBAR: Threat Intelligence */}
-                                <div style={{ width: '330px', background: '#0a0f1d', borderRight: '1px solid #1e293b', display: 'flex', flexDirection: 'column', padding: '16px', gap: '14px', overflowY: 'auto' }}>
-
-                                    {/* Golden Hour Countdown Clock */}
-                                    <div style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(185,28,28,0.05))', border: '1px solid #ef4444', borderRadius: '8px', padding: '12px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                            <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#fca5a5', textTransform: 'uppercase' }}>🚨 Golden Hour Response Clock</span>
-                                            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#ef4444' }}>{formatGoldenHour(secondsRemaining)}</span>
+                                {/* LEFT SIDEBAR */}
+                                <div className="ws-sidebar" style={{ width: isMobile ? '100%' : 320, display: (!isMobile || mobileViewTab === 'threat') ? 'flex' : 'none' }}>
+                                    <div className="golden-hour">
+                                        <div className="golden-hour-row">
+                                            <span className="golden-hour-label">Golden Hour response clock</span>
+                                            <span className="golden-hour-clock">{formatGoldenHour(secondsRemaining)}</span>
                                         </div>
-                                        <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
-                                            Critical window to mandate VASP debit freeze before liquidation.
-                                        </div>
+                                        <div className="golden-hour-desc">Critical window to mandate a VASP debit freeze before liquidation.</div>
                                     </div>
 
-                                    {/* Case File Docket */}
-                                    <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '8px', padding: '14px' }}>
-                                        <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#64748b', fontWeight: 'bold', marginBottom: '6px' }}>
-                                            Active Docket: {activeDataset.caseMeta.docket_no}
-                                        </div>
-                                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '2px' }}>
-                                            {activeDataset.caseMeta.victim_name}
-                                        </div>
-                                        <div style={{ fontSize: '12px', color: '#10b981', fontWeight: '600', marginBottom: '6px' }}>
-                                            Reported Loss: {activeDataset.caseMeta.reported_loss}
-                                        </div>
-                                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                                            <strong>Category:</strong> {activeDataset.caseMeta.category}
-                                        </div>
+                                    <div className="ws-panel">
+                                        <div className="k">Active docket · {activeDataset.caseMeta.docket_no}</div>
+                                        <div className="v">{activeDataset.caseMeta.victim_name}</div>
+                                        <div style={{ fontSize: 12, color: '#4caf7d', fontWeight: 600, margin: '4px 0' }}>Reported loss: {activeDataset.caseMeta.reported_loss}</div>
+                                        <div style={{ fontSize: 11 }} className="ws-muted"><strong style={{ color: '#e7e5dd' }}>Category:</strong> {activeDataset.caseMeta.category}</div>
                                     </div>
 
-                                    {/* Radial Threat Gauge */}
-                                    <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                        <div style={{ position: 'relative', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <svg width="70" height="70" style={{ transform: 'rotate(-90deg)' }}>
-                                                <circle cx="35" cy="35" r="30" stroke="#1f2937" strokeWidth="6" fill="transparent" />
-                                                <circle
-                                                    cx="35"
-                                                    cy="35"
-                                                    r="30"
-                                                    stroke={risk.overall_risk_score > 75 ? '#ef4444' : (risk.overall_risk_score > 50 ? '#f59e0b' : '#10b981')}
-                                                    strokeWidth="6"
-                                                    fill="transparent"
-                                                    strokeDasharray={188.5}
-                                                    strokeDashoffset={188.5 - (188.5 * risk.overall_risk_score) / 100}
-                                                    strokeLinecap="round"
-                                                />
-                                            </svg>
-                                            <div style={{ position: 'absolute', fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>
-                                                {risk.overall_risk_score}
-                                            </div>
-                                        </div>
+                                    <div className="ws-panel risk-block">
+                                        <RiskRing score={risk.overall_risk_score} />
                                         <div>
-                                            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold' }}>THREAT LEVEL</div>
-                                            <div style={{ fontSize: '16px', fontWeight: 'bold', color: risk.risk_rating === 'CRITICAL' || risk.risk_rating === 'HIGH' ? '#ef4444' : '#10b981' }}>
-                                                {risk.risk_rating}
-                                            </div>
-                                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>AI Topological Risk Score</div>
+                                            <div className="k">Threat level</div>
+                                            <div className="v" style={{ color: (risk.risk_rating === 'CRITICAL' || risk.risk_rating === 'HIGH') ? '#e0654a' : '#4caf7d' }}>{risk.risk_rating}</div>
+                                            <div style={{ fontSize: 11 }} className="ws-muted">AI topological risk score</div>
                                         </div>
                                     </div>
 
-                                    {/* Identified VASP Card */}
-                                    <div style={{ background: primaryAttr?.category === 'CEX' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)', border: primaryAttr?.category === 'CEX' ? '1px solid #059669' : '1px solid #dc2626', borderRadius: '8px', padding: '14px' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: primaryAttr?.category === 'CEX' ? '#34d399' : '#f87171', textTransform: 'uppercase', marginBottom: '4px' }}>
-                                            🎯 Actionable VASP Identified
-                                        </div>
-                                        <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#f8fafc', marginBottom: '4px' }}>
-                                            {primaryAttr?.entity_name}
-                                        </div>
-                                        <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '6px' }}>
-                                            Distance: {primaryAttr?.hop_distance} hops | Confidence: {primaryAttr?.confidence_score}%
-                                        </div>
-                                        <div style={{ fontSize: '11px', background: '#070b14', padding: '6px 8px', borderRadius: '4px', border: '1px solid #1e293b', color: '#93c5fd' }}>
-                                            <strong>VASP Desk:</strong> {primaryAttr?.compliance_contact}
-                                        </div>
+                                    <div className={`vasp-card ${primaryAttr?.category === 'CEX' ? 'hit' : 'warn'}`}>
+                                        <div className="head" style={{ color: primaryAttr?.category === 'CEX' ? '#4caf7d' : '#e0876f' }}>Actionable VASP identified</div>
+                                        <div className="name">{primaryAttr?.entity_name}</div>
+                                        <div className="meta">Distance: {primaryAttr?.hop_distance} hops · Confidence: {primaryAttr?.confidence_score}%</div>
+                                        <div className="contact"><strong>VASP desk:</strong> {primaryAttr?.compliance_contact}</div>
                                     </div>
 
-                                    {/* Typologies */}
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#64748b', fontWeight: 'bold', marginBottom: '8px' }}>
-                                            Detected Typologies
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <div className="k" style={{ marginBottom: 8 }}>Detected typologies</div>
+                                        <div className="stack" style={{ gap: 6 }}>
                                             {risk.detected_patterns?.map((p, idx) => (
-                                                <div key={idx} style={{ fontSize: '12px', background: '#111827', border: '1px solid #1f2937', padding: '8px', borderRadius: '6px', color: '#cbd5e1' }}>
-                                                    ⚡ {p}
-                                                </div>
+                                                <div key={idx} className="typology-item">{p}</div>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* CENTER CANVAS & LIVE SEARCH BAR */}
-                                <div style={{ flex: 1, position: 'relative', display: (!isMobile || mobileViewTab === 'canvas') ? 'flex' : 'none', flexDirection: 'column', minHeight: isMobile ? 'calc(100vh - 180px)' : '500px' }}>
-
-                                    {/* Top Interactive Bar */}
-                                    <div style={{ position: 'absolute', top: '16px', left: '20px', zIndex: 10, display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-
-                                        {/* Multi-Chain Selector Buttons */}
-                                        <div style={{ display: 'flex', background: '#0a0f1d', borderRadius: '8px', border: '1px solid #1e293b', padding: '4px', gap: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
-                                            {[
-                                                { key: 'ethereum', label: 'Ξ Ethereum' },
-                                                { key: 'tron', label: '₮ Tron (TRC-20)' },
-                                                { key: 'bitcoin', label: '₿ Bitcoin (Esplora)' },
-                                                { key: 'multichain', label: '🌉 Multi-Chain (Bridge)' }
-                                            ].map((c) => (
-                                                <button
-                                                    key={c.key}
-                                                    onClick={() => handleSelectChain(c.key)}
-                                                    style={{
-                                                        padding: '8px 14px',
-                                                        borderRadius: '6px',
-                                                        border: 'none',
-                                                        background: selectedChainKey === c.key ? '#2563eb' : 'transparent',
-                                                        color: selectedChainKey === c.key ? '#fff' : '#94a3b8',
-                                                        fontSize: '12px',
-                                                        fontWeight: 'bold',
-                                                        cursor: 'pointer',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                >
+                                {/* CENTER CANVAS */}
+                                <div className="ws-center" style={{ display: (!isMobile || mobileViewTab === 'canvas') ? 'flex' : 'none' }}>
+                                    <div className="ws-toolbar">
+                                        <div className="chain-tabs">
+                                            {CHAIN_TABS.map((c) => (
+                                                <button key={c.key} className={selectedChainKey === c.key ? 'active' : ''} onClick={() => handleSelectChain(c.key)}>
                                                     {c.label}
                                                 </button>
                                             ))}
                                         </div>
 
-                                        {/* Editable Search Bar Input */}
-                                        <div style={{ display: 'flex', alignItems: 'center', background: '#0a0f1d', border: '1px solid #1e293b', borderRadius: '8px', padding: '4px', gap: '6px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+                                        <div className="trace-bar">
                                             <input
                                                 type="text"
                                                 value={suspectInput}
                                                 onChange={(e) => setSuspectInput(e.target.value)}
                                                 placeholder="Enter wallet address (0x..., T..., or BTC)"
-                                                style={{
-                                                    width: isMobile ? '100%' : '380px',
-                                                    background: '#111827',
-                                                    border: '1px solid #374151',
-                                                    color: '#38bdf8',
-                                                    padding: '8px 12px',
-                                                    borderRadius: '6px',
-                                                    fontSize: '12px',
-                                                    fontFamily: 'monospace',
-                                                    outline: 'none'
-                                                }}
+                                                style={{ width: isMobile ? '100%' : 380 }}
                                             />
-                                            <button
-                                                onClick={() => handleTraceWallet(suspectInput)}
-                                                disabled={tracingLive}
-                                                style={{
-                                                    padding: '8px 16px',
-                                                    background: 'linear-gradient(135deg, #2563eb, #38bdf8)',
-                                                    color: '#fff',
-                                                    border: 'none',
-                                                    borderRadius: '6px',
-                                                    fontSize: '12px',
-                                                    fontWeight: 'bold',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                {tracingLive ? 'Tracing...' : '🔍 Trace'}
+                                            <button onClick={() => handleTraceWallet(suspectInput)} disabled={tracingLive}>
+                                                {tracingLive ? 'Tracing…' : 'Trace'}
                                             </button>
                                         </div>
                                     </div>
 
-                                    {/* Cytoscape Canvas */}
-                                    <div ref={containerRef} style={{ flex: 1, width: '100%', height: 'calc(100vh - 120px)', minHeight: '520px' }} />
+                                    <div ref={containerRef} className="graph-canvas" />
 
-                                    {/* Live Cyber Ticker */}
-                                    <div style={{ position: 'absolute', bottom: '16px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0f1d', padding: '8px 16px', borderRadius: '6px', border: '1px solid #1e293b', fontSize: '11px', color: '#94a3b8' }}>
-                                        <div style={{ display: 'flex', gap: '14px' }}>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} /> Suspect Origin</span>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#38bdf8' }} /> Mule Layering</span>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} /> Exchange / VASP</span>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#06b6d4' }} /> Cross-Chain Bridge</span>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#a855f7' }} /> Mixer Contract</span>
+                                    <div className="legend-bar">
+                                        <div className="items">
+                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.rust }} /> Suspect origin</span>
+                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.slate }} /> Mule layering</span>
+                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.green }} /> Exchange / VASP</span>
+                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.navy }} /> Cross-chain bridge</span>
                                         </div>
-                                        <div style={{ color: '#38bdf8', fontWeight: '600' }}>
-                                            ⚡ ANIMATED FUND FLOW VELOCITY ACTIVE | LIVE CURRENT ENGINE
-                                        </div>
+                                        <div style={{ color: '#9db4d8', fontWeight: 600 }}>Live fund-flow animation active</div>
                                     </div>
                                 </div>
 
-                                {/* RIGHT SIDEBAR */}
-                                <div style={{ width: isMobile ? '100%' : '360px', background: '#0a0f1d', borderLeft: isMobile ? 'none' : '1px solid #1e293b', display: (!isMobile || mobileViewTab === 'inspector') ? 'flex' : 'none', flexDirection: 'column', overflowY: 'auto' }}>
-                                    <div style={{ display: 'flex', borderBottom: '1px solid #1e293b', background: '#070b14' }}>
-                                        <button
-                                            onClick={() => setActiveTab('inspector')}
-                                            style={{ flex: 1, padding: '12px 0', background: activeTab === 'inspector' ? '#0a0f1d' : 'transparent', border: 'none', borderBottom: activeTab === 'inspector' ? '2px solid #38bdf8' : 'none', color: activeTab === 'inspector' ? '#38bdf8' : '#64748b', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                                        >
-                                            Inspector
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('custody')}
-                                            style={{ flex: 1, padding: '12px 0', background: activeTab === 'custody' ? '#0a0f1d' : 'transparent', border: 'none', borderBottom: activeTab === 'custody' ? '2px solid #38bdf8' : 'none', color: activeTab === 'custody' ? '#38bdf8' : '#64748b', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                                        >
-                                            Custody Trail
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('ml')}
-                                            style={{ flex: 1, padding: '12px 0', background: activeTab === 'ml' ? '#0a0f1d' : 'transparent', border: 'none', borderBottom: activeTab === 'ml' ? '2px solid #38bdf8' : 'none', color: activeTab === 'ml' ? '#38bdf8' : '#64748b', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                                        >
-                                            Forensic ML Heuristics
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('legal')}
-                                            style={{ flex: 1, padding: '12px 0', background: activeTab === 'legal' ? '#0a0f1d' : 'transparent', border: 'none', borderBottom: activeTab === 'legal' ? '2px solid #38bdf8' : 'none', color: activeTab === 'legal' ? '#38bdf8' : '#64748b', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
-                                        >
-                                            Sec 91
-                                        </button>
+                                {/* RIGHT INSPECTOR */}
+                                <div className="ws-inspector" style={{ width: isMobile ? '100%' : 340, display: (!isMobile || mobileViewTab === 'inspector') ? 'flex' : 'none' }}>
+                                    <div className="inspector-tabs">
+                                        <button className={activeTab === 'inspector' ? 'active' : ''} onClick={() => setActiveTab('inspector')}>Inspector</button>
+                                        <button className={activeTab === 'custody' ? 'active' : ''} onClick={() => setActiveTab('custody')}>Custody trail</button>
+                                        <button className={activeTab === 'ml' ? 'active' : ''} onClick={() => setActiveTab('ml')}>ML heuristics</button>
+                                        <button className={activeTab === 'legal' ? 'active' : ''} onClick={() => setActiveTab('legal')}>Sec. 91</button>
                                     </div>
 
-                                    {/* Tab 1: Inspector */}
                                     {activeTab === 'inspector' && (
-                                        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto' }}>
-                                            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>Selected Wallet Entity</div>
+                                        <div className="inspector-body">
+                                            <div className="eyebrow">Selected wallet entity</div>
                                             {selectedNode ? (
-                                                <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                <div className="entity-card">
                                                     <div>
-                                                        <div style={{ fontSize: '11px', color: '#64748b' }}>Entity Name</div>
-                                                        <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#f8fafc' }}>{selectedNode.entity_name}</div>
+                                                        <div className="k">Entity name</div>
+                                                        <div className="big">{selectedNode.entity_name}</div>
                                                     </div>
                                                     <div>
-                                                        <div style={{ fontSize: '11px', color: '#64748b' }}>Classification</div>
-                                                        <div style={{ fontSize: '13px', fontWeight: '600', color: selectedNode.entity_type === 'CEX' ? '#10b981' : (selectedNode.entity_type === 'SUSPECT' ? '#ef4444' : '#38bdf8') }}>
+                                                        <div className="k">Classification</div>
+                                                        <div style={{ fontSize: 13, fontWeight: 700, color: selectedNode.entity_type === 'CEX' ? '#4caf7d' : (selectedNode.entity_type === 'SUSPECT' ? '#e0654a' : '#9db4d8') }}>
                                                             {selectedNode.entity_type} ({selectedNode.tag})
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <div style={{ fontSize: '11px', color: '#64748b' }}>Hop Level</div>
-                                                        <div style={{ fontSize: '13px', color: '#cbd5e1' }}>Hop {selectedNode.hop_level} from origin</div>
+                                                        <div className="k">Hop level</div>
+                                                        <div style={{ fontSize: 13 }}>Hop {selectedNode.hop_level} from origin</div>
                                                     </div>
                                                     <div>
-                                                        <div style={{ fontSize: '11px', color: '#64748b' }}>Wallet Address</div>
-                                                        <div style={{ fontSize: '11px', wordBreak: 'break-all', color: '#93c5fd', background: '#070b14', padding: '6px', borderRadius: '4px', border: '1px solid #1e293b' }}>
-                                                            {selectedNode.full_address}
-                                                        </div>
+                                                        <div className="k">Wallet address</div>
+                                                        <div className="addr">{selectedNode.full_address}</div>
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div style={{ textAlign: 'center', color: '#64748b', marginTop: '40px', fontSize: '13px' }}>
-                                                    Click any node on the graph to inspect wallet entity and risk level.
-                                                </div>
+                                                <div className="empty-note">Click any node on the graph to inspect the wallet entity and risk level.</div>
                                             )}
                                         </div>
                                     )}
 
-                                    {/* Tab 2: Custody Trail */}
                                     {activeTab === 'custody' && (
-                                        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto' }}>
-                                            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>Transaction Hops (Audit Trail)</div>
+                                        <div className="inspector-body">
+                                            <div className="eyebrow">Transaction hops (audit trail)</div>
                                             {activeDataset.custody_trail.map((h, i) => (
-                                                <div key={i} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '6px', padding: '12px', fontSize: '12px' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                                        <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>Hop #{h.hop}</span>
-                                                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>{h.value_eth} {h.token} (₹{h.value_inr.toLocaleString('en-IN')})</span>
+                                                <div key={i} className="hop-card">
+                                                    <div className="top">
+                                                        <span style={{ color: '#9db4d8', fontWeight: 700 }}>Hop #{h.hop}</span>
+                                                        <span style={{ color: '#4caf7d', fontWeight: 700 }}>{h.value_eth} {h.token} (₹{h.value_inr.toLocaleString('en-IN')})</span>
                                                     </div>
-                                                    <div style={{ color: '#94a3b8', fontSize: '11px', marginBottom: '4px' }}>
-                                                        Target: <strong style={{ color: '#e2e8f0' }}>{h.to_name}</strong>
+                                                    <div className="ws-muted" style={{ fontSize: 11, marginBottom: 4 }}>
+                                                        Target: <strong style={{ color: '#e7e5dd' }}>{h.to_name}</strong>
                                                     </div>
-                                                    <div style={{ color: '#64748b', fontSize: '10px', wordBreak: 'break-all' }}>
-                                                        Tx: {h.tx_hash.slice(0, 24)}...
-                                                    </div>
+                                                    <div className="tx">Tx: {h.tx_hash.slice(0, 24)}...</div>
                                                 </div>
                                             ))}
                                         </div>
                                     )}
 
-                                    {/* Tab 3: Dedicated AI / Machine Learning Analytics */}
                                     {activeTab === 'ml' && (
-                                        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
-                                            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>Forensic Machine Learning Topology Analyzer</div>
-
-                                            <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '8px', padding: '12px' }}>
-                                                <div style={{ fontSize: '11px', color: '#94a3b8' }}>Model Architecture</div>
-                                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#38bdf8', marginTop: '2px' }}>{mlData.model_name}</div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '12px' }}>
-                                                    <span>Predicted Entity:</span>
-                                                    <strong style={{ color: '#10b981' }}>{mlData.predicted_type}</strong>
+                                        <div className="inspector-body">
+                                            <div className="eyebrow">Forensic ML topology analyzer</div>
+                                            <div className="ws-panel">
+                                                <div className="k" style={{ marginBottom: 0 }}>Model architecture</div>
+                                                <div style={{ fontSize: 13, fontWeight: 700, color: '#9db4d8', margin: '2px 0 8px' }}>{mlData.model_name}</div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                                                    <span className="ws-muted">Predicted entity</span>
+                                                    <strong style={{ color: '#4caf7d' }}>{mlData.predicted_type}</strong>
                                                 </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '12px' }}>
-                                                    <span>Inference Confidence:</span>
-                                                    <strong style={{ color: '#38bdf8' }}>{mlData.confidence}%</strong>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                                                    <span className="ws-muted">Inference confidence</span>
+                                                    <strong style={{ color: '#9db4d8' }}>{mlData.confidence}%</strong>
                                                 </div>
                                             </div>
 
-                                            <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' }}>Topological Feature Vector</div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <div className="eyebrow">Topological feature vector</div>
+                                            <div className="stack" style={{ gap: 6 }}>
                                                 {mlData.features.map((f, i) => (
-                                                    <div key={i} style={{ background: '#0d1322', border: '1px solid #1e293b', padding: '8px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                                                    <div key={i} className="feature-row">
                                                         <div>
-                                                            <div style={{ color: '#cbd5e1', fontWeight: '600' }}>{f.name}</div>
-                                                            <div style={{ color: '#64748b', fontSize: '10px' }}>Baseline: {f.normal}</div>
+                                                            <div style={{ fontWeight: 600 }}>{f.name}</div>
+                                                            <div style={{ fontSize: 10 }} className="ws-muted">Baseline: {f.normal}</div>
                                                         </div>
                                                         <div style={{ textAlign: 'right' }}>
-                                                            <div style={{ color: '#f8fafc', fontWeight: 'bold' }}>{f.value}</div>
-                                                            <span style={{ fontSize: '9px', padding: '1px 5px', borderRadius: '3px', background: f.status === 'ANOMALY' || f.status === 'CRITICAL' ? 'rgba(239,68,68,0.2)' : 'rgba(56,189,248,0.2)', color: f.status === 'ANOMALY' || f.status === 'CRITICAL' ? '#ef4444' : '#38bdf8' }}>
+                                                            <div style={{ fontWeight: 700, marginBottom: 2 }}>{f.value}</div>
+                                                            <span
+                                                                className="status-tag"
+                                                                style={{
+                                                                    background: (f.status === 'ANOMALY' || f.status === 'CRITICAL') ? 'rgba(224,101,74,0.2)' : 'rgba(157,180,216,0.2)',
+                                                                    color: (f.status === 'ANOMALY' || f.status === 'CRITICAL') ? '#e0654a' : '#9db4d8'
+                                                                }}
+                                                            >
                                                                 {f.status}
                                                             </span>
                                                         </div>
@@ -1865,12 +1319,12 @@ Cyber Crime Division`;
                                         </div>
                                     )}
 
-                                    {/* Tab 4: Legal Notice Draft */}
                                     {activeTab === 'legal' && (
-                                        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto' }}>
-                                            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>Section 91 CrPC Statutory Notice</div>
+                                        <div className="inspector-body">
+                                            <div className="eyebrow">Section 91 CrPC statutory notice</div>
                                             <textarea
                                                 readOnly
+                                                className="legal-textarea"
                                                 value={`STATUTORY DIRECTIVE UNDER SECTION 91 Cr.P.C. / BNSS 2023
 
 TO: Legal & Compliance Department, ${primaryAttr?.entity_name}
@@ -1888,13 +1342,9 @@ You are hereby directed to:
 
 Investigating Officer,
 Cyber Crime Division`}
-                                                style={{ width: '100%', height: '300px', background: '#070b14', border: '1px solid #1e293b', color: '#cbd5e1', padding: '10px', borderRadius: '6px', fontSize: '11px', fontFamily: 'monospace', resize: 'none' }}
                                             />
-                                            <button
-                                                onClick={handleCopyNotice}
-                                                style={{ padding: '8px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
-                                            >
-                                                {copiedNotice ? 'Copied to Clipboard!' : 'Copy Notice Text'}
+                                            <button className="btn btn-navy" onClick={handleCopyNotice}>
+                                                {copiedNotice ? 'Copied to clipboard' : 'Copy notice text'}
                                             </button>
                                         </div>
                                     )}
@@ -1905,47 +1355,47 @@ Cyber Crime Division`}
 
                     {/* LAYER 2: NATIONAL INTELLIGENCE GRID */}
                     {activeLayer === 'dashboard' && (
-                        <div style={{ flex: 1, padding: '30px', overflowY: 'auto', background: '#050811' }}>
-                            <h2 style={{ margin: '0 0 6px 0', fontSize: '20px', color: '#38bdf8' }}>National Cyber-Forensics Threat Intelligence Grid</h2>
-                            <p style={{ margin: '0 0 24px 0', color: '#64748b', fontSize: '13px' }}>Aggregated telemetry across state cyber cells, NCRP intake, and VASP freeze compliances.</p>
+                        <div className="intel-grid" style={{ background: '#0f1117', color: '#e7e5dd' }}>
+                            <h2>National Cyber-Forensics Threat Intelligence Grid</h2>
+                            <p>Aggregated telemetry across state cyber cells, NCRP intake, and VASP freeze compliance.</p>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
-                                <div style={{ background: '#0a0f1d', border: '1px solid #1e293b', padding: '20px', borderRadius: '8px' }}>
-                                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>TOTAL ASSETS TRACED (FY 2026)</div>
-                                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#10b981', marginTop: '6px' }}>₹48,87,500</div>
-                                    <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '4px' }}>Across 142 Cybercrime Dockets</div>
+                            <div className="stat-grid">
+                                <div className="stat-card">
+                                    <div className="label">Total assets traced (FY 2026)</div>
+                                    <div className="num" style={{ color: '#4caf7d' }}>₹48,87,500</div>
+                                    <div className="sub">Across 142 cybercrime dockets</div>
                                 </div>
-                                <div style={{ background: '#0a0f1d', border: '1px solid #1e293b', padding: '20px', borderRadius: '8px' }}>
-                                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>FIU-IND COMPLIANT VASPS</div>
-                                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#38bdf8', marginTop: '6px' }}>28 Registered</div>
-                                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>CoinDCX, WazirX, Binance, CoinSwitch</div>
+                                <div className="stat-card">
+                                    <div className="label">FIU-IND compliant VASPs</div>
+                                    <div className="num" style={{ color: '#9db4d8' }}>28 registered</div>
+                                    <div className="sub">CoinDCX, WazirX, Binance, CoinSwitch</div>
                                 </div>
-                                <div style={{ background: '#0a0f1d', border: '1px solid #1e293b', padding: '20px', borderRadius: '8px' }}>
-                                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>AVG VASP ATTRIBUTION TIME</div>
-                                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f59e0b', marginTop: '6px' }}>1.2 Seconds</div>
-                                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Down from 72 Hours manual search</div>
+                                <div className="stat-card">
+                                    <div className="label">Avg. VASP attribution time</div>
+                                    <div className="num" style={{ color: '#d9a441' }}>1.2 seconds</div>
+                                    <div className="sub">Down from 72 hours of manual search</div>
                                 </div>
-                                <div style={{ background: '#0a0f1d', border: '1px solid #1e293b', padding: '20px', borderRadius: '8px' }}>
-                                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>ASSET FREEZE SUCCESS RATE</div>
-                                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#10b981', marginTop: '6px' }}>87.4%</div>
-                                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>During Golden Hour Window (&lt; 2 hrs)</div>
+                                <div className="stat-card">
+                                    <div className="label">Asset-freeze success rate</div>
+                                    <div className="num" style={{ color: '#4caf7d' }}>87.4%</div>
+                                    <div className="sub">During Golden Hour window (&lt; 2 hrs)</div>
                                 </div>
                             </div>
 
-                            <div style={{ background: '#0a0f1d', border: '1px solid #1e293b', padding: '20px', borderRadius: '8px' }}>
-                                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#f8fafc' }}>Active Fraud Typologies (NCRP Ingestion Stream)</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                                    <div style={{ background: '#111827', padding: '16px', borderRadius: '6px', border: '1px solid #1f2937' }}>
-                                        <div style={{ fontWeight: 'bold', color: '#ef4444', marginBottom: '6px' }}>Telegram Part-Time Job Scams</div>
-                                        <div style={{ fontSize: '12px', color: '#cbd5e1' }}>Victims coerced into sending small sums that escalate, layered via 2-3 burner mules before Binance/CoinDCX deposit.</div>
+                            <div className="ws-panel" style={{ padding: 20 }}>
+                                <h3 style={{ fontSize: 16, marginBottom: 16 }}>Active fraud typologies (NCRP ingestion stream)</h3>
+                                <div className="typology-grid">
+                                    <div className="typology-card">
+                                        <div className="h" style={{ color: '#e0654a' }}>Telegram part-time job scams</div>
+                                        <p>Victims are coerced into sending small sums that escalate, layered via 2–3 burner mules before a Binance/CoinDCX deposit.</p>
                                     </div>
-                                    <div style={{ background: '#111827', padding: '16px', borderRadius: '6px', border: '1px solid #1f2937' }}>
-                                        <div style={{ fontWeight: 'bold', color: '#f59e0b', marginBottom: '6px' }}>Tron TRC-20 Forex Fraud</div>
-                                        <div style={{ fontSize: '12px', color: '#cbd5e1' }}>Low-gas USDT transfers designed to evade bank scrutiny; rapid off-ramping into international exchange deposit pools.</div>
+                                    <div className="typology-card">
+                                        <div className="h" style={{ color: '#d9a441' }}>Tron TRC-20 forex fraud</div>
+                                        <p>Low-gas USDT transfers designed to evade bank scrutiny, with rapid off-ramping into international exchange deposit pools.</p>
                                     </div>
-                                    <div style={{ background: '#111827', padding: '16px', borderRadius: '6px', border: '1px solid #1f2937' }}>
-                                        <div style={{ fontWeight: 'bold', color: '#a855f7', marginBottom: '6px' }}>Cross-Chain Bridge Layering</div>
-                                        <div style={{ fontSize: '12px', color: '#cbd5e1' }}>Scammers jumping funds from Ethereum to Polygon/Arbitrum to deliberately sever single-chain investigator trails.</div>
+                                    <div className="typology-card">
+                                        <div className="h" style={{ color: '#9db4d8' }}>Cross-chain bridge layering</div>
+                                        <p>Scammers jump funds from Ethereum to Polygon or Arbitrum specifically to sever single-chain investigator trails.</p>
                                     </div>
                                 </div>
                             </div>
@@ -1954,64 +1404,63 @@ Cyber Crime Division`}
 
                     {/* LAYER 3: COURT EVIDENCE DOSSIER */}
                     {activeLayer === 'dossier' && (
-                        <div style={{ flex: 1, padding: '30px', overflowY: 'auto', background: '#050811', display: 'flex', justifyContent: 'center' }}>
-                            <div style={{ width: '800px', background: '#ffffff', color: '#0f172a', padding: '40px', borderRadius: '4px', boxShadow: '0 10px 40px rgba(0,0,0,0.8)', fontFamily: 'Georgia, serif' }}>
-
-                                <div style={{ textAlign: 'center', borderBottom: '2px solid #1e3a8a', paddingBottom: '16px', marginBottom: '20px' }}>
-                                    <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e3a8a', letterSpacing: '0.5px' }}>INDIAN CYBER CRIME COORDINATION CENTRE (I4C)</div>
-                                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#0f172a' }}>MINISTRY OF HOME AFFAIRS | GOVERNMENT OF INDIA</div>
-                                    <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px' }}>STATUTORY BLOCKCHAIN FORENSIC INTELLIGENCE DOSSIER (SIH26183)</div>
+                        <div className="dossier-shell">
+                            <div className="dossier-page">
+                                <div style={{ textAlign: 'center', borderBottom: '2px solid #1e3a8a', paddingBottom: 16, marginBottom: 20 }}>
+                                    <div style={{ fontSize: 16, fontWeight: 'bold', color: '#1e3a8a', letterSpacing: 0.5 }}>INDIAN CYBER CRIME COORDINATION CENTRE (I4C)</div>
+                                    <div style={{ fontSize: 13, fontWeight: 'bold' }}>MINISTRY OF HOME AFFAIRS | GOVERNMENT OF INDIA</div>
+                                    <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>STATUTORY BLOCKCHAIN FORENSIC INTELLIGENCE DOSSIER (SIH26183)</div>
                                 </div>
 
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: '20px', background: '#f8fafc' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 20, background: '#f8fafc' }}>
                                     <tbody>
                                         <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                            <td style={{ padding: '8px', fontWeight: 'bold', width: '25%' }}>NCRP Docket Ref:</td>
-                                            <td style={{ padding: '8px', width: '25%' }}>{activeDataset.caseMeta.docket_no}</td>
-                                            <td style={{ padding: '8px', fontWeight: 'bold', width: '25%' }}>Date of Analysis:</td>
-                                            <td style={{ padding: '8px', width: '25%' }}>06-SEP-2026</td>
+                                            <td style={{ padding: 8, fontWeight: 'bold', width: '25%' }}>NCRP Docket Ref:</td>
+                                            <td style={{ padding: 8, width: '25%' }}>{activeDataset.caseMeta.docket_no}</td>
+                                            <td style={{ padding: 8, fontWeight: 'bold', width: '25%' }}>Date of Analysis:</td>
+                                            <td style={{ padding: 8, width: '25%' }}>06-SEP-2026</td>
                                         </tr>
                                         <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                            <td style={{ padding: '8px', fontWeight: 'bold' }}>Complainant:</td>
-                                            <td style={{ padding: '8px' }}>{activeDataset.caseMeta.victim_name}</td>
-                                            <td style={{ padding: '8px', fontWeight: 'bold' }}>Reported Loss:</td>
-                                            <td style={{ padding: '8px', color: '#dc2626', fontWeight: 'bold' }}>{activeDataset.caseMeta.reported_loss}</td>
+                                            <td style={{ padding: 8, fontWeight: 'bold' }}>Complainant:</td>
+                                            <td style={{ padding: 8 }}>{activeDataset.caseMeta.victim_name}</td>
+                                            <td style={{ padding: 8, fontWeight: 'bold' }}>Reported Loss:</td>
+                                            <td style={{ padding: 8, color: '#dc2626', fontWeight: 'bold' }}>{activeDataset.caseMeta.reported_loss}</td>
                                         </tr>
                                         <tr>
-                                            <td style={{ padding: '8px', fontWeight: 'bold' }}>Suspect Origin:</td>
-                                            <td style={{ padding: '8px', wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '11px' }}>{suspectInput}</td>
-                                            <td style={{ padding: '8px', fontWeight: 'bold' }}>Attributed VASP:</td>
-                                            <td style={{ padding: '8px', fontWeight: 'bold', color: '#059669' }}>{primaryAttr?.entity_name} ({primaryAttr?.hop_distance} Hops)</td>
+                                            <td style={{ padding: 8, fontWeight: 'bold' }}>Suspect Origin:</td>
+                                            <td style={{ padding: 8, wordBreak: 'break-all', fontFamily: 'monospace', fontSize: 11 }}>{suspectInput}</td>
+                                            <td style={{ padding: 8, fontWeight: 'bold' }}>Attributed VASP:</td>
+                                            <td style={{ padding: 8, fontWeight: 'bold', color: '#059669' }}>{primaryAttr?.entity_name} ({primaryAttr?.hop_distance} Hops)</td>
                                         </tr>
                                     </tbody>
                                 </table>
 
-                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '8px' }}>1. TRANSACTION CHAIN OF CUSTODY (AUDIT TRAIL)</div>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', marginBottom: '24px' }}>
+                                <div style={{ fontSize: 13, fontWeight: 'bold', color: '#1e3a8a', marginBottom: 8 }}>1. TRANSACTION CHAIN OF CUSTODY (AUDIT TRAIL)</div>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 24 }}>
                                     <thead>
                                         <tr style={{ background: '#1e3a8a', color: '#ffffff' }}>
-                                            <th style={{ padding: '6px', textAlign: 'center' }}>Hop #</th>
-                                            <th style={{ padding: '6px', textAlign: 'left' }}>Sender</th>
-                                            <th style={{ padding: '6px', textAlign: 'left' }}>Recipient / Entity</th>
-                                            <th style={{ padding: '6px', textAlign: 'right' }}>Value</th>
-                                            <th style={{ padding: '6px', textAlign: 'right' }}>INR Equivalent</th>
+                                            <th style={{ padding: 6, textAlign: 'center' }}>Hop #</th>
+                                            <th style={{ padding: 6, textAlign: 'left' }}>Sender</th>
+                                            <th style={{ padding: 6, textAlign: 'left' }}>Recipient / Entity</th>
+                                            <th style={{ padding: 6, textAlign: 'right' }}>Value</th>
+                                            <th style={{ padding: 6, textAlign: 'right' }}>INR Equivalent</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {activeDataset.custody_trail.map((h, idx) => (
                                             <tr key={idx} style={{ borderBottom: '1px solid #cbd5e1', background: idx % 2 === 0 ? '#ffffff' : '#f1f5f9' }}>
-                                                <td style={{ padding: '6px', textAlign: 'center', fontWeight: 'bold' }}>{h.hop}</td>
-                                                <td style={{ padding: '6px', fontFamily: 'monospace' }}>{h.from_addr.slice(0, 10)}...</td>
-                                                <td style={{ padding: '6px', fontWeight: 'bold' }}>{h.to_name}</td>
-                                                <td style={{ padding: '6px', textAlign: 'right' }}>{h.value_eth} {h.token}</td>
-                                                <td style={{ padding: '6px', textAlign: 'right', fontWeight: 'bold' }}>₹{h.value_inr.toLocaleString('en-IN')}</td>
+                                                <td style={{ padding: 6, textAlign: 'center', fontWeight: 'bold' }}>{h.hop}</td>
+                                                <td style={{ padding: 6, fontFamily: 'monospace' }}>{h.from_addr.slice(0, 10)}...</td>
+                                                <td style={{ padding: 6, fontWeight: 'bold' }}>{h.to_name}</td>
+                                                <td style={{ padding: 6, textAlign: 'right' }}>{h.value_eth} {h.token}</td>
+                                                <td style={{ padding: 6, textAlign: 'right', fontWeight: 'bold' }}>₹{h.value_inr.toLocaleString('en-IN')}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
 
-                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '8px' }}>2. STATUTORY DIRECTIVE UNDER SECTION 91 Cr.P.C. / BNSS 2023</div>
-                                <div style={{ fontSize: '11px', lineHeight: '1.6', background: '#f8fafc', border: '1px solid #cbd5e1', padding: '12px', borderRadius: '4px', marginBottom: '30px' }}>
+                                <div style={{ fontSize: 13, fontWeight: 'bold', color: '#1e3a8a', marginBottom: 8 }}>2. STATUTORY DIRECTIVE UNDER SECTION 91 Cr.P.C. / BNSS 2023</div>
+                                <div style={{ fontSize: 11, lineHeight: 1.6, background: '#f8fafc', border: '1px solid #cbd5e1', padding: 12, borderRadius: 4, marginBottom: 30 }}>
                                     <strong>TO: Compliance Officer, {primaryAttr?.entity_name}</strong><br />
                                     WHEREAS an official investigation is underway regarding cyber fraud registered under NCRP Docket {activeDataset.caseMeta.docket_no}.
                                     The cryptographic assets listed in Table 1 have been traced as direct proceeds of crime entering your liquidity pool.<br />
@@ -2020,32 +1469,29 @@ Cyber Crime Division`}
                                     2. Furnish complete subscriber KYC records (Aadhaar/Passport, Registered Mobile, PAN, Bank Off-Ramp) and IP login logs within 24 hours of receipt.
                                 </div>
 
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: '11px', color: '#475569' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: 11, color: '#475569' }}>
                                     <div>
                                         <div>Generated by: <strong>Automated Blockchain Forensics Grid (SIH26183)</strong></div>
                                         <div>Hash Verification: <code>0x8f2b...9a12</code> (Tamper-Proof)</div>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
-                                        <div style={{ fontWeight: 'bold', color: '#0f172a' }}>Investigating Officer (Cyber Crime PS)</div>
+                                        <div style={{ fontWeight: 'bold' }}>Investigating Officer (Cyber Crime PS)</div>
                                         <div>Indian Cyber Crime Coordination Centre (I4C)</div>
-                                        <div style={{ marginTop: '10px' }}>
+                                        <div style={{ marginTop: 10 }}>
                                             <button
                                                 onClick={() => window.print()}
-                                                style={{ padding: '6px 14px', background: '#1e3a8a', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+                                                style={{ padding: '6px 14px', background: '#1e3a8a', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 'bold', cursor: 'pointer' }}
                                             >
-                                                🖨️ Print / Save PDF
+                                                Print / Save PDF
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     )}
                 </>
             )}
-
         </div>
     );
 }
-
