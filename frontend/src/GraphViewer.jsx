@@ -2,9 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
 
 // API Base URL - Points to live Render backend with localhost fallback
-const API_BASE = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-    ? 'https://cyclops-backend.onrender.com'
-    : 'http://localhost:8000';
+// AFTER (Correct Render URL):
+const API_BASE =
+    typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+        ? 'https://cyclops-sih26183.onrender.com'
+        : 'http://localhost:8000';
 
 // Node/edge colors used by the Cytoscape canvas. Cytoscape styles are JS,
 // not CSS, so this palette is kept in one place and mirrored by the CSS
