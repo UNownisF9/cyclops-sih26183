@@ -175,6 +175,3 @@ This returns the graph (`elements.nodes` / `elements.edges`), any exchange/mixer
 - **The PDF dossier and Section 91 Cr.P.C. / BNSS 2023 notice are illustrative templates** generated for the hackathon demo — they are not vetted legal instruments and shouldn't be sent to a real institution as-is.
 - **The forensic report itself explicitly states** it does not independently establish criminal liability, wallet ownership, VASP attribution, intent, or legal guilt — blockchain evidence and investigator review remain authoritative.
 
-## License
-
-Not specified in the current codebase — add a license file if you intend to open-source this.
