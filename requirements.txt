@@ -2,5 +2,6 @@ fastapi
 uvicorn
 pydantic
 requests
+httpx
 python-dotenv
 reportlab
