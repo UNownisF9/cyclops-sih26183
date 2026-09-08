@@ -2,9 +2,79 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+
+    <title>CYCLOPS | Autonomous Blockchain Forensics &amp; VASP Attribution Terminal</title>
+    <meta
+      name="description"
+      content="CYCLOPS is an autonomous blockchain forensics and VASP attribution terminal for tracing stolen cryptocurrency across chains, mapping exposure to exchanges and mixers, and generating court-ready digital custody reports for cybercrime investigation."
+    />
+    <link rel="canonical" href="https://cyclops-sih26183.vercel.app/" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CYCLOPS | Autonomous Blockchain Forensics & VASP Attribution Terminal" />
+    <meta
+      property="og:description"
+      content="Trace stolen funds across chains, attribute exposure to VASPs and mixers, and generate court-ready forensic dossiers — built for the 1930 Cybercrime Helpline and I4C investigative workflow."
+    />
+    <!-- TODO: export public/og-image.svg to a 1200x630 PNG and swap this URL —
+         most social crawlers (Facebook/Slack/LinkedIn) don't rasterize SVG. -->
+    <meta property="og:image" content="https://cyclops-sih26183.vercel.app/og-image.svg" />
+    <meta property="og:url" content="https://cyclops-sih26183.vercel.app/" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CYCLOPS | Autonomous Blockchain Forensics Terminal" />
+    <meta
+      name="twitter:description"
+      content="Autonomous blockchain forensics and VASP attribution for cybercrime investigation."
+    />
+    <meta name="twitter:image" content="https://cyclops-sih26183.vercel.app/og-image.svg" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "CYCLOPS Blockchain Forensics Platform",
+            "applicationCategory": "SecurityApplication",
+            "operatingSystem": "Web",
+            "description": "Autonomous blockchain forensics and VASP attribution terminal for tracing stolen cryptocurrency and generating investigative dossiers.",
+            "url": "https://cyclops-sih26183.vercel.app/"
+          },
+          {
+            "@type": "GovernmentService",
+            "name": "1930 Citizen Cybercrime Helpline & NCRP Incident Filing",
+            "provider": {
+              "@type": "GovernmentOrganization",
+              "name": "Indian Cyber Crime Coordination Centre (I4C)",
+              "parentOrganization": {
+                "@type": "GovernmentOrganization",
+                "name": "Ministry of Home Affairs, Government of India"
+              }
+            },
+            "serviceType": "Cybercrime reporting and financial fraud helpline",
+            "areaServed": "IN",
+            "availableChannel": {
+              "@type": "ServiceChannel",
+              "servicePhone": "1930",
+              "serviceUrl": "https://cybercrime.gov.in/"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

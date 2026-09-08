@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /portal/police
+Disallow: /portal/court
+
+Sitemap: https://cyclops-sih26183.vercel.app/sitemap.xml

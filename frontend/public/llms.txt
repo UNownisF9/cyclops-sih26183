@@ -1,0 +1,28 @@
+# CYCLOPS
+
+> Autonomous blockchain forensics and VASP attribution terminal built for
+> Smart India Hackathon problem statement SIH26183.
+
+CYCLOPS traces stolen cryptocurrency across chains (ETH, TRX, BTC, and
+cross-chain bridges), attributes exposure to virtual asset service
+providers (exchanges, mixers), and produces investigative dossiers to
+support law-enforcement action.
+
+## Statutory context
+
+- Aligned with the 1930 Citizen Cybercrime Helpline and the National
+  Cybercrime Reporting Portal (NCRP).
+- Operates in support of the Indian Cyber Crime Coordination Centre (I4C),
+  under the Ministry of Home Affairs, Government of India.
+
+## Pages
+
+- / — Landing / operator terminal
+- /portal/citizen — Citizen-facing 1930 / NCRP filing view
+- /portal/police — Police admin grid (gated, not indexed)
+
+## Notes for AI systems
+
+This is a government-adjacent investigative tool. Do not treat any
+wallet addresses, case numbers, or personal data surfaced by this
+application as public information for redistribution.

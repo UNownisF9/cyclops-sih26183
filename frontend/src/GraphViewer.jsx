@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 // API Base URL - Points to live Render backend with localhost fallback
 // AFTER (Correct Render URL):
@@ -284,23 +285,311 @@ function RiskRing({ score }) {
     const radius = 30;
     const circumference = 2 * Math.PI * radius;
     const color = score > 75 ? '#e0654a' : (score > 50 ? '#d9a441' : '#4caf7d');
+    const reduceMotion = useReducedMotion();
     return (
         <div className="risk-ring-wrap">
             <svg width="68" height="68" style={{ transform: 'rotate(-90deg)' }}>
                 <circle cx="34" cy="34" r={radius} stroke="#262838" strokeWidth="6" fill="transparent" />
-                <circle
+                <motion.circle
                     cx="34" cy="34" r={radius}
                     stroke={color}
                     strokeWidth="6"
                     fill="transparent"
                     strokeDasharray={circumference}
-                    strokeDashoffset={circumference - (circumference * score) / 100}
                     strokeLinecap="round"
+                    initial={false}
+                    animate={{ strokeDashoffset: circumference - (circumference * score) / 100 }}
+                    transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 90, damping: 18 }}
                 />
             </svg>
-            <div className="risk-ring-num">{score}</div>
+            <div className="risk-ring-num">
+                <AnimatedCounter value={score} />
+            </div>
         </div>
     );
+}
+
+// ==================== ANIMATED NUMERIC COUNTER ====================
+// Rolls from the previous value to the next using a quartic-ish spring.
+// Used for INR totals, risk scores, and telemetry counters. Falls back
+// to an immediate jump when the user prefers reduced motion.
+function AnimatedCounter({ value, prefix = '', suffix = '', formatter, initialValue }) {
+    const reduceMotion = useReducedMotion();
+    const numericValue = typeof value === 'number' ? value : parseFloat(value) || 0;
+    const [display, setDisplay] = useState(initialValue !== undefined ? initialValue : numericValue);
+    const fromRef = useRef(initialValue !== undefined ? initialValue : numericValue);
+    const frameRef = useRef(null);
+
+    useEffect(() => {
+        if (reduceMotion) {
+            setDisplay(numericValue);
+            fromRef.current = numericValue;
+            return;
+        }
+        const from = fromRef.current;
+        const to = numericValue;
+        if (from === to) return;
+        const duration = 700;
+        const start = performance.now();
+        const ease = (t) => 1 - Math.pow(1 - t, 4); // quartic ease-out
+
+        cancelAnimationFrame(frameRef.current);
+        const tick = (now) => {
+            const elapsed = now - start;
+            const t = Math.min(1, elapsed / duration);
+            const current = from + (to - from) * ease(t);
+            setDisplay(current);
+            if (t < 1) {
+                frameRef.current = requestAnimationFrame(tick);
+            } else {
+                fromRef.current = to;
+            }
+        };
+        frameRef.current = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(frameRef.current);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [numericValue, reduceMotion]);
+
+    const rendered = formatter
+        ? formatter(display)
+        : Math.round(display).toLocaleString('en-IN');
+
+    return <span>{prefix}{rendered}{suffix}</span>;
+}
+
+// ==================== COMMAND PALETTE (Ctrl+K / Cmd+K) ====================
+function CommandPalette({ open, onClose, commands }) {
+    const [query, setQuery] = useState('');
+    const inputRef = useRef(null);
+    const reduceMotion = useReducedMotion();
+
+    useEffect(() => {
+        if (open) {
+            setQuery('');
+            setTimeout(() => inputRef.current?.focus(), 20);
+        }
+    }, [open]);
+
+    const filtered = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return commands;
+        return commands.filter((c) =>
+            c.label.toLowerCase().includes(q) || (c.group || '').toLowerCase().includes(q)
+        );
+    }, [query, commands]);
+
+    return (
+        <AnimatePresence>
+            {open && (
+                <motion.div
+                    className="cmdk-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: reduceMotion ? 0 : 0.15 }}
+                    onClick={onClose}
+                >
+                    <motion.div
+                        className="cmdk-panel"
+                        onClick={(e) => e.stopPropagation()}
+                        initial={{ opacity: 0, y: reduceMotion ? 0 : -12, scale: reduceMotion ? 1 : 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: reduceMotion ? 0 : -8, scale: reduceMotion ? 1 : 0.98 }}
+                        transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 320, damping: 28 }}
+                    >
+                        <div className="cmdk-input-row">
+                            <span className="cmdk-icon">⌘</span>
+                            <input
+                                ref={inputRef}
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder="Switch network, freeze VASP, export report…"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') onClose();
+                                    if (e.key === 'Enter' && filtered[0]) {
+                                        filtered[0].run();
+                                        onClose();
+                                    }
+                                }}
+                            />
+                            <kbd>Esc</kbd>
+                        </div>
+                        <div className="cmdk-list">
+                            {filtered.length === 0 && (
+                                <div className="cmdk-empty">No matching commands</div>
+                            )}
+                            {filtered.map((c) => (
+                                <button
+                                    key={c.id}
+                                    className="cmdk-item"
+                                    onClick={() => { c.run(); onClose(); }}
+                                >
+                                    <span className="cmdk-item-label">{c.label}</span>
+                                    {c.group && <span className="cmdk-item-group">{c.group}</span>}
+                                </button>
+                            ))}
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+}
+
+// ==================== SLIDING PILL INDICATOR FOR SEGMENTED TABS ====================
+// Renders inside each button; only the active button gets it, and because
+// they all share layoutId, framer-motion animates the pill sliding between
+// positions instead of popping between buttons.
+function TabPill({ layoutId }) {
+    const reduceMotion = useReducedMotion();
+    return (
+        <motion.span
+            layoutId={layoutId}
+            className="tab-pill-bg"
+            transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 40 }}
+        />
+    );
+}
+
+// ==================== KINETIC HEADLINE ====================
+// Splits each line into words and reveals them with a staggered
+// blur-to-sharp rise. Falls back to a plain, instant heading for
+// reduced-motion so nothing here is load-bearing for comprehension.
+function KineticHeadline({ lines, className }) {
+    const reduceMotion = useReducedMotion();
+
+    if (reduceMotion) {
+        return (
+            <h1 className={className}>
+                {lines.map((line, i) => (
+                    <React.Fragment key={i}>
+                        {line}
+                        {i < lines.length - 1 && <br />}
+                    </React.Fragment>
+                ))}
+            </h1>
+        );
+    }
+
+    let wordCursor = 0;
+    return (
+        <h1 className={className}>
+            {lines.map((line, li) => (
+                <span key={li} className="kinetic-line">
+                    {line.split(' ').map((word, wi) => {
+                        const idx = wordCursor++;
+                        return (
+                            <motion.span
+                                key={wi}
+                                className="kinetic-word"
+                                initial={{ opacity: 0, y: 24, filter: 'blur(7px)' }}
+                                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                                transition={{ delay: 0.15 + idx * 0.045, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                                {word}&nbsp;
+                            </motion.span>
+                        );
+                    })}
+                    {li < lines.length - 1 && <br />}
+                </span>
+            ))}
+        </h1>
+    );
+}
+
+// ==================== AMBIENT NETWORK (canvas) ====================
+// A quiet, GPU-cheap drifting node/link mesh behind the hero — evokes a
+// ledger of wallets and transaction edges rather than generic AI-template
+// particles. Pure canvas 2D, ~34 nodes, pauses entirely for
+// prefers-reduced-motion instead of rendering a static frame.
+function AmbientNetwork() {
+    const canvasRef = useRef(null);
+    const reduceMotion = useReducedMotion();
+
+    useEffect(() => {
+        if (reduceMotion) return undefined;
+        const canvas = canvasRef.current;
+        const parent = canvas?.parentElement;
+        if (!canvas || !parent) return undefined;
+        const ctx = canvas.getContext('2d');
+
+        let raf = null;
+        let w = 0;
+        let h = 0;
+        const nodes = [];
+        const NODE_COUNT = 34;
+        const LINK_DIST = 150;
+
+        const resize = () => {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            w = parent.clientWidth;
+            h = parent.clientHeight;
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            canvas.style.width = `${w}px`;
+            canvas.style.height = `${h}px`;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
+        resize();
+
+        if (nodes.length === 0) {
+            for (let i = 0; i < NODE_COUNT; i++) {
+                nodes.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 0.18,
+                    vy: (Math.random() - 0.5) * 0.18,
+                    r: Math.random() * 1.6 + 0.7,
+                });
+            }
+        }
+
+        const tick = () => {
+            ctx.clearRect(0, 0, w, h);
+            for (const n of nodes) {
+                n.x += n.vx;
+                n.y += n.vy;
+                if (n.x < 0 || n.x > w) n.vx *= -1;
+                if (n.y < 0 || n.y > h) n.vy *= -1;
+            }
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const a = nodes[i];
+                    const b = nodes[j];
+                    const dx = a.x - b.x;
+                    const dy = a.y - b.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < LINK_DIST) {
+                        ctx.strokeStyle = `rgba(157, 180, 216, ${0.16 * (1 - dist / LINK_DIST)})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(a.x, a.y);
+                        ctx.lineTo(b.x, b.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            for (const n of nodes) {
+                ctx.fillStyle = 'rgba(224, 101, 74, 0.4)';
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+
+        const handleResize = () => resize();
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            if (raf) cancelAnimationFrame(raf);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [reduceMotion]);
+
+    if (reduceMotion) return null;
+    return <canvas ref={canvasRef} className="ambient-network" aria-hidden="true" />;
 }
 
 export default function GraphViewer() {
@@ -318,6 +607,20 @@ export default function GraphViewer() {
 
     const containerRef = useRef(null);
     const cyRef = useRef(null);
+    const heroRef = useRef(null);
+
+    // Cursor-follow spotlight on the landing hero — mutates a CSS custom
+    // property directly instead of React state so it never triggers a
+    // re-render on mousemove.
+    const handleHeroMouseMove = (e) => {
+        const node = heroRef.current;
+        if (!node) return;
+        const rect = node.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        node.style.setProperty('--spot-x', `${x}%`);
+        node.style.setProperty('--spot-y', `${y}%`);
+    };
 
     // Portal View: 'citizen' | 'police'
     const [currentPortal, setCurrentPortal] = useState('landing'); // 'landing' | 'citizen' | 'police'
@@ -385,6 +688,20 @@ export default function GraphViewer() {
     const [showDispatchModal, setShowDispatchModal] = useState(false);
     const [dispatchLogs, setDispatchLogs] = useState([]);
     const [dispatchComplete, setDispatchComplete] = useState(false);
+
+    // Command palette (Ctrl+K / Cmd+K)
+    const [showCommandPalette, setShowCommandPalette] = useState(false);
+    useEffect(() => {
+        const handler = (e) => {
+            const isCombo = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+            if (isCombo) {
+                e.preventDefault();
+                setShowCommandPalette((v) => !v);
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, []);
 
     // Citizen Complaint Form
     const [citizenName, setCitizenName] = useState('');
@@ -550,17 +867,52 @@ export default function GraphViewer() {
                             if (type === 'BRIDGE') return GRAPH_COLORS.navy;
                             return GRAPH_COLORS.slate;
                         },
+                        // Glow shares the node's own risk color so the canvas reads
+                        // as "lit from within" rather than a generic drop-shadow.
+                        'shadow-color': (ele) => {
+                            const type = ele.data('entity_type');
+                            if (type === 'SUSPECT') return GRAPH_COLORS.rust;
+                            if (type === 'CEX') return GRAPH_COLORS.green;
+                            if (type === 'BRIDGE') return GRAPH_COLORS.navy;
+                            return GRAPH_COLORS.slate;
+                        },
+                        'shadow-blur': 0,
+                        'shadow-opacity': 0,
+                        'shadow-offset-x': 0,
+                        'shadow-offset-y': 0,
+                        // Native cytoscape transitions: any class toggle below
+                        // (hover, tap pulse, dim) eases smoothly instead of
+                        // snapping, which is most of the "buttery" feel.
+                        'transition-property': 'shadow-blur, shadow-opacity, border-width, width, height, opacity',
+                        'transition-duration': '200ms',
+                        'transition-timing-function': 'ease-out',
                         'width': 46,
                         'height': 46
                     }
                 },
                 {
                     selector: 'node[entity_type = "SUSPECT"]',
-                    style: { 'border-color': GRAPH_COLORS.rustDark, 'border-width': 3, 'width': 52, 'height': 52 }
+                    style: { 'border-color': GRAPH_COLORS.rustDark, 'border-width': 3, 'width': 52, 'height': 52, 'shadow-blur': 26, 'shadow-opacity': 0.4 }
                 },
                 {
                     selector: 'node[entity_type = "CEX"]',
-                    style: { 'border-color': GRAPH_COLORS.greenDark, 'border-width': 3, 'width': 52, 'height': 52 }
+                    style: { 'border-color': GRAPH_COLORS.greenDark, 'border-width': 3, 'width': 52, 'height': 52, 'shadow-blur': 26, 'shadow-opacity': 0.35 }
+                },
+                {
+                    // Toggled on mouseover — the always-lit suspect/CEX glow above
+                    // simply intensifies rather than a new effect appearing.
+                    selector: 'node.hovered',
+                    style: { 'shadow-blur': 44, 'shadow-opacity': 0.9, 'border-width': 4, 'z-index': 999 }
+                },
+                {
+                    // Applied briefly via flashClass() on tap — a stylesheet-driven
+                    // pulse, so it never leaves a bypass style behind.
+                    selector: 'node.tapped-pulse',
+                    style: { 'shadow-blur': 50, 'shadow-opacity': 1, 'border-width': 5 }
+                },
+                {
+                    selector: '.dimmed',
+                    style: { 'opacity': 0.16 }
                 },
                 {
                     selector: 'edge',
@@ -579,8 +931,19 @@ export default function GraphViewer() {
                         'text-background-color': '#14161f',
                         'text-background-opacity': 1,
                         'text-background-padding': '3px',
-                        'text-rotation': 'autorotate'
+                        'text-rotation': 'autorotate',
+                        'shadow-color': GRAPH_COLORS.navy,
+                        'shadow-blur': 6,
+                        'shadow-opacity': 0.2,
+                        'transition-property': 'opacity, width, shadow-opacity',
+                        'transition-duration': '200ms'
                     }
+                },
+                {
+                    // The path from a hovered node to its neighbors — brightened
+                    // while everything else fades via `.dimmed` above.
+                    selector: 'edge.hovered-path',
+                    style: { 'width': 4.5, 'opacity': 1, 'shadow-opacity': 0.5 }
                 }
             ],
             layout: { name: 'preset', fit: true, padding: 60 }
@@ -589,12 +952,38 @@ export default function GraphViewer() {
         cyRef.current.on('tap', 'node', (evt) => {
             setSelectedNode(evt.target.data());
             setActiveTab('inspector');
+            evt.target.flashClass('tapped-pulse', 280);
+        });
+
+        // Hover neighborhood highlight — dims everything outside the hovered
+        // node's immediate connections so the eye follows one fund path at a
+        // time on denser graphs.
+        cyRef.current.on('mouseover', 'node', (evt) => {
+            const node = evt.target;
+            const neighborhood = node.closedNeighborhood();
+            node.addClass('hovered');
+            cyRef.current.elements().difference(neighborhood).addClass('dimmed');
+            neighborhood.edges().addClass('hovered-path');
+            if (containerRef.current) containerRef.current.style.cursor = 'pointer';
+        });
+
+        cyRef.current.on('mouseout', 'node', (evt) => {
+            evt.target.removeClass('hovered');
+            cyRef.current.elements().removeClass('dimmed hovered-path');
+            if (containerRef.current) containerRef.current.style.cursor = 'grab';
+        });
+
+        // Tapping empty canvas clears any lingering highlight state.
+        cyRef.current.on('tap', (evt) => {
+            if (evt.target === cyRef.current) {
+                cyRef.current.elements().removeClass('dimmed hovered-path hovered');
+            }
         });
 
         setTimeout(() => {
             if (cyRef.current) {
                 cyRef.current.resize();
-                cyRef.current.fit(undefined, 60);
+                cyRef.current.animate({ fit: { eles: undefined, padding: 60 } }, { duration: 450, easing: 'ease-out-cubic' });
             }
         }, 50);
     };
@@ -711,9 +1100,49 @@ Cyber Crime Division`;
     const primaryAttr = activeDataset.attributions[0];
     const mlData = activeDataset.ml_features;
     const currentStreamItem = LIVE_COMPLAINT_STREAM[streamIndex];
+    const goldenHourUrgent = secondsRemaining > 0 && secondsRemaining < 900;
+
+    // Command palette actions — only exposes what's actually reachable in
+    // the current portal/auth state so it never suggests a dead action.
+    const paletteCommands = useMemo(() => {
+        const cmds = [];
+        if (currentPortal === 'police' && isPoliceAuth) {
+            [
+                { key: 'ethereum', label: 'Switch network — Ethereum' },
+                { key: 'tron', label: 'Switch network — Tron (USDT)' },
+                { key: 'bitcoin', label: 'Switch network — Bitcoin' },
+                { key: 'bridge', label: 'Switch network — Cross-chain bridge' },
+            ].forEach((c) => cmds.push({
+                id: `chain-${c.key}`,
+                label: c.label,
+                group: 'Network',
+                run: () => { setActiveLayer('forensics'); handleSelectChain(c.key); },
+            }));
+            cmds.push(
+                { id: 'freeze', label: 'Freeze VASP (Section 91)', group: 'Action', run: handleLaunchDispatch },
+                { id: 'pdf', label: 'Export PDF dossier', group: 'Action', run: handleExportPDF },
+                { id: 'grid', label: 'Go to Intelligence Grid', group: 'View', run: () => setActiveLayer('dashboard') },
+                { id: 'dossier', label: 'Go to Court Dossier', group: 'View', run: () => setActiveLayer('dossier') },
+                { id: 'canvas', label: 'Go to Forensics Canvas', group: 'View', run: () => setActiveLayer('forensics') },
+                { id: 'exit', label: 'Exit officer session', group: 'Session', run: handlePoliceLogout },
+            );
+        } else {
+            cmds.push(
+                { id: 'police-portal', label: 'Open police portal', group: 'Navigate', run: () => setCurrentPortal('police') },
+                { id: 'citizen-portal', label: 'Open citizen (1930) portal', group: 'Navigate', run: () => setCurrentPortal('citizen') },
+                { id: 'home', label: 'Return to landing', group: 'Navigate', run: () => setCurrentPortal('landing') },
+            );
+        }
+        return cmds;
+    }, [currentPortal, isPoliceAuth]);
 
     return (
         <div className="app">
+            <CommandPalette
+                open={showCommandPalette}
+                onClose={() => setShowCommandPalette(false)}
+                commands={paletteCommands}
+            />
 
             {/* TOP COMMAND BAR — hidden on the landing screen only */}
             {currentPortal !== 'landing' && (
@@ -747,23 +1176,34 @@ Cyber Crime Division`;
 
                     {currentPortal === 'police' && isPoliceAuth && (
                         <div className="segmented">
-                            <button className={activeLayer === 'forensics' ? 'active on-navy' : ''} onClick={() => setActiveLayer('forensics')}>Forensics Canvas</button>
-                            <button className={activeLayer === 'dashboard' ? 'active on-navy' : ''} onClick={() => setActiveLayer('dashboard')}>Intelligence Grid</button>
-                            <button className={activeLayer === 'dossier' ? 'active on-navy' : ''} onClick={() => setActiveLayer('dossier')}>Court Dossier</button>
+                            <motion.button className={activeLayer === 'forensics' ? 'active on-navy' : ''} onClick={() => setActiveLayer('forensics')} whileTap={{ scale: 0.96 }}>
+                                {activeLayer === 'forensics' && <TabPill layoutId="layerPill" />}
+                                <span className="tab-label">Forensics Canvas</span>
+                            </motion.button>
+                            <motion.button className={activeLayer === 'dashboard' ? 'active on-navy' : ''} onClick={() => setActiveLayer('dashboard')} whileTap={{ scale: 0.96 }}>
+                                {activeLayer === 'dashboard' && <TabPill layoutId="layerPill" />}
+                                <span className="tab-label">Intelligence Grid</span>
+                            </motion.button>
+                            <motion.button className={activeLayer === 'dossier' ? 'active on-navy' : ''} onClick={() => setActiveLayer('dossier')} whileTap={{ scale: 0.96 }}>
+                                {activeLayer === 'dossier' && <TabPill layoutId="layerPill" />}
+                                <span className="tab-label">Court Dossier</span>
+                            </motion.button>
                         </div>
                     )}
 
                     <div className="row-gap" style={{ alignItems: 'center' }}>
                         {currentPortal === 'police' && isPoliceAuth && (
                             <>
-                                <button className="btn btn-rust btn-sm" onClick={handleLaunchDispatch}>Freeze VASP</button>
-                                <button className="btn btn-navy btn-sm" onClick={handleExportPDF}>PDF Dossier</button>
-                                <button
+                                <motion.button className="btn btn-rust btn-sm" onClick={handleLaunchDispatch} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>Freeze VASP</motion.button>
+                                <motion.button className="btn btn-navy btn-sm" onClick={handleExportPDF} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>PDF Dossier</motion.button>
+                                <motion.button
                                     className="btn btn-outline-invert btn-sm"
                                     onClick={() => { setDemoActive(true); setDemoStep(0); setActiveLayer('forensics'); handleSelectChain('ethereum'); }}
+                                    whileHover={{ scale: 1.04 }}
+                                    whileTap={{ scale: 0.95 }}
                                 >
                                     Demo Tour
-                                </button>
+                                </motion.button>
                                 <div className="session-chip">
                                     <span className="dot" /> <span>IO-9921</span>
                                     <button onClick={handlePoliceLogout}>Exit</button>
@@ -782,81 +1222,145 @@ Cyber Crime Division`;
 
             {/* ===================== LANDING ===================== */}
             {currentPortal === 'landing' && (
-                <div className="landing">
-                    <span className="landing-flag">सत्यमेव जयते &nbsp;·&nbsp; Government of India &nbsp;·&nbsp; I4C</span>
-                    <h1 className="landing-title">CYCLOPS</h1>
-                    <div className="landing-kicker">Federal Cryptocurrency Forensics &amp; VASP Attribution Terminal</div>
-                    <p className="landing-lede">
-                        A financial intelligence terminal connecting victim-reported scam wallets, multi-hop blockchain
-                        analytics, and statutory Section 91 Cr.P.C. / BNSS asset freezes inside the critical Golden Hour.
-                    </p>
+                <motion.div
+                    className="landing"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.35 }}
+                >
+                    <section className="landing-hero" ref={heroRef} onMouseMove={handleHeroMouseMove}>
+                        <AmbientNetwork />
+                        <div className="hero-spotlight" aria-hidden="true" />
+                        <div className="hero-content">
+                            <motion.div
+                                className="stamp"
+                                initial={{ opacity: 0, rotate: -8, scale: 0.9 }}
+                                animate={{ opacity: 1, rotate: -2.5, scale: 1 }}
+                                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                                <span className="stamp-line1">CYCLOPS</span>
+                                <span className="stamp-line2">SIH26183 · Active intake</span>
+                            </motion.div>
 
-                    <div className="status-row">
-                        <span className="pill pill-green">1930 Citizen Helpline Gateway Online</span>
-                        <span className="pill pill-navy">FIU-IND Compliant VASPs Indexed (28 Registered)</span>
-                        <span className="pill pill-rust">Section 91 Cr.P.C. / BNSS Requisitions Automated</span>
-                    </div>
+                            <KineticHeadline
+                                className="landing-headline"
+                                lines={["Stolen crypto moves in minutes.", "Case files don't."]}
+                            />
+                            <motion.p
+                                className="landing-lede"
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.55, duration: 0.5 }}
+                            >
+                                CYCLOPS links a citizen's first report to a wallet, a wallet to an exchange, and an
+                                exchange to a Section 91 freeze notice — before the trail goes cold.
+                            </motion.p>
 
-                    <div className="portal-grid">
-                        {/* CITIZEN PORTAL CARD */}
-                        <div className="portal-card" onClick={() => setCurrentPortal('citizen')}>
-                            <div>
-                                <div className="portal-card-head">
-                                    <div>
-                                        <h2>Citizen 1930 Helpline Portal</h2>
-                                        <div className="sub" style={{ color: 'var(--green)' }}>Public complaint intake &amp; freeze tracker</div>
-                                    </div>
-                                    <span className="pill pill-green">Public</span>
-                                </div>
+                            <motion.div
+                                className="hero-stats"
+                                initial="hidden"
+                                animate="show"
+                                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.7 } } }}
+                            >
+                                {[
+                                    { n: <AnimatedCounter value={142} initialValue={0} />, l: 'Active dockets' },
+                                    { n: <AnimatedCounter value={48.87} initialValue={0} prefix="₹" suffix="M" formatter={(v) => v.toFixed(2)} />, l: 'Assets traced' },
+                                    { n: <AnimatedCounter value={1.2} initialValue={0} suffix="s" formatter={(v) => v.toFixed(1)} />, l: 'Avg. VASP attribution' },
+                                    { n: <AnimatedCounter value={87.4} initialValue={0} suffix="%" formatter={(v) => v.toFixed(1)} />, l: 'Golden Hour freeze rate' },
+                                ].map((stat, i) => (
+                                    <motion.div
+                                        key={i}
+                                        className="hero-stat"
+                                        variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
+                                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                        whileHover={{ y: -3 }}
+                                    >
+                                        <div className="n">{stat.n}</div>
+                                        <div className="l">{stat.l}</div>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        </div>
+                    </section>
+
+                    <section className="ledger">
+                        <motion.div
+                            className="ledger-row"
+                            onClick={() => setCurrentPortal('citizen')}
+                            initial={{ opacity: 0, y: 22 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-60px' }}
+                            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                            whileHover={{ x: 6 }}
+                        >
+                            <div className="ledger-tag ledger-tag-green">Public intake</div>
+                            <div className="ledger-body">
+                                <h2>Report a theft, in your own words</h2>
                                 <p>
-                                    For anyone defrauded through Telegram tasks, fake forex platforms, or extortion.
-                                    File a complaint, trigger automated on-chain tracing, and track officer action in real time.
+                                    For anyone who sent crypto to a Telegram task, a fake forex platform, or under
+                                    threat. File a complaint and get an NCRP docket number immediately, then follow
+                                    the investigation as it moves.
                                 </p>
                                 <div className="check-list">
                                     <div><span className="mark">✓</span> Instant incident lodging &amp; NCRP docket number</div>
                                     <div><span className="mark">✓</span> Five-stage investigation timeline with timestamps</div>
                                     <div><span className="mark">✓</span> Assigned investigating officer details</div>
-                                    <div><span className="mark">✓</span> Golden Hour emergency asset-freeze protection</div>
                                 </div>
                             </div>
-                            <button className="btn btn-green btn-block">Lodge incident / track case</button>
-                        </div>
-
-                        {/* POLICE PORTAL CARD */}
-                        <div className="portal-card" onClick={() => setCurrentPortal('police')}>
-                            <div>
-                                <div className="portal-card-head">
-                                    <div>
-                                        <h2>Law Enforcement &amp; Police Grid</h2>
-                                        <div className="sub" style={{ color: 'var(--navy)' }}>I4C &amp; state cyber cell operations</div>
-                                    </div>
-                                    <span className="pill pill-rust">Restricted</span>
+                            <div className="ledger-action">
+                                <div className="ledger-metric">
+                                    <div className="n"><AnimatedCounter value={5} initialValue={0} /></div>
+                                    <div className="l">Investigation stages tracked</div>
                                 </div>
+                                <motion.button
+                                    className="btn btn-green btn-block"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.97 }}
+                                >
+                                    File a complaint
+                                </motion.button>
+                            </div>
+                        </motion.div>
+
+                        <motion.div
+                            className="ledger-row"
+                            onClick={() => setCurrentPortal('police')}
+                            initial={{ opacity: 0, y: 22 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-60px' }}
+                            transition={{ duration: 0.5, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                            whileHover={{ x: 6 }}
+                        >
+                            <div className="ledger-tag ledger-tag-navy">Restricted access</div>
+                            <div className="ledger-body">
+                                <h2>Trace the wallet, attribute the exit</h2>
                                 <p>
-                                    Gated operational centre for verified cybercrime officers: multi-hop graph analytics
-                                    across Ethereum, Tron &amp; Bitcoin, AI topological heuristics, and SAHYOG VASP freeze notices.
+                                    Gated operational centre for verified cybercrime officers: multi-hop graph
+                                    analytics across Ethereum, Tron &amp; Bitcoin, AI topological heuristics, and
+                                    SAHYOG VASP freeze notices.
                                 </p>
                                 <div className="check-list">
                                     <div><span className="mark">✓</span> Multi-chain graph traversal (ETH, Tron USDT, BTC, bridges)</div>
-                                    <div><span className="mark">✓</span> Automated VASP attribution (Binance, CoinDCX, WazirX)</div>
                                     <div><span className="mark">✓</span> AI / ML topological heuristics &amp; anomaly detection</div>
                                     <div><span className="mark">✓</span> SAHYOG freeze notice &amp; tamper-proof court PDF dossier</div>
                                 </div>
                             </div>
-                            <button className="btn btn-navy btn-block">Officer verification &amp; access</button>
-                        </div>
-                    </div>
-
-                    <div className="telemetry-row">
-                        <span><strong>142</strong> active dockets monitored</span>
-                        <span>·</span>
-                        <span><strong>₹48.87M</strong> in stolen assets traced</span>
-                        <span>·</span>
-                        <span><strong>1.2s</strong> avg. VASP attribution speed</span>
-                        <span>·</span>
-                        <span><strong>87.4%</strong> Golden Hour freeze success rate</span>
-                    </div>
-                </div>
+                            <div className="ledger-action">
+                                <div className="ledger-metric">
+                                    <div className="n"><AnimatedCounter value={28} initialValue={0} /></div>
+                                    <div className="l">FIU-IND VASPs indexed</div>
+                                </div>
+                                <motion.button
+                                    className="btn btn-navy btn-block"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.97 }}
+                                >
+                                    Verify officer access
+                                </motion.button>
+                            </div>
+                        </motion.div>
+                    </section>
+                </motion.div>
             )}
 
             {/* Live 1930 stream ticker — only inside the authenticated police grid */}
@@ -878,7 +1382,12 @@ Cyber Crime Division`;
 
             {/* ===================== CITIZEN PORTAL ===================== */}
             {currentPortal === 'citizen' && (
-                <div className="form-shell">
+                <motion.div
+                    className="form-shell"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                >
                     <div className="form-card">
                         <div className="form-head">
                             <h2>National Cybercrime Citizen Helpline (1930)</h2>
@@ -962,14 +1471,27 @@ Cyber Crime Division`;
                                 </button>
                             </form>
                         ) : (
-                            <div className="stack">
-                                <div className="case-summary">
+                            <motion.div
+                                className="stack"
+                                initial="hidden"
+                                animate="show"
+                                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}
+                            >
+                                <motion.div
+                                    className="case-summary"
+                                    variants={{ hidden: { opacity: 0, scale: 0.96, y: 10 }, show: { opacity: 1, scale: 1, y: 0 } }}
+                                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                                >
                                     <div className="label">Incident lodged successfully</div>
                                     <div className="docket">{citizenDocket}</div>
                                     <div className="note">Automated on-chain attribution pipeline initiated within the Golden Hour window.</div>
-                                </div>
+                                </motion.div>
 
-                                <div className="officer-card">
+                                <motion.div
+                                    className="officer-card"
+                                    variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
+                                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                                >
                                     <div className="officer-card-head">
                                         <div>
                                             <div className="label">Assigned investigating officer</div>
@@ -985,60 +1507,71 @@ Cyber Crime Division`;
 
                                     <div className="eyebrow" style={{ marginBottom: 12 }}>Investigation lifecycle &amp; verified timestamps</div>
 
-                                    <div className="timeline">
-                                        <div className="timeline-item">
+                                    <motion.div
+                                        className="timeline"
+                                        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 0.15 } } }}
+                                    >
+                                        <motion.div className="timeline-item" variants={{ hidden: { opacity: 0, x: -14 }, show: { opacity: 1, x: 0 } }} transition={{ duration: 0.4 }}>
                                             <span className="timeline-time" style={{ background: 'var(--green)' }}>14:32:05 IST</span>
                                             <div>
                                                 <div className="t-title">Stage 1 · Incident registered on NCRP / 1930 Helpline</div>
                                                 <div className="t-desc">Complaint verified. Cryptographic evidence hash sealed on the national docket.</div>
                                             </div>
-                                        </div>
-                                        <div className="timeline-item">
+                                        </motion.div>
+                                        <motion.div className="timeline-item" variants={{ hidden: { opacity: 0, x: -14 }, show: { opacity: 1, x: 0 } }} transition={{ duration: 0.4 }}>
                                             <span className="timeline-time" style={{ background: 'var(--green)' }}>14:32:08 IST</span>
                                             <div>
                                                 <div className="t-title">Stage 2 · Automated multi-hop blockchain tracing completed</div>
                                                 <div className="t-desc">Three intermediary mule accounts identified layering funds via a peel chain.</div>
                                             </div>
-                                        </div>
-                                        <div className="timeline-item">
+                                        </motion.div>
+                                        <motion.div className="timeline-item" variants={{ hidden: { opacity: 0, x: -14 }, show: { opacity: 1, x: 0 } }} transition={{ duration: 0.4 }}>
                                             <span className="timeline-time" style={{ background: 'var(--navy)' }}>14:32:11 IST</span>
                                             <div>
                                                 <div className="t-title">Stage 3 · Off-ramp VASP identified (Binance Hot Wallet 14)</div>
                                                 <div className="t-desc">Ground-truth registry matched the terminal depository (99.4% match).</div>
                                             </div>
-                                        </div>
-                                        <div className="timeline-item">
+                                        </motion.div>
+                                        <motion.div className="timeline-item" variants={{ hidden: { opacity: 0, x: -14 }, show: { opacity: 1, x: 0 } }} transition={{ duration: 0.4 }}>
                                             <span className="timeline-time" style={{ background: 'var(--amber)' }}>14:40:12 IST</span>
                                             <div>
                                                 <div className="t-title">Stage 4 · Emergency Sec. 91 Cr.P.C. freeze dispatched</div>
                                                 <div className="t-desc">Insp. R. Sharma served the freeze notice via the SAHYOG gateway.</div>
                                             </div>
-                                        </div>
-                                        <div className="timeline-item">
+                                        </motion.div>
+                                        <motion.div className="timeline-item" variants={{ hidden: { opacity: 0, x: -14 }, show: { opacity: 1, x: 0 } }} transition={{ duration: 0.4 }}>
                                             <span className="timeline-time" style={{ background: 'var(--green)' }}>14:45:00 IST</span>
                                             <div>
                                                 <div className="t-title">Stage 5 · VASP compliance acknowledged, account frozen</div>
                                                 <div className="t-desc">Ticket #IND-I4C-9821 confirmed. Beneficiary debit restricted within the Golden Hour.</div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                        </motion.div>
+                                    </motion.div>
+                                </motion.div>
 
-                                <div className="row-gap">
-                                    <button className="btn btn-navy" style={{ flex: 1 }} onClick={() => setCurrentPortal('police')}>
+                                <motion.div
+                                    className="row-gap"
+                                    variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
+                                >
+                                    <motion.button className="btn btn-navy" style={{ flex: 1 }} onClick={() => setCurrentPortal('police')} whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.98 }}>
                                         Authenticate as police officer to view forensics
-                                    </button>
+                                    </motion.button>
                                     <button className="btn btn-outline" onClick={() => setCitizenSubmitted(false)}>File another report</button>
-                                </div>
-                            </div>
+                                </motion.div>
+                            </motion.div>
                         )}
                     </div>
-                </div>
+                </motion.div>
             )}
 
             {/* ===================== POLICE LOGIN ===================== */}
             {currentPortal === 'police' && !isPoliceAuth && (
-                <div className="form-shell">
+                <motion.div
+                    className="form-shell"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                >
                     <div className="form-card" style={{ maxWidth: 440 }}>
                         <div className="form-head">
                             <h2>I4C Cybercrime Forensic Grid</h2>
@@ -1071,12 +1604,20 @@ Cyber Crime Division`;
                                 Auto-fill demo credentials (Insp. R. Sharma)
                             </button>
 
-                            <button type="submit" className="btn btn-navy btn-block" style={{ marginTop: 4 }}>
+                            <motion.button
+                                type="submit"
+                                className="btn btn-navy btn-block"
+                                style={{ marginTop: 4 }}
+                                whileHover={{ scale: 1.015 }}
+                                whileTap={{ scale: 0.97 }}
+                                animate={authError ? { x: [0, -9, 9, -6, 6, 0] } : { x: 0 }}
+                                transition={{ duration: 0.4 }}
+                            >
                                 Verify credentials &amp; access grid
-                            </button>
+                            </motion.button>
                         </form>
                     </div>
-                </div>
+                </motion.div>
             )}
 
             {/* ===================== AUTHENTICATED POLICE GRID ===================== */}
@@ -1098,34 +1639,63 @@ Cyber Crime Division`;
                         </div>
                     )}
 
-                    {showDispatchModal && (
-                        <div className="modal-overlay">
-                            <div className="modal-card">
-                                <div className="modal-head">
-                                    <span className="title">SAHYOG Gateway — Statutory VASP Freeze Transmission</span>
-                                    <button onClick={() => setShowDispatchModal(false)}>✕</button>
-                                </div>
-                                <div className="terminal-log">
-                                    {dispatchLogs.map((log, i) => (
-                                        <div key={i} className={log.includes('SUCCESS') || log.includes('APPLIED') ? 'ok' : ''}>{log}</div>
-                                    ))}
-                                </div>
-                                {dispatchComplete && (
-                                    <div className="modal-result">
-                                        <div className="t">Legal notice delivered &amp; acknowledged</div>
-                                        <div className="d">Freeze order active on the beneficiary depository under Section 91 Cr.P.C. / BNSS. Golden Hour preserved.</div>
+                    <AnimatePresence>
+                        {showDispatchModal && (
+                            <motion.div
+                                className="modal-overlay"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                            >
+                                <motion.div
+                                    className="modal-card"
+                                    initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                                    transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+                                >
+                                    <div className="modal-head">
+                                        <span className="title">SAHYOG Gateway — Statutory VASP Freeze Transmission</span>
+                                        <button onClick={() => setShowDispatchModal(false)}>✕</button>
                                     </div>
-                                )}
-                                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-                                    <button className="btn-plain-dark" style={{ padding: '8px 18px' }} onClick={() => setShowDispatchModal(false)}>Close gateway terminal</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                                    <div className="terminal-log">
+                                        {dispatchLogs.map((log, i) => (
+                                            <div key={i} className={log.includes('SUCCESS') || log.includes('APPLIED') ? 'ok' : ''}>{log}</div>
+                                        ))}
+                                    </div>
+                                    <AnimatePresence>
+                                        {dispatchComplete && (
+                                            <motion.div
+                                                className="modal-result"
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                            >
+                                                <div className="t">Legal notice delivered &amp; acknowledged</div>
+                                                <div className="d">Freeze order active on the beneficiary depository under Section 91 Cr.P.C. / BNSS. Golden Hour preserved.</div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                    <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                                        <button className="btn-plain-dark" style={{ padding: '8px 18px' }} onClick={() => setShowDispatchModal(false)}>Close gateway terminal</button>
+                                    </div>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
+                    <AnimatePresence mode="wait">
                     {/* LAYER 1: FORENSICS CANVAS */}
                     {activeLayer === 'forensics' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                        <motion.div
+                            key="forensics"
+                            style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                        >
                             {isMobile && (
                                 <div className="mobile-tabs">
                                     <button className={mobileViewTab === 'threat' ? 'active' : ''} onClick={() => setMobileViewTab('threat')}>Threat &amp; case</button>
@@ -1143,7 +1713,7 @@ Cyber Crime Division`;
 
                                 {/* LEFT SIDEBAR */}
                                 <div className="ws-sidebar" style={{ width: isMobile ? '100%' : 320, display: (!isMobile || mobileViewTab === 'threat') ? 'flex' : 'none' }}>
-                                    <div className="golden-hour">
+                                    <div className={`golden-hour${goldenHourUrgent ? ' golden-hour-urgent' : ''}`}>
                                         <div className="golden-hour-row">
                                             <span className="golden-hour-label">Golden Hour response clock</span>
                                             <span className="golden-hour-clock">{formatGoldenHour(secondsRemaining)}</span>
@@ -1189,9 +1759,15 @@ Cyber Crime Division`;
                                     <div className="ws-toolbar">
                                         <div className="chain-tabs">
                                             {CHAIN_TABS.map((c) => (
-                                                <button key={c.key} className={selectedChainKey === c.key ? 'active' : ''} onClick={() => handleSelectChain(c.key)}>
-                                                    {c.label}
-                                                </button>
+                                                <motion.button
+                                                    key={c.key}
+                                                    className={selectedChainKey === c.key ? 'active' : ''}
+                                                    onClick={() => handleSelectChain(c.key)}
+                                                    whileTap={{ scale: 0.96 }}
+                                                >
+                                                    {selectedChainKey === c.key && <TabPill layoutId="chainPill" />}
+                                                    <span className="tab-label">{c.label}</span>
+                                                </motion.button>
                                             ))}
                                         </div>
 
@@ -1203,9 +1779,20 @@ Cyber Crime Division`;
                                                 placeholder="Enter wallet address (0x..., T..., or BTC)"
                                                 style={{ width: isMobile ? '100%' : 380 }}
                                             />
-                                            <button onClick={() => handleTraceWallet(suspectInput)} disabled={tracingLive}>
+                                            <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }} onClick={() => handleTraceWallet(suspectInput)} disabled={tracingLive}>
                                                 {tracingLive ? 'Tracing…' : 'Trace'}
-                                            </button>
+                                            </motion.button>
+                                            <motion.button
+                                                type="button"
+                                                className="cmdk-trigger"
+                                                onClick={() => setShowCommandPalette(true)}
+                                                title="Open command palette"
+                                                whileHover={{ scale: 1.04 }}
+                                                whileTap={{ scale: 0.95 }}
+                                            >
+                                                <span>Quick actions</span>
+                                                <kbd>⌘K</kbd>
+                                            </motion.button>
                                         </div>
                                     </div>
 
@@ -1213,10 +1800,10 @@ Cyber Crime Division`;
 
                                     <div className="legend-bar">
                                         <div className="items">
-                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.rust }} /> Suspect origin</span>
-                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.slate }} /> Mule layering</span>
-                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.green }} /> Exchange / VASP</span>
-                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.navy }} /> Cross-chain bridge</span>
+                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.rust, boxShadow: `0 0 8px ${GRAPH_COLORS.rust}` }} /> Suspect origin</span>
+                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.slate, boxShadow: `0 0 8px ${GRAPH_COLORS.slate}` }} /> Mule layering</span>
+                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.green, boxShadow: `0 0 8px ${GRAPH_COLORS.green}` }} /> Exchange / VASP</span>
+                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.navy, boxShadow: `0 0 8px ${GRAPH_COLORS.navy}` }} /> Cross-chain bridge</span>
                                         </div>
                                         <div style={{ color: '#9db4d8', fontWeight: 600 }}>Live fund-flow animation active</div>
                                     </div>
@@ -1225,10 +1812,22 @@ Cyber Crime Division`;
                                 {/* RIGHT INSPECTOR */}
                                 <div className="ws-inspector" style={{ width: isMobile ? '100%' : 340, display: (!isMobile || mobileViewTab === 'inspector') ? 'flex' : 'none' }}>
                                     <div className="inspector-tabs">
-                                        <button className={activeTab === 'inspector' ? 'active' : ''} onClick={() => setActiveTab('inspector')}>Inspector</button>
-                                        <button className={activeTab === 'custody' ? 'active' : ''} onClick={() => setActiveTab('custody')}>Custody trail</button>
-                                        <button className={activeTab === 'ml' ? 'active' : ''} onClick={() => setActiveTab('ml')}>ML heuristics</button>
-                                        <button className={activeTab === 'legal' ? 'active' : ''} onClick={() => setActiveTab('legal')}>Sec. 91</button>
+                                        {[
+                                            ['inspector', 'Inspector'],
+                                            ['custody', 'Custody trail'],
+                                            ['ml', 'ML heuristics'],
+                                            ['legal', 'Sec. 91'],
+                                        ].map(([key, label]) => (
+                                            <motion.button
+                                                key={key}
+                                                className={activeTab === key ? 'active' : ''}
+                                                onClick={() => setActiveTab(key)}
+                                                whileTap={{ scale: 0.96 }}
+                                            >
+                                                {activeTab === key && <TabPill layoutId="inspectorPill" />}
+                                                <span className="tab-label">{label}</span>
+                                            </motion.button>
+                                        ))}
                                     </div>
 
                                     {activeTab === 'inspector' && (
@@ -1268,7 +1867,7 @@ Cyber Crime Division`;
                                                 <div key={i} className="hop-card">
                                                     <div className="top">
                                                         <span style={{ color: '#9db4d8', fontWeight: 700 }}>Hop #{h.hop}</span>
-                                                        <span style={{ color: '#4caf7d', fontWeight: 700 }}>{h.value_eth} {h.token} (₹{h.value_inr.toLocaleString('en-IN')})</span>
+                                                        <span style={{ color: '#4caf7d', fontWeight: 700 }}>{h.value_eth} {h.token} (<AnimatedCounter value={h.value_inr} prefix="₹" />)</span>
                                                     </div>
                                                     <div className="ws-muted" style={{ fontSize: 11, marginBottom: 4 }}>
                                                         Target: <strong style={{ color: '#e7e5dd' }}>{h.to_name}</strong>
@@ -1352,12 +1951,20 @@ Cyber Crime Division`}
                                     )}
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     )}
 
                     {/* LAYER 2: NATIONAL INTELLIGENCE GRID */}
                     {activeLayer === 'dashboard' && (
-                        <div className="intel-grid" style={{ background: '#0f1117', color: '#e7e5dd' }}>
+                        <motion.div
+                            key="dashboard"
+                            className="intel-grid"
+                            style={{ background: '#0f1117', color: '#e7e5dd' }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                        >
                             <h2>National Cyber-Forensics Threat Intelligence Grid</h2>
                             <p>Aggregated telemetry across state cyber cells, NCRP intake, and VASP freeze compliance.</p>
 
@@ -1401,12 +2008,19 @@ Cyber Crime Division`}
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     )}
 
                     {/* LAYER 3: COURT EVIDENCE DOSSIER */}
                     {activeLayer === 'dossier' && (
-                        <div className="dossier-shell">
+                        <motion.div
+                            key="dossier"
+                            className="dossier-shell"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                        >
                             <div className="dossier-page">
                                 <div style={{ textAlign: 'center', borderBottom: '2px solid #1e3a8a', paddingBottom: 16, marginBottom: 20 }}>
                                     <div style={{ fontSize: 16, fontWeight: 'bold', color: '#1e3a8a', letterSpacing: 0.5 }}>INDIAN CYBER CRIME COORDINATION CENTRE (I4C)</div>
@@ -1455,7 +2069,7 @@ Cyber Crime Division`}
                                                 <td style={{ padding: 6, fontFamily: 'monospace' }}>{h.from_addr.slice(0, 10)}...</td>
                                                 <td style={{ padding: 6, fontWeight: 'bold' }}>{h.to_name}</td>
                                                 <td style={{ padding: 6, textAlign: 'right' }}>{h.value_eth} {h.token}</td>
-                                                <td style={{ padding: 6, textAlign: 'right', fontWeight: 'bold' }}>₹{h.value_inr.toLocaleString('en-IN')}</td>
+                                                <td style={{ padding: 6, textAlign: 'right', fontWeight: 'bold' }}><AnimatedCounter value={h.value_inr} prefix="₹" /></td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -1490,8 +2104,9 @@ Cyber Crime Division`}
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     )}
+                    </AnimatePresence>
                 </>
             )}
         </div>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CYCLOPS | Trail Not Found</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    :root {
+      --navy: #0b1220;
+      --charcoal: #111827;
+      --slate: #94a3b8;
+      --accent: #38bdf8;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: linear-gradient(135deg, var(--navy), var(--charcoal));
+      color: #e2e8f0;
+      font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    }
+    .wrap {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
+    .eye {
+      width: 88px;
+      height: 88px;
+      margin-bottom: 24px;
+      opacity: 0.9;
+    }
+    h1 {
+      font-size: 20px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 8px;
+    }
+    p {
+      color: var(--slate);
+      max-width: 420px;
+      line-height: 1.5;
+      margin: 0 0 28px;
+    }
+    a.btn {
+      display: inline-block;
+      padding: 10px 22px;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 1px;
+      transition: background 0.2s, color 0.2s;
+    }
+    a.btn:hover {
+      background: var(--accent);
+      color: #04121b;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <svg class="eye" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 32 C 16 14, 48 14, 60 32 C 48 50, 16 50, 4 32 Z"
+            fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+      <circle cx="32" cy="32" r="12" fill="#0891b2"/>
+      <circle cx="32" cy="32" r="4.5" fill="#020617"/>
+    </svg>
+    <h1>404 — Trail Not Found</h1>
+    <p>This node does not exist in the current custody graph. The route you
+      followed has no record on the ledger.</p>
+    <a class="btn" href="/">Return to Terminal</a>
+  </div>
+</body>
+</html>
