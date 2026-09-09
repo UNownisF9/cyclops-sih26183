@@ -628,9 +628,9 @@ async def get_ethereum_transactions_async(address: str, api_key: str) -> List[Di
     try:
         if HAS_HTTPX:
             async with httpx.AsyncClient(timeout=6.0) as client:
-                url = "https://api.etherscan.io/api"
+                url = "https://api.etherscan.io/v2/api"
                 params = {
-                    "module": "account", "action": "txlist", "address": address,
+                    "chainid": 1, "module": "account", "action": "txlist", "address": address,
                     "startblock": 0, "endblock": 99999999, "page": 1, "offset": 20,
                     "sort": "desc", "apikey": api_key
                 }
@@ -646,7 +646,7 @@ async def get_ethereum_transactions_async(address: str, api_key: str) -> List[Di
                             "timestamp": int(tx["timeStamp"])
                         })
                 token_params = {
-                    "module": "account", "action": "tokentx", "address": address,
+                    "chainid": 1, "module": "account", "action": "tokentx", "address": address,
                     "startblock": 0, "endblock": 99999999, "page": 1, "offset": 15,
                     "sort": "desc", "apikey": api_key
                 }
@@ -667,9 +667,9 @@ async def get_ethereum_transactions_async(address: str, api_key: str) -> List[Di
             def _sync():
                 import requests as req
                 out = []
-                url = "https://api.etherscan.io/api"
+                url = "https://api.etherscan.io/v2/api"
                 params = {
-                    "module": "account", "action": "txlist", "address": address,
+                    "chainid": 1, "module": "account", "action": "txlist", "address": address,
                     "startblock": 0, "endblock": 99999999, "page": 1, "offset": 20,
                     "sort": "desc", "apikey": api_key
                 }
@@ -685,7 +685,7 @@ async def get_ethereum_transactions_async(address: str, api_key: str) -> List[Di
                             "timestamp": int(tx["timeStamp"])
                         })
                 token_params = {
-                    "module": "account", "action": "tokentx", "address": address,
+                    "chainid": 1, "module": "account", "action": "tokentx", "address": address,
                     "startblock": 0, "endblock": 99999999, "page": 1, "offset": 15,
                     "sort": "desc", "apikey": api_key
                 }
@@ -816,8 +816,8 @@ def get_ethereum_transactions(address: str, api_key: str) -> List[Dict[str, Any]
         if not api_key:
             return txs
         try:
-            url = "https://api.etherscan.io/api"
-            params = {"module": "account", "action": "txlist", "address": address, "startblock": 0, "endblock": 99999999, "page": 1, "offset": 20, "sort": "desc", "apikey": api_key}
+            url = "https://api.etherscan.io/v2/api"
+            params = {"chainid": 1, "module": "account", "action": "txlist", "address": address, "startblock": 0, "endblock": 99999999, "page": 1, "offset": 20, "sort": "desc", "apikey": api_key}
             res = req.get(url, params=params, timeout=5)
             if res.status_code == 200 and res.json().get("status") == "1":
                 for tx in res.json().get("result", []):

@@ -53,11 +53,11 @@ TARGETS = [
 def fetch_eth_txs(address: str, api_key: str, limit: int = 20):
     if not api_key:
         return [], "no-key"
-    url = "https://api.etherscan.io/api"
+    url = "https://api.etherscan.io/v2/api"
     # Try txlist first (native ETH), then tokentx (ERC-20) — covers hot wallets that mostly move tokens
     for action in ("txlist", "tokentx"):
         params = {
-            "module": "account", "action": action, "address": address,
+            "chainid": 1, "module": "account", "action": action, "address": address,
             "startblock": 0, "endblock": 99999999, "page": 1, "offset": limit,
             "sort": "desc", "apikey": api_key
         }
@@ -74,16 +74,16 @@ def fetch_eth_txs(address: str, api_key: str, limit: int = 20):
                 return j["result"][:limit], f"LIVE_ETHERSCAN_{action}"
         except Exception as e:
             continue
-    # If both fail, return empty with last status
+    # If both fail, return empty with last status (V2)
     try:
         if HAS_HTTPX:
             import httpx as hx
-            r = hx.get(url, params={"module":"account","action":"txlist","address":address,"apikey":api_key}, timeout=5.0)
+            r = hx.get("https://api.etherscan.io/v2/api", params={"chainid":1,"module":"account","action":"txlist","address":address,"apikey":api_key}, timeout=5.0)
             j = r.json()
             return [], f"etherscan-status-{j.get('status')}-{j.get('message','')}"
         else:
             import requests as rq
-            r = rq.get(url, params={"module":"account","action":"txlist","address":address,"apikey":api_key}, timeout=5)
+            r = rq.get("https://api.etherscan.io/v2/api", params={"chainid":1,"module":"account","action":"txlist","address":address,"apikey":api_key}, timeout=5)
             j = r.json()
             return [], f"etherscan-status-{j.get('status')}"
     except Exception as e:

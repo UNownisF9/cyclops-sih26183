@@ -322,7 +322,7 @@ const PATCH_NOTES = [
                     'New: scripts/ingest_sample.py — fetches 20 real tx hashes for Binance 0x28c6…, WazirX, CoinDCX, 0x1111… (txlist + tokentx) + Blockstream BTC 34xp… (5 txs), writes data/live_sample.json (count, provenance, ingested_normalized) + data/sample_provenance.json; respects 5/sec Etherscan limit, fallback mock if key missing',
                     'Startup load: main.py:911 LIVE_SAMPLE_DATA auto-loaded from data/live_sample.json (if present), logged, exposed via GET /api/health (dataset.live_sample_count), GET /api/security/status, GET /api/dataset/live-sample & /api/dataset/sample-provenance',
                     'Judge-verifiable: each provenance has tx_hash, source_url (https://etherscan.io/tx/… / https://blockstream.info/tx/…), verified_at, source (LIVE_ETHERSCAN/LIVE_BLOCKSTREAM vs DEMO_MOCK_DATA), not required for demo — mock remains primary per tracer deterministic priority',
-                    'Committed: data/live_sample.json (5 LIVE_BLOCKSTREAM BTC txs proven, plus fallback) + data/sample_provenance.json — judges can curl or run `python scripts/ingest_sample.py --verify`',
+                    'Committed: data/live_sample.json (25 LIVE — 20 ETH txlist LIVE_ETHERSCAN_txlist for Binance 0x28c6… + 5 BTC LIVE_BLOCKSTREAM) + data/sample_provenance.json — judges can curl `GET /api/dataset/live-sample` or run `python scripts/ingest_sample.py --verify`; Etherscan V2 (chainid=1) now used — V1 deprecated fix applied to both main.py and ingester',
                 ]
             },
             {
