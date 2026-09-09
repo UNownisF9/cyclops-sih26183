@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+env/
+*.egg-info/
+pip-log.txt
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+
+# Env & secrets
+.env
+.env.local
+*.env
+frontend/src/.env
+
+# App data (encrypted at rest, local only)
+ncrp_complaints.json
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Report / temp
+*.tmp
+*.bak

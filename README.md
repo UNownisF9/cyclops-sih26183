@@ -1,103 +1,126 @@
 # PROJECT CYCLOPS — SIH26183
 
-**Autonomous Blockchain Forensics Platform** for tracing stolen cryptocurrency across multiple chains, attributing it to known exchanges/mixers, scoring laundering risk, and generating a court-ready forensic dossier.
+<p align="center">
+  <img src="https://img.shields.io/badge/version-v6.1.1-blue?style=for-the-badge" alt="version" />
+  <img src="https://img.shields.io/badge/SIH-26183-orange?style=for-the-badge" alt="SIH26183" />
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="python" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="react" />
+  <img src="https://img.shields.io/badge/FastAPI-0.141-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="fastapi" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="license" />
+</p>
 
-Built for **Smart India Hackathon problem statement SIH26183**.
+<p align="center">
+  <strong>Autonomous Blockchain Forensics Platform</strong> — trace stolen crypto across chains, attribute it to exchanges/mixers, score laundering risk, generate a court-ready forensic dossier.
+  <br/>Built for <strong>Smart India Hackathon SIH26183</strong> by <strong>Team CrySec</strong>.
+</p>
 
-> ⚠️ **Hackathon prototype.** Several pieces (VASP registry, "ML" classifier, legal notice text) are simplified demo implementations — see [Limitations](#limitations--disclaimer) before treating any output as real evidence or a real legal instrument.
+<p align="center">
+  <a href="http://localhost:8000/docs"><strong>API Docs</strong></a> •
+  <a href="#-quick-start-github">Quick Start</a> •
+  <a href="#-patch-notes">Patch Notes</a> •
+  <a href="#-security">Security</a>
+</p>
+
+> ⚠️ **Hackathon prototype.** VASP registry, “ML” classifier and Section 91 notice are simplified demo implementations — see [Limitations](#-limitations--disclaimer) before treating output as real evidence.
 
 ---
 
-## Overview
+## ✨ What's New in v6.1.1
 
-A victim reports a crypto scam. Investigators enter the suspect's wallet address, and Cyclops:
+| Area | Before | After |
+|---|---|---|
+| **Citizen portal** | Static form + 5 hardcoded timeline rows | Dark live tracker: 6-stage lifecycle (FILED→…→RESOLVED), Golden Hour countdown, 3s polling via `GET /api/citizen/track/{docket}`, fund-hop preview, `enc:…` toggle |
+| **Security** | Plaintext passwords, CORS `*`, no headers, no rate-limit | Fernet AES-128 field encryption (masked display, `enc:…` at rest), hashed auth `SHA256(salt+pass)+hmac`, sanitization, `CORS allowlist`, `CSP/HSTS/nosniff/DENY`, `60/10/20/min` rate-limit, `512KB` body guard, `200`-event audit log |
+| **Dossier / PDF** | `Unidentified Wallet (1 Hops)` empty on Bitcoin/Multi-chain/auto-trace | Deterministic mocks for `1A1z…`, `0x8888…` (+ `0x1111…`), `BRIDGE` transit → `CoinDCX (3 hops)` for **Deepak Chawla**, INR per token, deepest-`CEX` target — dossier & PDF now match for all chains |
+| **Layout** | Topbar `Court Dossier` collided with `IST` at ~1480px; patch-notes button in 8 places | Topbar wraps at `1580/1480px`, `BRIDGE` handling, patch notes consolidated to **one** landing ledger card (`CHANGELOG · v6.1.1`) |
 
-1. Walks the chain of outgoing transactions from that wallet (a breadth-first "fund flow trace"), hop by hop.
-2. Checks every address it finds against a registry of known exchanges (CEXs), bridges, and mixers.
-3. Flags suspicious money-laundering patterns (peel chains, mixer use, rapid pass-through mule wallets).
-4. Runs a lightweight heuristic classifier over the wallet's transaction pattern (sweep ratio, holding time, peel-chain asymmetry) to label it as e.g. `MULE_INTERMEDIARY` or `CEX_HOT_WALLET`.
-5. Renders the trace as an interactive graph and generates a downloadable PDF "forensic dossier," including a template Section 91 Cr.P.C. / BNSS 2023 legal notice to the destination exchange.
+> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.1.1`, `v6.0.0` expandable sections.
 
-## Key Features
+---
 
-- **Multi-chain wallet tracing** — Ethereum (native ETH + ERC-20 via Etherscan), Tron (TRC-20 USDT via TronGrid), and Bitcoin (via the public Blockstream Esplora API, no key required).
-- **Guaranteed demo mode** — if no API key is set or an address isn't found on-chain, the backend falls back to a built-in mock multi-hop wallet trail so the demo always works offline.
-- **VASP / entity attribution registry** — a hardcoded lookup table of known exchange, bridge, and mixer addresses (Binance, CoinDCX, WazirX, Gate.io, Tornado Cash, Polygon Bridge, etc.) with FIU-IND registration status and compliance contact.
-- **Risk & pattern analysis** — flags mixer usage, peel-chain structuring, and direct-to-exchange deposits, and produces an overall risk score/rating.
-- **Heuristic ML classification** — a rules-based feature extractor (holding velocity, balance sweep ratio, peel-chain asymmetry, in/out ratio) that labels a wallet's likely role.
-- **Interactive graph canvas** — a Cytoscape.js-powered fund-flow graph in the React frontend, with an inspector, custody trail, ML, and legal-notice tab per node.
-- **PDF forensic dossier** — server-side PDF generation (ReportLab) containing the chain-of-custody table and a statutory notice, downloadable via `/api/report/pdf`.
-- **Mock NCRP live queue** — a simulated feed of incoming National Cybercrime Reporting Portal cases, for the dashboard view.
-- **Citizen & police portals** — the frontend includes separate flows for citizens (report a scam) and police/investigators (authenticate and run traces).
-
-## Architecture
+## 🏗 Architecture
 
 ```
 ┌────────────────────────────┐         ┌──────────────────────────────┐
 │   Frontend (React + Vite)  │  HTTP   │   Backend (FastAPI)           │
 │   GraphViewer.jsx          │ ──────► │   main.py                      │
-│   Cytoscape.js graph canvas│         │                                │
-│   Citizen / Police portals │ ◄────── │   BlockchainTracer (BFS)       │
-└────────────────────────────┘  JSON   │   BlockchainMLEngine (rules)   │
-                                        │   analyze_trace_risk()         │
-                                        │   generate_pdf() (ReportLab)   │
-                                        └───────────┬────────────────────┘
-                                                    │
-                                   ┌────────────────┼────────────────────┐
-                                   ▼                ▼                    ▼
-                            Etherscan API     TronGrid API      Blockstream Esplora
-                            (ETH / ERC-20)    (TRC-20 USDT)     (BTC, keyless)
-                                   │                │                    │
-                                   └──────── fallback to ────────────────┘
-                                        MOCK_WALLET_TRAILS (built-in demo data)
+│   Cytoscape.js canvas      │         │   BlockchainTracer (BFS)       │
+│   Citizen / Police portals │ ◄────── │   BlockchainMLEngine (rules)   │
+└────────────────────────────┘  JSON   │   analyze_trace_risk()         │
+                                       │   generate_pdf() (ReportLab)   │
+                                       └───────────┬────────────────────┘
+                                                   │
+                                  ┌────────────────┼────────────────────┐
+                                  ▼                ▼                    ▼
+                           Etherscan API     TronGrid API      Blockstream Esplora
+                           (ETH / ERC-20)    (TRC-20 USDT)     (BTC, keyless)
+                                  │                │                    │
+                                  └──────── fallback to ────────────────┘
+                                       MOCK_WALLET_TRAILS (deterministic demo)
 ```
 
-**Backend flow (`/api/trace`):**
-`suspect_address` → `BlockchainTracer.trace_fund_flow()` (BFS over outgoing transactions, up to `max_depth` hops and `max_branches` per node, stopping early at any recognized entity) → `analyze_trace_risk()` (pattern/risk scoring) → `BlockchainMLEngine.extract_features()` (heuristic classification) → combined JSON response consumed by the graph canvas.
+**Backend flow `POST /api/trace`:** `suspect_address` → `BlockchainTracer.trace_fund_flow_async()` (BFS, `max_depth`/`max_branches`, stops on `CEX`/`MIXER`, `BRIDGE` transit) → `analyze_trace_risk()` → `BlockchainMLEngine.extract_features()` → JSON for graph canvas. `GET /api/dossier/data` and `GET /api/report/pdf` share the same tracer + `max(CEX by hop)` target.
 
-## Tech Stack
+---
 
-**Backend**
-- Python 3.11, [FastAPI](https://fastapi.tiangolo.com/) + Uvicorn
-- Pydantic (request validation)
-- `requests` (Etherscan / TronGrid / Blockstream calls)
-- `reportlab` (PDF dossier generation)
-- `python-dotenv` (loads `.env`)
+## 🔑 Key Features
 
-**Frontend**
-- React 19 + Vite
-- [Cytoscape.js](https://js.cytoscape.org/) (graph rendering)
-- Plain CSS (`index.css`, `App.css`) — no CSS framework
+- **Multi-chain tracing** — Ethereum (ETH + ERC-20 via Etherscan), Tron (TRC-20 USDT via TronGrid), Bitcoin (Blockstream Esplora, keyless). Deterministic `MOCK_WALLET_TRAILS` for offline demos.
+- **VASP registry** — 30 hardcoded CEX/bridge/mixer entries (Binance, CoinDCX, WazirX, Gate.io, Tornado, Polygon Bridge…) with FIU-IND status & compliance contact.
+- **Risk & ML** — mixer/peel-chain/direct-deposit scoring + heuristic classifier (holding velocity, sweep ratio, peel asymmetry, in/out).
+- **Graph canvas** — Cytoscape.js with hover highlight, tap pulse, animated dashed edges, inspector/custody/ML/Sec.91 tabs.
+- **Dossier & PDF** — `SimpleDocTemplate` (ReportLab) chain-of-custody + Sec.91 notice, INR Indian grouping, `₹` glyph handling, provenance badge.
+- **Portals** — Citizen (file + **live 6-stage tracking**, `enc:…` toggle, 3s poll `GET /api/citizen/track/{docket}`) and Police (auth, forensics, intelligence grid, court dossier).
+- **Security** — AES-128 field encryption, hashed credentials, sanitization, rate-limit, security headers, CORS allowlist, audit log.
 
-## Project Structure
+---
+
+## 🧰 Tech Stack
+
+**Backend** `Python 3.11` · `FastAPI` · `Uvicorn` · `Pydantic` · `requests`/`httpx` · `reportlab` · `cryptography` (Fernet) · `python-dotenv`  
+**Frontend** `React 19` · `Vite 8` · `Cytoscape 3.34` · `framer-motion 11` · plain CSS (`index.css`, `App.css`)
+
+---
+
+## 📁 Project Structure
 
 ```
 .
-├── main.py                  # FastAPI backend — tracer, risk engine, ML heuristic, PDF report
-├── requirements.txt         # Backend Python dependencies
-├── src/ (or project root)
-│   ├── main.jsx             # React entry point
-│   ├── App.jsx               # Root component → renders GraphViewer
-│   ├── GraphViewer.jsx       # Main UI: graph canvas, portals, dashboard, dossier view
-│   ├── App.css / index.css   # Styling
-│   └── ...
-├── index.html                # Vite HTML entry
-├── package.json               # Frontend dependencies (React, Cytoscape, Vite)
-└── vite.config.js             # Vite + React plugin config
+├── main.py                     # FastAPI backend — tracer, risk, ML, PDF, security, dossier
+├── requirements.txt            # Backend deps (fastapi, uvicorn, reportlab, cryptography …)
+├── ncrp_complaints.json        # Encrypted-at-rest citizen filings (gitignored, local only)
+├── frontend/
+│   ├── index.html              # Vite HTML entry + OG/Twitter/JSON-LD
+│   ├── vite.config.js          # React plugin, manualChunks, no sourcemap
+│   ├── package.json            # React, Cytoscape, Vite, framer-motion
+│   └── src/
+│       ├── main.jsx            # React entry
+│       ├── App.jsx             # → GraphViewer
+│       ├── GraphViewer.jsx     # All UI: landing, citizen, police, graph, dossier
+│       ├── App.css             # Vite demo styles
+│       └── index.css           # Full design system (paper/ink, topbar, ledger, workspace, dossier, patch-notes modal)
+└── CYCLOPS_SIH26183_CrySec_Team_Report.docx
 ```
 
-## Getting Started
+---
+
+## 🚀 Quick Start (GitHub)
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 18+ and npm
-- (Optional) Etherscan and/or TronGrid API keys for **live** on-chain data — the app runs fully in demo mode without them.
+- **Python 3.11+** · **Node.js 18+ / npm** · **Git**
+- (Optional) `ETHERSCAN_API_KEY` / `TRONGRID_API_KEY` for live on-chain data — demo works without them.
 
-### 1. Backend setup
+### 1. Clone
 
 ```bash
-# from the project root
+git clone https://github.com/UNownisF9/cyclops-sih26183.git
+cd cyclops-sih26183
+```
+
+### 2. Backend
+
+```bash
 python -m venv venv
 # Windows
 venv\Scripts\activate
@@ -107,71 +130,152 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Create a `.env` file next to `main.py` (optional — only needed for live chain data):
+Create `.env` next to `main.py` (optional, for live chain data):
 
 ```env
 ETHERSCAN_API_KEY=your_etherscan_key
 TRONGRID_API_KEY=your_trongrid_key
+# Optional overrides
+CYCLOPS_AUTH_SECRET=change-in-prod
+CYCLOPS_ENCRYPTION_KEY=44-char-urlsafe-base64-or-plain-secret
+CYCLOPS_CORS_ORIGINS=https://your-frontend.vercel.app,https://your-backend.onrender.com
+CYCLOPS_OFFICERS={"IO-CUSTOM-001":"custompass"}
 ```
 
-Run the API:
+Run:
 
 ```bash
 uvicorn main:app --reload --port 8000
+# → http://localhost:8000  docs at http://localhost:8000/docs
 ```
 
-The API is now live at `http://localhost:8000`, with interactive docs at `http://localhost:8000/docs`.
-
-### 2. Frontend setup
+### 3. Frontend
 
 ```bash
+cd frontend
 npm install
 npm run dev
+# → http://localhost:5173
 ```
 
-Vite will start the dev server (default `http://localhost:5173`).
+> `frontend/src/GraphViewer.jsx: API_BASE` — `http://localhost:8000` on `localhost`, else `https://cyclops-sih26183.onrender.com`. Change there if you deploy elsewhere.
 
-> **Note:** `GraphViewer.jsx` points at `http://localhost:8000` when running on `localhost`, and otherwise falls back to a hardcoded deployed backend URL (`https://cyclops-sih26183.onrender.com`). Update the `API_BASE` constant near the top of `GraphViewer.jsx` if you deploy the backend elsewhere.
+### Default Police Credentials
 
-## API Reference
+| Badge | Passcode |
+|---|---|
+| `IO-I4C-9921` | `cybercell` |
+| `admin` | `admin123` |
+| `IO-MHA-001` | `cyclops2026` |
+| `SIH-JUDGE` | `sih26183` |
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/` | Service info / health banner |
-| `GET` | `/api/health` | Backend health, entity registry count, which chain backends are active |
-| `GET` | `/api/ncrp/live-queue` | Mock live feed of incoming NCRP fraud cases (for the dashboard) |
-| `POST` | `/api/trace` | Run a fund-flow trace on a suspect address. Body: `{ suspect_address, chain, max_depth, min_value_eth, max_branches }` |
-| `POST` | `/api/ml/classify?address=...` | Run the heuristic ML classifier on a single address |
-| `GET` | `/api/report/pdf?address=...` | Download a generated PDF forensic dossier for an address |
+Citizen portal needs no login — file a complaint to get a docket like `NCRP-2026-DEL-1092`, then use the `Enter NCRP docket` lookup on the same page (polls `GET /api/citizen/track/{docket}` every 3s).
 
-### Example: run a trace
+---
+
+## 🔌 API Reference
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/` | — | Service banner + `v6.1.1` feature list |
+| `GET` | `/api/health` | — | Health, `entities:30`, `security` flags, `citizen_tracking` |
+| `GET` | `/api/security/status` | — | Field encryption algo, rate-limit, headers |
+| `POST` | `/api/security/encrypt-demo` | — | `{"text":"…"}` → `enc:…` demo |
+| `GET` | `/api/ncrp/live-queue` | — | Live-enriched queue (newest first, masked) |
+| `POST` | `/api/ncrp/complaint` | — | File complaint → `docket_no` + `encryption` preview + `live_tracking` |
+| `GET` | `/api/citizen/track/{docket_no}` | — | **Live** 6-stage timeline, `golden_hour_remaining`, `hops_preview` |
+| `GET` | `/api/citizen/complaint/{docket_no}` | optional | Masked citizen view or decrypted `officer_view` if Bearer |
+| `GET` | `/api/citizen/dockets?q=` | — | Search dockets |
+| `POST` | `/api/auth/login` | — | `{"officer_id","passcode"}` → `Bearer` token (8h) |
+| `GET` | `/api/auth/verify` | Bearer | Token check |
+| `POST` | `/api/auth/logout` | Bearer | Revoke token |
+| `GET` | `/api/audit/log` | Bearer | Last 50 audit events |
+| `POST` | `/api/trace` | Bearer | `{"suspect_address","chain","max_depth","min_value_eth","max_branches"}` → graph + attributions + custody_trail |
+| `POST` | `/api/ml/classify` | Bearer | `{"address":"…"}` → heuristic ML |
+| `GET` | `/api/forensics/flow-metrics?address=` | Bearer | Time-series + VASP exposure |
+| `GET` | `/api/dossier/data?address=` | optional | JSON dossier (used by Court Dossier tab) |
+| `GET` | `/api/report/pdf?address=` | Bearer | Court PDF (ReportLab) |
+| `GET` | `/api/report/pdf/preview?address=` | — | Watermarked demo PDF |
+| `GET` | `/api/intelligence/summary` | optional | National grid stats + recent queue |
+
+**Example trace:**
 
 ```bash
 curl -X POST http://localhost:8000/api/trace \
   -H "Content-Type: application/json" \
-  -d '{
-    "suspect_address": "0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1",
-    "chain": "ethereum",
-    "max_depth": 3,
-    "min_value_eth": 0.01,
-    "max_branches": 5
-  }'
+  -H "Authorization: Bearer <token>" \
+  -d '{"suspect_address":"0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1","chain":"ethereum","max_depth":3,"min_value_eth":0.01,"max_branches":5}'
 ```
 
-This returns the graph (`elements.nodes` / `elements.edges`), any exchange/mixer `attributions`, the hop-by-hop `custody_trail`, a `risk_assessment`, and `ml_analysis`.
+---
 
-## How the Trace Works
+## 🔍 How the Trace Works
 
-1. Start from `suspect_address` at hop 0.
-2. Fetch its outgoing transactions (live from the relevant chain API, or from `MOCK_WALLET_TRAILS` if no key/data is available).
-3. For each destination address: if it matches a known entity in `KNOWN_ENTITIES` (exchange/mixer/bridge), record it as a terminal **attribution** and stop that branch. Otherwise, treat it as an intermediary/mule and keep tracing, up to `max_depth` hops.
-4. Aggregate everything into a node/edge graph plus a linear custody trail, then score it for risk patterns (mixer use, peel-chaining, direct exchange deposit).
+1. Starts at `suspect_address` hop 0.
+2. Calls `fetch_transactions_async()` — checks `MOCK_WALLET_TRAILS` first (deterministic demo), else live `Etherscan/TronGrid/Blockstream` (cached 5 min).
+3. For each `to`: if `KNOWN_ENTITIES[addr]` is `CEX`/`MIXER` → terminal attribution + stop branch; if `BRIDGE` → log attribution but **continue** through bridge; else mule/intermediary, enqueue up to `max_depth`.
+4. Builds `elements {nodes, edges}` + linear `custody_trail` (`value_inr` per token: `ETH:2.5L`, `BTC:52.57L`, `USDT:82`) → `analyze_trace_risk()` → `BlockchainMLEngine.extract_features()` → response.
 
-## Limitations & Disclaimer
+---
 
-- **Known-entity registry is hardcoded** — only a handful of demo addresses (Binance, CoinDCX, WazirX, Gate.io, Tornado Cash, Polygon Bridge) are recognized; anything else is labeled a generic "mule."
-- **The "ML" classifier is a rules-based heuristic**, not a trained model — it thresholds a few hand-picked features (holding time, sweep ratio, peel-chain asymmetry) rather than learning from data.
-- **Demo/mock data fallback** — without valid API keys (or for addresses the mock dataset doesn't cover), the app deterministically falls back to a small set of pre-built fake wallet trails so the UI always has something to show.
-- **The PDF dossier and Section 91 Cr.P.C. / BNSS 2023 notice are illustrative templates** generated for the hackathon demo — they are not vetted legal instruments and shouldn't be sent to a real institution as-is.
-- **The forensic report itself explicitly states** it does not independently establish criminal liability, wallet ownership, VASP attribution, intent, or legal guilt — blockchain evidence and investigator review remain authoritative.
+## 🔒 Security
 
+- **Field encryption** — `encrypt_field()`/`decrypt_field()` (`cryptography.fernet.Fernet`) with `CYCLOPS_ENCRYPTION_KEY` fallback to `CYCLOPS_AUTH_SECRET` SHA256; stored as `enc:…`, masked via `mask_address()`/`mask_phone()`; citizen view sees masked, LEA view decrypts.
+- **Auth** — `OFFICER_CREDENTIALS` hashed as `SHA256(salt+pass)` (`_AUTH_SALT` from `CYCLOPS_AUTH_SECRET`) + `hmac.compare_digest`; `Bearer` 8h token, `GET /api/audit/log`.
+- **Sanitization** — `sanitize_text()` strips `<tags>`/control chars, length caps, wallet regex.
+- **Rate-limit** — `RateLimiter` sliding window: `60/min` global, `10/min` auth, `20/min` trace; `Retry-After`.
+- **Headers & CORS** — `X-Content-Type-Options nosniff`, `X-Frame DENY`, `CSP`, `HSTS 63072000`, `Referrer-Policy`, `Permissions-Policy`; `CORSMiddleware` allowlist (`Render/Vercel/localhost` + regex) via `CYCLOPS_CORS_ORIGINS`; `512KB` body guard.
+
+---
+
+## 📝 Patch Notes
+
+Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.1.1` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
+
+- **v6.1.1 — Layout & Single-Source Notes (09 Sept 2026, Current/Fix)** — Topbar `Court Dossier`/`IST` overlap fixed (wrap at `1580/1480px`, compress at `1520–1481`), patch-notes consolidated to one ledger entry.
+- **v6.1.0 — Secure & Live (09 Sept 2026, Major)** — Security hardening, citizen 6-stage live tracker (`GET /api/citizen/track`), dossier/PDF fix (now `Deepak Chawla → CoinDCX (3 hops)` correct for Multi-chain, plus `1A1z…` BTC & `0x1111…`), forensics `BRIDGE→CEX`.
+- **v6.0.0 — CrySec (08 Sept 2026, Baseline)** — Multi-chain tracer, VASP registry, risk/ML, Cytoscape graph, dossier, NCRP queue. See in-app modal for full bullet list.
+
+For the complete concise list, open the app landings ledger card or `Ctrl+K` → not needed — just the landing card.
+
+---
+
+## ☁️ Deployment
+
+- **Backend** → Render/Fly/VM: `pip install -r requirements.txt` then `uvicorn main:app --host 0.0.0.0 --port $PORT`. Set `ETHERSCAN_API_KEY`, `TRONGRID_API_KEY`, `CYCLOPS_AUTH_SECRET`, `CYCLOPS_ENCRYPTION_KEY`, `CYCLOPS_CORS_ORIGINS`.
+- **Frontend** → Vercel/Netlify: `cd frontend && npm install && npm run build` (`dist/`), env not required. Update `API_BASE` in `GraphViewer.jsx` if backend URL changes.
+- Current `API_BASE` fallback: `https://cyclops-sih26183.onrender.com` (non-localhost).
+
+---
+
+## 🛠 Troubleshooting
+
+| Issue | Fix |
+|---|---|
+| `410/429 Rate limit` | Wait `Retry-After` seconds; auth is `10/min`. |
+| `401 Invalid token` | Re-login `POST /api/auth/login`; token is 8h. |
+| Dossier shows `Unidentified Wallet` | Ensure backend is running with latest `MOCK_WALLET_TRAILS` (restart `uvicorn`); frontend auto-falls back to `activeDataset` after 3s poll. |
+| `CORS` error | Add your frontend origin to `CYCLOPS_CORS_ORIGINS` comma list. |
+| Port in use | `uvicorn main:app --port 8001` and change `API_BASE` to `:8001`. |
+| `cryptography` missing | `pip install cryptography` — fallback XOR still works but Fernet is recommended. |
+
+---
+
+## ⚠️ Limitations & Disclaimer
+
+- **VASP registry hardcoded** — only demo addresses (Binance, CoinDCX, WazirX, Gate, Tornado, Polygon Bridge) recognized; others → generic mule.
+- **“ML” heuristic, not trained** — thresholds on holding velocity, sweep ratio, peel asymmetry.
+- **Mock fallback** — without keys or for unknown addresses, deterministic fake trails are used so UI never white-screens.
+- **PDF/Sec.91 notice are templates** — for hackathon demo, not vetted legal instruments. Report explicitly does not establish liability/ownership/intent — blockchain evidence + investigator review remain authoritative.
+
+---
+
+## 👥 Team CrySec — SIH26183
+
+- **CYCLOPS** · Ministry of Home Affairs · Indian Cyber Crime Coordination Centre (I4C) · National Cybercrime Reporting Portal (NCRP) & SAHYOG Grid
+- Built for the Golden Hour — file to freeze before the trail goes cold.
+
+<p align="center">
+  <a href="http://localhost:5173"><strong>Open Citizen Portal →</strong></a> •
+  <a href="http://localhost:8000/docs"><strong>Open API Docs →</strong></a>
+</p>

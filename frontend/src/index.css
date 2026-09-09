@@ -249,15 +249,18 @@ button:disabled {
   white-space: nowrap;
 }
 
-@media (max-width: 1180px) {
+/* Prevent Court Dossier / IST overlap — crowded topbar (brand + 2 segmented + IST/PDF/chip) began colliding at ~1580px; wrap early */
+@media (max-width: 1580px) {
+  .brand-sub { display: none; }
+}
+@media (max-width: 1480px) {
   .topbar {
     flex-wrap: wrap;
     padding: 10px 14px;
     gap: 10px;
+    min-height: auto;
   }
-  .topbar-left {
-    gap: 10px;
-  }
+  .topbar-left { gap: 10px; }
   .topbar-center {
     order: 3;
     flex-basis: 100%;
@@ -267,10 +270,54 @@ button:disabled {
     margin-left: auto;
   }
 }
+@media (max-width: 1520px) and (min-width: 1481px) {
+  /* Between 1481–1520: keep single row but compress */
+  .topbar { gap: 10px; padding: 0 10px 0 12px; }
+  .topbar-left { gap: 10px; }
+  .topbar-center { gap: 8px; }
+  .topbar-right { gap: 8px; }
+  .segmented button { padding: 6px 10px; font-size: 11px; }
+  .topbar-time { padding: 5px 8px; }
+  .brand-name { font-size: 13px; }
+}
+
+@media (max-width: 1280px) {
+  .topbar-left {
+    gap: 10px;
+  }
+  .segmented button {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  .topbar-time {
+    padding: 5px 8px;
+  }
+  .topbar-time .time { font-size: 11px; }
+  .topbar-time .date { font-size: 9px; }
+  .brand-name { font-size: 13px; }
+  .brand-sub { font-size: 10px; }
+}
+
+@media (max-width: 860px) {
+  .topbar-center {
+    flex-basis: 100%;
+  }
+  .topbar-right {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .topbar-pdf {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+}
 
 @media (max-width: 640px) {
   .topbar-time {
     display: none;
+  }
+  .topbar {
+    padding: 8px 10px;
   }
 }
 
@@ -2150,8 +2197,133 @@ textarea.field-input {
   color: #6d6f7d;
 }
 
+/* ---------------------------------------------------------- patch notes */
+.patchnotes-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(10,10,8,0.62);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px 24px;
+  overflow-y: auto;
+}
+.patchnotes-panel {
+  width: min(880px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+}
+.patchnotes-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  z-index: 1;
+}
+.patchnotes-close {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.patchnotes-close:hover { background: #f1f5f9; color: var(--ink); }
+.patchnotes-body {
+  padding: 14px 18px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+.patchnotes-release {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #fff, #fdfcfa);
+  padding: 12px 14px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.patchnotes-release.open {
+  border-color: var(--line-strong);
+  box-shadow: 0 4px 16px rgba(20,20,15,0.07);
+}
+.patchnotes-release-head {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+.patchnotes-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.patchnotes-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.patchnotes-section-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
+}
+.patchnotes-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.patchnotes-list li { padding-left: 2px; }
+.patchnotes-list li::marker { color: var(--line-strong); }
+.patchnotes-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  position: sticky;
+  bottom: 0;
+}
+
 /* Global guard: any framer-motion element that slips past its own
-   useReducedMotion() check still gets clamped here. */
+    useReducedMotion() check still gets clamped here. */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;
