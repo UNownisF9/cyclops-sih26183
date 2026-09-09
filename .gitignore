@@ -39,3 +39,8 @@ Thumbs.db
 # Report / temp
 *.tmp
 *.bak
+
+# Word temp
+~$*
+*.tmp
+
