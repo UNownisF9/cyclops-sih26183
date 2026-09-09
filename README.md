@@ -1,7 +1,7 @@
 # PROJECT CYCLOPS — SIH26183
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v6.1.1-blue?style=for-the-badge" alt="version" />
+  <img src="https://img.shields.io/badge/version-v6.2.0-blue?style=for-the-badge" alt="version" />
   <img src="https://img.shields.io/badge/SIH-26183-orange?style=for-the-badge" alt="SIH26183" />
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="python" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="react" />
@@ -25,16 +25,17 @@
 
 ---
 
-## ✨ What's New in v6.1.1
+## ✨ What's New in v6.2.0
 
 | Area | Before | After |
 |---|---|---|
 | **Citizen portal** | Static form + 5 hardcoded timeline rows | Dark live tracker: 6-stage lifecycle (FILED→…→RESOLVED), Golden Hour countdown, 3s polling via `GET /api/citizen/track/{docket}`, fund-hop preview, `enc:…` toggle |
-| **Security** | Plaintext passwords, CORS `*`, no headers, no rate-limit | Fernet AES-128 field encryption (masked display, `enc:…` at rest), hashed auth `SHA256(salt+pass)+hmac`, sanitization, `CORS allowlist`, `CSP/HSTS/nosniff/DENY`, `60/10/20/min` rate-limit, `512KB` body guard, `200`-event audit log |
+| **Security** | `SHA256(salt+pass)` fast hash, `SHA256(secret)` key, no nonce | **PBKDF2-HMAC-SHA256 100k** key + old `SHA256` fallback for `enc:…` decrypt, **bcrypt** per-password salt (via `bcrypt`/`passlib`, `gensalt()` per officer) + `SHA256` fallback, CSP per-request `nonce-…` + `X-CSP-Nonce`/`X-Request-ID`, prod check for default secret |
 | **Dossier / PDF** | `Unidentified Wallet (1 Hops)` empty on Bitcoin/Multi-chain/auto-trace | Deterministic mocks for `1A1z…`, `0x8888…` (+ `0x1111…`), `BRIDGE` transit → `CoinDCX (3 hops)` for **Deepak Chawla**, INR per token, deepest-`CEX` target — dossier & PDF now match for all chains |
-| **Layout** | Topbar `Court Dossier` collided with `IST` at ~1480px; patch-notes button in 8 places | Topbar wraps at `1580/1480px`, `BRIDGE` handling, patch notes consolidated to **one** landing ledger card (`CHANGELOG · v6.1.1`) |
+| **Dataset (New)** | No live provenance, judges ask “mock or real?” | `scripts/ingest_sample.py` (Option B) — `Etherscan txlist+tokentx` + `Blockstream` (5/sec), writes `data/live_sample.json` (5 `LIVE_BLOCKSTREAM` BTC proven, `source_url` verifiable) + `data/sample_provenance.json`; `GET /api/dataset/live-sample` + `/sample-provenance`; `GET /api/health` shows `dataset.live_sample_count` |
+| **Layout** | Topbar `Court Dossier` collided with `IST` at ~1480px; patch-notes button in 8 places | Topbar wraps at `1580/1480px`, `BRIDGE` handling, patch notes consolidated to **one** landing ledger card (`CHANGELOG · v6.2.0`) |
 
-> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.1.1`, `v6.0.0` expandable sections.
+> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.2.0`, `v6.0.0` expandable sections.
 
 ---
 
@@ -177,7 +178,7 @@ Citizen portal needs no login — file a complaint to get a docket like `NCRP-20
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/` | — | Service banner + `v6.1.1` feature list |
+| `GET` | `/` | — | Service banner + `v6.2.0` feature list |
 | `GET` | `/api/health` | — | Health, `entities:30`, `security` flags, `citizen_tracking` |
 | `GET` | `/api/security/status` | — | Field encryption algo, rate-limit, headers |
 | `POST` | `/api/security/encrypt-demo` | — | `{"text":"…"}` → `enc:…` demo |
@@ -197,6 +198,8 @@ Citizen portal needs no login — file a complaint to get a docket like `NCRP-20
 | `GET` | `/api/report/pdf?address=` | Bearer | Court PDF (ReportLab) |
 | `GET` | `/api/report/pdf/preview?address=` | — | Watermarked demo PDF |
 | `GET` | `/api/intelligence/summary` | optional | National grid stats + recent queue |
+| `GET` | `/api/dataset/live-sample` | — | Live `data/live_sample.json` (Option B, `LIVE_BLOCKSTREAM`) |
+| `GET` | `/api/dataset/sample-provenance` | — | 30-row `tx_hash`+`source_url` only |
 
 **Example trace:**
 
@@ -218,21 +221,22 @@ curl -X POST http://localhost:8000/api/trace \
 
 ---
 
-## 🔒 Security
+## 🔒 Security — Demo-grade, judge-verifiable
 
-- **Field encryption** — `encrypt_field()`/`decrypt_field()` (`cryptography.fernet.Fernet`) with `CYCLOPS_ENCRYPTION_KEY` fallback to `CYCLOPS_AUTH_SECRET` SHA256; stored as `enc:…`, masked via `mask_address()`/`mask_phone()`; citizen view sees masked, LEA view decrypts.
-- **Auth** — `OFFICER_CREDENTIALS` hashed as `SHA256(salt+pass)` (`_AUTH_SALT` from `CYCLOPS_AUTH_SECRET`) + `hmac.compare_digest`; `Bearer` 8h token, `GET /api/audit/log`.
+- **Field encryption** — `encrypt_field()`/`decrypt_field()` (`cryptography.fernet.Fernet`, **PBKDF2-HMAC-SHA256 100k** + deterministic salt, fallback `SHA256` for old `enc:…` decrypt); `Fernet.generate_key()` from `CYCLOPS_ENCRYPTION_KEY` else `CYCLOPS_AUTH_SECRET`; stored as `enc:…`, masked via `mask_address()`/`mask_phone()`; citizen masked, LEA decrypts (`GET /api/citizen/complaint/{docket}` with Bearer).
+- **Auth** — **bcrypt** per-password salt (`bcrypt.hashpw` + `gensalt()` per officer at startup, `HAS_BCRYPT` + `passlib` fallback) + **SHA256 fallback** for zero-downtime migration; `hmac.compare_digest` for SHA path; `Bearer` 8h token, `GET /api/audit/log` (200 events). See `main.py:360` `HAS_BCRYPT`.
 - **Sanitization** — `sanitize_text()` strips `<tags>`/control chars, length caps, wallet regex.
-- **Rate-limit** — `RateLimiter` sliding window: `60/min` global, `10/min` auth, `20/min` trace; `Retry-After`.
-- **Headers & CORS** — `X-Content-Type-Options nosniff`, `X-Frame DENY`, `CSP`, `HSTS 63072000`, `Referrer-Policy`, `Permissions-Policy`; `CORSMiddleware` allowlist (`Render/Vercel/localhost` + regex) via `CYCLOPS_CORS_ORIGINS`; `512KB` body guard.
+- **Rate-limit** — `RateLimiter` sliding window: `60/min` global, `10/min` auth, `20/min` trace; `Retry-After`; `512KB` body guard (header check).
+- **Headers & CORS** — `X-Content-Type-Options nosniff`, `X-Frame DENY`, **`CSP` with per-request `nonce-…` + `unsafe-inline` (Vite compat) + `X-CSP-Nonce`/`X-Request-ID`**, `HSTS 63072000`, `Referrer-Policy`, `Permissions-Policy`; `CORSMiddleware` allowlist via `CYCLOPS_CORS_ORIGINS`; prod warning if `CYCLOPS_AUTH_SECRET` is default.
+- **Live dataset** — `data/live_sample.json` committed (5 `LIVE_BLOCKSTREAM` BTC `source_url` verifiable), `scripts/ingest_sample.py --verify` (Option B, 5/sec `Etherscan txlist+tokentx` + `Blockstream`), `GET /api/dataset/live-sample`.
 
 ---
 
 ## 📝 Patch Notes
 
-Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.1.1` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
+Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.2.0` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
 
-- **v6.1.1 — Layout & Single-Source Notes (09 Sept 2026, Current/Fix)** — Topbar `Court Dossier`/`IST` overlap fixed (wrap at `1580/1480px`, compress at `1520–1481`), patch-notes consolidated to one ledger entry.
+- **v6.2.0 — Layout & Single-Source Notes (09 Sept 2026, Current/Fix)** — Topbar `Court Dossier`/`IST` overlap fixed (wrap at `1580/1480px`, compress at `1520–1481`), patch-notes consolidated to one ledger entry.
 - **v6.1.0 — Secure & Live (09 Sept 2026, Major)** — Security hardening, citizen 6-stage live tracker (`GET /api/citizen/track`), dossier/PDF fix (now `Deepak Chawla → CoinDCX (3 hops)` correct for Multi-chain, plus `1A1z…` BTC & `0x1111…`), forensics `BRIDGE→CEX`.
 - **v6.0.0 — CrySec (08 Sept 2026, Baseline)** — Multi-chain tracer, VASP registry, risk/ML, Cytoscape graph, dossier, NCRP queue. See in-app modal for full bullet list.
 

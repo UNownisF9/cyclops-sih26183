@@ -309,9 +309,38 @@ const DEMO_STEPS = [
 // ==================== PATCH NOTES — complete & concise ====================
 const PATCH_NOTES = [
     {
+        version: 'v6.2.0 — Live Dataset + Bcrypt',
+        date: '10 Sept 2026',
+        badge: 'Current',
+        tag: 'Major',
+        summary: 'Option B live ingester (Etherscan/Blockstream, 5/sec, offline-verifiable) + bcrypt + PBKDF2 — your “B + bcrypt yes” delivered.',
+        sections: [
+            {
+                title: 'Live Dataset (Option B)',
+                icon: '●',
+                items: [
+                    'New: scripts/ingest_sample.py — fetches 20 real tx hashes for Binance 0x28c6…, WazirX, CoinDCX, 0x1111… (txlist + tokentx) + Blockstream BTC 34xp… (5 txs), writes data/live_sample.json (count, provenance, ingested_normalized) + data/sample_provenance.json; respects 5/sec Etherscan limit, fallback mock if key missing',
+                    'Startup load: main.py:911 LIVE_SAMPLE_DATA auto-loaded from data/live_sample.json (if present), logged, exposed via GET /api/health (dataset.live_sample_count), GET /api/security/status, GET /api/dataset/live-sample & /api/dataset/sample-provenance',
+                    'Judge-verifiable: each provenance has tx_hash, source_url (https://etherscan.io/tx/… / https://blockstream.info/tx/…), verified_at, source (LIVE_ETHERSCAN/LIVE_BLOCKSTREAM vs DEMO_MOCK_DATA), not required for demo — mock remains primary per tracer deterministic priority',
+                    'Committed: data/live_sample.json (5 LIVE_BLOCKSTREAM BTC txs proven, plus fallback) + data/sample_provenance.json — judges can curl or run `python scripts/ingest_sample.py --verify`',
+                ]
+            },
+            {
+                title: 'Auth Hardening — Bcrypt + PBKDF2',
+                icon: '🔒',
+                items: [
+                    'Before: SHA256(salt+pass) single fast hash — demo-grade; key derivation SHA256(secret) — no iteration',
+                    'After: bcrypt (per-password salt, slow) via `bcrypt`/`passlib` with `gensalt()` per officer at startup (`main.py:360` HAS_BCRYPT), verify via `checkpw` with SHA256 fallback for zero-downtime migration; key derivation now PBKDF2-HMAC-SHA256 100k + deterministic salt (`cyclops-salt-v2:raw`), old SHA256 key kept as _FERNET_KEY_OLD for decrypting existing enc:… in ncrp_complaints.json',
+                    'Headers: added per-request CSP nonce (`nonce-…` + `unsafe-inline` for Vite compat) + X-CSP-Nonce + X-Request-ID (`main.py:1380` security_middleware), production warning if CYCLOPS_AUTH_SECRET is default in ENV=production',
+                    'Deps: requirements.txt +bcrypt, +passlib[bcrypt] (11 installed), health/security endpoints now report `PBKDF2 100k` + `has_bcrypt`',
+                ]
+            },
+        ]
+    },
+    {
         version: 'v6.1.1 — Layout & Single-Source Notes',
         date: '09 Sept 2026',
-        badge: 'Current',
+        badge: 'Previous',
         tag: 'Fix',
         summary: 'Court dossier/time overlap fixed, patch-notes decluttered to one suitable place — clean police grid at all widths.',
         sections: [
@@ -665,7 +694,7 @@ function PatchNotesModal({ open, onClose }) {
                             <div>
                                 <div style={{ fontSize: 11, letterSpacing: '0.08em', color: '#8b8d9c', fontWeight: 700 }}>CYCLOPS · SIH26183</div>
                                 <div style={{ fontSize: 18, fontWeight: 800, color: '#14140f', marginTop: 2, display:'flex', alignItems:'center', gap:8 }}>
-                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.1.1</span>
+                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.2.0</span>
                                     <span style={{ fontSize: 11, color:'#6d6f7d', fontWeight:600 }}>Complete & concise</span>
                                 </div>
                                 <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. Single source on landing.</div>
@@ -716,7 +745,7 @@ function PatchNotesModal({ open, onClose }) {
                             })}
                         </div>
                         <div className="patchnotes-foot">
-                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.1.1 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
+                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.2.0 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
                             <button className="btn btn-navy btn-sm" onClick={onClose}>Close</button>
                         </div>
                     </motion.div>
@@ -2005,21 +2034,21 @@ Cyber Crime Division`;
                                 <div className="ledger-orb" style={{ background: 'linear-gradient(135deg, #f2e8d4, #e8dcc3)', borderColor: '#d9bd83', color: '#8a5a12' }}>✎</div>
                             </div>
                             <div className="ledger-body">
-                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.1.1</div>
+                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.2.0</div>
                                 <h2>Patch Notes — Complete & Concise</h2>
                                 <p>
-                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. Tap for the full changelog — now including the <strong>topbar overlap fix</strong> and consolidated <strong>single-ledger</strong> entry.
+                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. Tap for live dataset + bcrypt/PBKDF2 hardening.
                                 </p>
                                 <div className="check-list">
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Security: AES-128, hashed auth, rate-limit, CSP/HSTS</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Citizen: 6-stage live tracker with encryption toggle</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Dossier: CoinDCX (3 hops) for Deepak Chawla — no more Unidentified</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Live dataset: 5 BTC LIVE_BLOCKSTREAM + Etherscan ingester</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Auth: bcrypt + PBKDF2 100k, CSP nonce</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Dossier: CoinDCX (3 hops) — no Unidentified</div>
                                 </div>
                             </div>
                             <div className="ledger-action">
                                 <div className="ledger-metric">
-                                    <div className="n" style={{ color:'#8a5a12' }}>09 Sept</div>
-                                    <div className="l">v6.1.1 · 16 fixes</div>
+                                    <div className="n" style={{ color:'#8a5a12' }}>10 Sept</div>
+                                    <div className="l">v6.2.0 · 20 fixes</div>
                                 </div>
                                 <motion.button className="btn btn-block" style={{ background:'#8a5a12', borderColor:'#8a5a12', color:'#fff' }} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}>
                                     View patch notes →

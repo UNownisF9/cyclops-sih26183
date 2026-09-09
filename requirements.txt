@@ -6,3 +6,5 @@ httpx
 python-dotenv
 reportlab
 cryptography
+bcrypt
+passlib[bcrypt]

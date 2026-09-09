@@ -48,10 +48,10 @@ TRONGRID_API_KEY = os.getenv("TRONGRID_API_KEY", "")
 CYCLOPS_AUTH_SECRET = os.getenv("CYCLOPS_AUTH_SECRET", "cyclops-dev-secret-change-in-prod-SIH26183")
 CYCLOPS_ENCRYPTION_KEY = os.getenv("CYCLOPS_ENCRYPTION_KEY", "")
 
-# ==================== SECURITY: ENCRYPTION (AES-256-GCM via cryptography Fernet) ====================
-# Provides field-level encryption for wallet addresses, phone numbers and sensitive messages.
-# Falls back to a deterministic HMAC-XOR stream if cryptography is unavailable, so the
-# application never runs without encryption.
+# ==================== SECURITY: ENCRYPTION (Fernet + PBKDF2) ====================
+# Field-level encryption for wallet addresses, phone numbers and sensitive messages.
+# v6.2.0: PBKDF2-HMAC-SHA256 (100k iter) for Fernet key derivation; XOR fallback kept for offline.
+# Decrypt tries new PBKDF2 key first, then old SHA256 key for backward compat with existing ncrp_complaints.json.
 try:
     from cryptography.fernet import Fernet
     HAS_FERNET = True
@@ -59,29 +59,46 @@ except ImportError:
     HAS_FERNET = False
     Fernet = None
 
+def _derive_fernet_key_old(raw: str) -> bytes:
+    """Legacy SHA256 derivation (v6.1.0) — kept for decrypt fallback."""
+    digest = hashlib.sha256(raw.encode()).digest()
+    return base64.urlsafe_b64encode(digest)
+
 def _derive_fernet_key() -> bytes:
-    """Derive a stable 32-byte Fernet key from CYCLOPS_ENCRYPTION_KEY or CYCLOPS_AUTH_SECRET."""
+    """PBKDF2-HMAC-SHA256 (100k) derivation — stable, salted, slow."""
     raw = CYCLOPS_ENCRYPTION_KEY.strip() if CYCLOPS_ENCRYPTION_KEY else CYCLOPS_AUTH_SECRET
-    # If raw already looks like a Fernet key (44 urlsafe base64 chars), use it
     if len(raw) == 44:
         try:
             base64.urlsafe_b64decode(raw)
             return raw.encode()
         except Exception:
             pass
-    digest = hashlib.sha256(raw.encode()).digest()  # 32 bytes
-    return base64.urlsafe_b64encode(digest)
+    # Deterministic salt: SHA256('cyclops-salt-v2' + raw)[:16] — stable per deployment, not per-field
+    salt = hashlib.sha256((f"cyclops-salt-v2:{raw}").encode()).digest()[:16]
+    # PBKDF2 is stdlib, no extra dep; 100k iter is ~30ms on typical CPU, good for 1-2 encryptions per request
+    dk = hashlib.pbkdf2_hmac('sha256', raw.encode(), salt, 100000, dklen=32)
+    return base64.urlsafe_b64encode(dk)
 
 _FERNET_KEY = _derive_fernet_key()
+# Old key for decrypting data written with v6.1.0
+_raw_for_old = CYCLOPS_ENCRYPTION_KEY.strip() if CYCLOPS_ENCRYPTION_KEY else CYCLOPS_AUTH_SECRET
+_FERNET_KEY_OLD = _derive_fernet_key_old(_raw_for_old)
+
+# Warn if running with default secret in prod-like env
+if CYCLOPS_AUTH_SECRET == "cyclops-dev-secret-change-in-prod-SIH26183" and os.getenv("ENV", "").lower() in ("production", "prod"):
+    logger.warning("CYCLOPS_AUTH_SECRET is default! Set a strong random secret in prod.")
+
 try:
     _fernet = Fernet(_FERNET_KEY) if HAS_FERNET else None
+    _fernet_old = Fernet(_FERNET_KEY_OLD) if HAS_FERNET else None
     if HAS_FERNET:
-        logger.info("Field encryption: Fernet AES-128-CBC+HMAC active")
+        logger.info("Field encryption: Fernet AES-128-CBC+HMAC active (PBKDF2 100k)")
     else:
         logger.warning("Field encryption: fallback XOR stream (install cryptography for Fernet)")
 except Exception as e:
     logger.warning(f"Fernet init failed, using fallback: {e}")
     _fernet = None
+    _fernet_old = None
     HAS_FERNET = False
 
 def encrypt_field(plaintext: str) -> str:
@@ -92,14 +109,11 @@ def encrypt_field(plaintext: str) -> str:
         if HAS_FERNET and _fernet is not None:
             token = _fernet.encrypt(plaintext.encode()).decode()
             return f"enc:{token}"
-        # Fallback: XOR with derived key + base64 (still reversible, obscures at rest)
         key = hashlib.sha256(_FERNET_KEY).digest()
         data = plaintext.encode()
         xored = bytes(b ^ key[i % len(key)] for i, b in enumerate(data))
-        # Prepend random 8-byte nonce for non-determinism
         nonce = secrets.token_bytes(8)
         payload = nonce + xored
-        # HMAC for integrity
         mac = hmac.new(key, payload, hashlib.sha256).digest()[:8]
         return "enc:" + base64.urlsafe_b64encode(payload + mac).decode()
     except Exception as e:
@@ -107,7 +121,7 @@ def encrypt_field(plaintext: str) -> str:
         return "enc:" + base64.urlsafe_b64encode(plaintext.encode()).decode()
 
 def decrypt_field(token: str) -> str:
-    """Decrypt a value produced by encrypt_field. Returns plaintext or original on failure."""
+    """Decrypt a value produced by encrypt_field. Tries new PBKDF2 key, then old SHA256 key for backward compat."""
     if not token or not isinstance(token, str):
         return token or ""
     if not token.startswith("enc:"):
@@ -115,14 +129,21 @@ def decrypt_field(token: str) -> str:
     raw = token[4:]
     try:
         if HAS_FERNET and _fernet is not None:
-            return _fernet.decrypt(raw.encode()).decode()
-        # Fallback decode
+            try:
+                return _fernet.decrypt(raw.encode()).decode()
+            except Exception:
+                # Fallback to old key (v6.1.0 data encrypted with SHA256 derivation)
+                if _fernet_old is not None:
+                    try:
+                        return _fernet_old.decrypt(raw.encode()).decode()
+                    except Exception:
+                        pass
+                raise
         key = hashlib.sha256(_FERNET_KEY).digest()
         combined = base64.urlsafe_b64decode(raw.encode())
         if len(combined) < 16:
             return raw
         payload = combined[:-8]
-        # mac = combined[-8:]  # verify optionally
         nonce_len = 8
         xored = payload[nonce_len:]
         plain = bytes(b ^ key[i % len(key)] for i, b in enumerate(xored))
@@ -355,14 +376,39 @@ if _env_officers:
     except:
         pass
 
-# Build salted hash map for constant-time verification
+# Build salted hash maps — bcrypt (v6.2.0) + legacy SHA256 fallback for zero-downtime migration
 _AUTH_SALT = hashlib.sha256(CYCLOPS_AUTH_SECRET.encode()).hexdigest()[:16]
 
 def _hash_passcode(passcode: str) -> str:
-    # PBKDF2-ish: sha256(salt + passcode) — lightweight without extra deps, still salted
     return hashlib.sha256((_AUTH_SALT + passcode).encode()).hexdigest()
 
 _HASHED_CREDENTIALS: Dict[str, str] = {k: _hash_passcode(v) for k, v in OFFICER_CREDENTIALS.items()}
+
+# bcrypt — slow, salted per-password, via passlib/bcrypt (added in v6.2.0 per user request "B + bcrypt yes")
+try:
+    import bcrypt as _bcrypt_lib
+    HAS_BCRYPT = True
+except ImportError:
+    try:
+        from passlib.hash import bcrypt as _bcrypt_lib  # type: ignore
+        HAS_BCRYPT = True
+    except ImportError:
+        HAS_BCRYPT = False
+        _bcrypt_lib = None
+
+_BCRYPT_HASHES: Dict[str, bytes] = {}
+if HAS_BCRYPT:
+    try:
+        for _oid, _pwd in OFFICER_CREDENTIALS.items():
+            # bcrypt.gensalt() is per-startup random, so verification is against this run's hash — safe for demo; prod would persist hash
+            _BCRYPT_HASHES[_oid] = _bcrypt_lib.hashpw(_pwd.encode(), _bcrypt_lib.gensalt())  # type: ignore
+        logger.info(f"Auth: bcrypt active for {len(_BCRYPT_HASHES)} officers (fallback SHA256 kept)")
+    except Exception as e:
+        logger.warning(f"bcrypt hash generation failed, falling back to SHA256: {e}")
+        HAS_BCRYPT = False
+        _BCRYPT_HASHES.clear()
+else:
+    logger.warning("Auth: bcrypt not available — using SHA256 fallback (pip install bcrypt passlib)")
 
 # Audit log (in-memory, last 200 events)
 _AUDIT_LOG: deque = deque(maxlen=200)
@@ -381,9 +427,20 @@ def audit_log(event: str, officer_id: str = "", ip: str = "", detail: str = ""):
     logger.info(f"AUDIT {event} officer={officer_id} ip={ip} detail={detail}")
 
 def verify_credentials(officer_id: str, passcode: str) -> bool:
+    # Try bcrypt first (slow, secure); fallback to legacy SHA256 for compatibility
+    if HAS_BCRYPT and officer_id in _BCRYPT_HASHES:
+        try:
+            # _bcrypt_lib.checkpw expects bytes
+            if hasattr(_bcrypt_lib, 'checkpw'):
+                return _bcrypt_lib.checkpw(passcode.encode(), _BCRYPT_HASHES[officer_id])  # type: ignore
+            else:
+                # passlib path
+                return _bcrypt_lib.verify(passcode, _BCRYPT_HASHES[officer_id].decode() if isinstance(_BCRYPT_HASHES[officer_id], bytes) else _BCRYPT_HASHES[officer_id])  # type: ignore
+        except Exception:
+            pass
+        # bcrypt failed — fall through to SHA256
     expected_hash = _HASHED_CREDENTIALS.get(officer_id)
     if not expected_hash:
-        # Dummy compare to prevent user-enumeration timing oracle
         dummy = _hash_passcode(passcode)
         hmac.compare_digest(dummy, dummy)
         return False
@@ -850,6 +907,24 @@ MOCK_WALLET_TRAILS = {
     ],
 }
 
+# ==================== LIVE SAMPLE DATASET (Option B) ====================
+# Thin live layer — ingested via scripts/ingest_sample.py (Etherscan/Blockstream) for judge-verifiable provenance.
+# Loaded at startup if data/live_sample.json exists; not required for demo (mock remains primary).
+from pathlib import Path as _Path
+LIVE_SAMPLE_DATA = None
+LIVE_SAMPLE_PATH = _Path(__file__).parent / "data" / "live_sample.json"
+try:
+    if LIVE_SAMPLE_PATH.exists():
+        with open(LIVE_SAMPLE_PATH, "r", encoding="utf-8") as f:
+            LIVE_SAMPLE_DATA = json.load(f)
+        cnt = LIVE_SAMPLE_DATA.get("count", 0) if isinstance(LIVE_SAMPLE_DATA, dict) else 0
+        logger.info(f"Live sample loaded: {cnt} provenance from {LIVE_SAMPLE_PATH} (ingest via scripts/ingest_sample.py)")
+    else:
+        logger.info("Live sample not found (run scripts/ingest_sample.py to generate data/live_sample.json)")
+except Exception as e:
+    logger.warning(f"Live sample load failed: {e}")
+    LIVE_SAMPLE_DATA = None
+
 # ==================== TRACER ENGINE ====================
 class BlockchainTracer:
     def __init__(self, eth_key: str = "", tron_key: str = ""):
@@ -1289,7 +1364,7 @@ def generate_pdf(case_data: dict) -> bytes:
 # ==================== FASTAPI APP ====================
 app = FastAPI(
     title='SIH26183 CryptoForensics Platform',
-    version='6.1.1',
+    version='6.2.0',
     description='Cyclops by CrySec - SIH26183. Auth-protected LEA forensics API. Hardened: AES-256 field encryption, rate limiting, security headers, hashed auth.'
 )
 
@@ -1346,6 +1421,9 @@ async def security_middleware(request: Request, call_next):
             content={"detail": f"Rate limit exceeded. Retry in {retry}s.", "retry_after": retry},
             headers={"Retry-After": str(retry)}
         )
+    # Per-request CSP nonce (v6.2.0) — adds 'nonce-…' alongside 'unsafe-inline' for Vite compat; strict mode can drop unsafe-inline later
+    csp_nonce = secrets.token_urlsafe(16)
+    request.state.csp_nonce = csp_nonce
     response = await call_next(request)
     # Security headers (OWASP recommended)
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -1353,7 +1431,15 @@ async def security_middleware(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "0"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.etherscan.io https://api.trongrid.io https://blockstream.info"
+    response.headers["X-Request-ID"] = secrets.token_hex(8)
+    response.headers["X-CSP-Nonce"] = csp_nonce
+    response.headers["Content-Security-Policy"] = (
+        f"default-src 'self'; "
+        f"script-src 'self' 'unsafe-inline' 'nonce-{csp_nonce}'; "
+        f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        f"font-src https://fonts.gstatic.com; img-src 'self' data: https:; "
+        f"connect-src 'self' https://api.etherscan.io https://api.trongrid.io https://blockstream.info"
+    )
     response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
     response.headers["Cache-Control"] = "no-store" if path.startswith("/api/auth") or path.startswith("/api/citizen") else "no-cache"
     return response
@@ -1691,16 +1777,23 @@ def logout(credentials: Optional[HTTPAuthorizationCredentials] = Depends(securit
 # ==================== CORE API ====================
 @app.get('/api/health')
 def health():
+    live_cnt = 0
+    live_generated = None
+    if isinstance(LIVE_SAMPLE_DATA, dict):
+        live_cnt = LIVE_SAMPLE_DATA.get("count", 0)
+        live_generated = LIVE_SAMPLE_DATA.get("generated_at")
     return {
         'status': 'healthy',
-        'version': '6.1.1-CRYSEC',
+        'version': '6.2.0-CRYSEC',
         'team': 'CrySec',
         'project': 'Cyclops',
         'sih_problem': 'SIH26183',
         'entities': len(KNOWN_ENTITIES),
         'auth_required': True,
         'security': {
-            'field_encryption': 'Fernet AES-128-CBC + HMAC' if HAS_FERNET else 'XOR-HMAC fallback',
+            'field_encryption': 'Fernet AES-128-CBC+HMAC (PBKDF2 100k)' if HAS_FERNET else 'XOR-HMAC fallback',
+            'key_derivation': 'PBKDF2-HMAC-SHA256 100k + salt, fallback SHA256 for decrypt compat',
+            'hashed_auth': 'bcrypt (per-password salt, slow) + SHA256 fallback' if HAS_BCRYPT else 'SHA256(salt+pass)',
             'encryption_at_rest': True,
             'rate_limiting': True,
             'security_headers': True,
@@ -1712,6 +1805,13 @@ def health():
             'live_stages': len(CASE_STAGES),
             'golden_hour_hours': 2,
             'poll_interval_seconds': 3,
+        },
+        'dataset': {
+            'live_sample_count': live_cnt,
+            'live_sample_generated_at': live_generated,
+            'live_sample_path': str(LIVE_SAMPLE_PATH) if LIVE_SAMPLE_PATH else None,
+            'has_live_sample': live_cnt > 0,
+            'ingest_script': 'scripts/ingest_sample.py (Option B, Etherscan/Blockstream, 5/sec)',
         },
         'ingestion_backends': {
             'ethereum': bool(ETHERSCAN_API_KEY),
@@ -1730,17 +1830,46 @@ def health():
 
 @app.get('/api/security/status', tags=["security"])
 def security_status():
+    live_cnt = 0
+    if isinstance(LIVE_SAMPLE_DATA, dict):
+        live_cnt = LIVE_SAMPLE_DATA.get("count", 0)
     return {
-        "field_encryption": "Fernet (AES-128-CBC + HMAC-SHA256)" if HAS_FERNET else "XOR-HMAC-SHA256 fallback",
-        "key_derivation": "SHA256(PBKDF2-like) from CYCLOPS_AUTH_SECRET",
+        "field_encryption": "Fernet AES-128-CBC+HMAC (PBKDF2 100k)" if HAS_FERNET else "XOR-HMAC fallback",
+        "key_derivation": "PBKDF2-HMAC-SHA256 100k with deterministic salt (fallback SHA256 for old enc:… decrypt)",
         "encrypted_fields": ["suspect_wallet", "citizen_phone", "custody_trail sensitive notes"],
         "at_rest": "ncrp_complaints.json stores enc: tokens, never plaintext sensitive fields alone",
-        "in_transit": "HTTPS + Security headers + Rate limiting + Input sanitization",
-        "hashed_auth": "SHA256(salt + passcode) with constant-time compare",
+        "in_transit": "HTTPS + Security headers + CSP nonce + Rate limiting + Input sanitization + X-Request-ID",
+        "hashed_auth": "bcrypt (per-password salt, slow) + SHA256 fallback (constant-time)" if HAS_BCRYPT else "SHA256(salt+passcode) with constant-time compare",
+        "has_bcrypt": HAS_BCRYPT,
         "audit_log_size": len(_AUDIT_LOG),
         "rate_limit": {"global": "60/min", "auth": "10/min", "trace": "20/min"},
-        "headers": ["X-Content-Type-Options: nosniff", "X-Frame-Options: DENY", "CSP", "HSTS", "Referrer-Policy"]
+        "headers": ["X-Content-Type-Options: nosniff", "X-Frame-Options: DENY", "CSP (nonce)", "HSTS", "Referrer-Policy", "X-CSP-Nonce", "X-Request-ID"],
+        "dataset": {"live_sample_count": live_cnt, "ingest": "scripts/ingest_sample.py --verify"},
     }
+
+@app.get('/api/dataset/live-sample', tags=["dataset"])
+def dataset_live_sample():
+    """Judge-verifiable live provenance (Option B). Returns data/live_sample.json if present, else 404 with instructions."""
+    if isinstance(LIVE_SAMPLE_DATA, dict) and LIVE_SAMPLE_DATA.get("count", 0) > 0:
+        return LIVE_SAMPLE_DATA
+    # Fallback: try to read file directly
+    try:
+        fp = _Path(__file__).parent / "data" / "live_sample.json"
+        if fp.exists():
+            with open(fp, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Live sample read failed: {e}")
+    raise HTTPException(status_code=404, detail="Live sample not yet generated. Run: python scripts/ingest_sample.py  (uses ETHERSCAN_API_KEY, writes data/live_sample.json with 5/sec Etherscan limit)")
+
+@app.get('/api/dataset/sample-provenance', tags=["dataset"])
+def dataset_sample_provenance():
+    """Smaller provenance-only view for judges (tx_hash + source_url)."""
+    if isinstance(LIVE_SAMPLE_DATA, dict):
+        prov = LIVE_SAMPLE_DATA.get("provenance", [])
+        if prov:
+            return {"count": len(prov), "provenance": prov[:30], "generated_at": LIVE_SAMPLE_DATA.get("generated_at")}
+    raise HTTPException(status_code=404, detail="No provenance yet. Run scripts/ingest_sample.py")
 
 @app.post('/api/security/encrypt-demo', tags=["security"])
 def encrypt_demo(payload: Dict[str, Any]):
@@ -2363,7 +2492,7 @@ def root():
         "docs": "/docs",
         "sih_problem": "SIH26183",
         "auth": "Bearer token required for /api/trace, /api/report/pdf, /api/forensics/*, /api/ml/* — obtain via POST /api/auth/login",
-        "version": "6.1.1",
+        "version": "6.2.0",
         "security": "AES-256 field encryption (Fernet), masked PII, rate limiting, security headers, hashed auth, audit logging",
         "citizen_portal": "Real-time tracking via GET /api/citizen/track/{docket_no} — 6-stage lifecycle, Golden Hour countdown, encrypted at rest",
         "new_in_6_1": ["Field-level AES encryption for wallet/phone", "Citizen real-time timeline (poll every 3s)", "Rate limiting (60/min, 10/min auth)", "Security headers (CSP, HSTS, nosniff)", "Hashed credentials + audit log", "Input sanitization (XSS/stripper)", "CORS allowlist + body-size guard"]
