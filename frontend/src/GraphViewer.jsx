@@ -2131,21 +2131,21 @@ Cyber Crime Division`;
                                 <div className="ledger-orb" style={{ background: 'linear-gradient(135deg, #f2e8d4, #e8dcc3)', borderColor: '#d9bd83', color: '#8a5a12' }}>✎</div>
                             </div>
                             <div className="ledger-body">
-                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.2.0</div>
+                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.2.1</div>
                                 <h2>Patch Notes — Complete & Concise</h2>
                                 <p>
-                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. Tap for live dataset + bcrypt/PBKDF2 hardening.
+                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. v6.2.1: same wallet → same graph, isolated → <strong>LOW</strong> not HIGH, strict ETH check.
                                 </p>
                                 <div className="check-list">
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Live dataset: 5 BTC LIVE_BLOCKSTREAM + Etherscan ingester</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Auth: bcrypt + PBKDF2 100k, CSP nonce</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Dossier: CoinDCX (3 hops) — no Unidentified</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Determinism: re-tracing 0x9999…e4a1 now identical</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Isolated wallets → LOW 12 + gray ring + neutral VASP</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Strict ETH 0x+40 hex (422) — truncated rejected</div>
                                 </div>
                             </div>
                             <div className="ledger-action">
                                 <div className="ledger-metric">
-                                    <div className="n" style={{ color:'#8a5a12' }}>10 Sept</div>
-                                    <div className="l">v6.2.0 · 20 fixes</div>
+                                    <div className="n" style={{ color:'#8a5a12' }}>15 Sept</div>
+                                    <div className="l">v6.2.1 · 23 fixes</div>
                                 </div>
                                 <motion.button className="btn btn-block" style={{ background:'#8a5a12', borderColor:'#8a5a12', color:'#fff' }} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}>
                                     View patch notes →
