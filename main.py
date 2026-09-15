@@ -871,13 +871,12 @@ def get_bitcoin_transactions(address: str) -> List[Dict[str, Any]]:
 
 # ==================== GUARANTEED HACKATHON MOCK DATASETS ====================
 MOCK_WALLET_TRAILS = {
+    # v6.2.2: linear 3-hop main trail only — dust branches 0.15/0.35 removed so backend graph == CHAIN_DATASETS 4 nodes (Image1 == Image2)
     '0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1': [
         {'hash': '0xaaa1111111111111111111111111111111111111111111111111111111111111', 'from': '0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1', 'to': '0x77771b3e5a4439c2d1b7642e4e112d8a1c905b12', 'value_eth': 4.85, 'token': 'ETH', 'timestamp': 1725600000},
-        {'hash': '0xaaa2222222222222222222222222222222222222222222222222222222222222', 'from': '0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1', 'to': '0x88884c5e6b1239f1c7d8894e3a221f7b2c918e34', 'value_eth': 0.15, 'token': 'ETH', 'timestamp': 1725600100}
     ],
     '0x77771b3e5a4439c2d1b7642e4e112d8a1c905b12': [
         {'hash': '0xbbb1111111111111111111111111111111111111111111111111111111111111', 'from': '0x77771b3e5a4439c2d1b7642e4e112d8a1c905b12', 'to': '0x55552c4d7e9921b3a8d9921c5f334a9b6d812c45', 'value_eth': 4.50, 'token': 'ETH', 'timestamp': 1725603600},
-        {'hash': '0xbbb2222222222222222222222222222222222222222222222222222222222222', 'from': '0x77771b3e5a4439c2d1b7642e4e112d8a1c905b12', 'to': '0x66661a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f', 'value_eth': 0.35, 'token': 'ETH', 'timestamp': 1725603700}
     ],
     '0x55552c4d7e9921b3a8d9921c5f334a9b6d812c45': [
         {'hash': '0xccc1111111111111111111111111111111111111111111111111111111111111', 'from': '0x55552c4d7e9921b3a8d9921c5f334a9b6d812c45', 'to': '0x28c6c06298d514db089934071355e5743bf21d60', 'value_eth': 4.45, 'token': 'ETH', 'timestamp': 1725607200}
@@ -1380,8 +1379,8 @@ def generate_pdf(case_data: dict) -> bytes:
 # ==================== FASTAPI APP ====================
 app = FastAPI(
     title='SIH26183 CryptoForensics Platform',
-    version='6.2.1',
-    description='Cyclops by CrySec - SIH26183. Auth-protected LEA forensics API. v6.2.1: deterministic re-trace + LOW for isolated wallets + strict ETH validation.'
+    version='6.2.2',
+    description='Cyclops by CrySec - SIH26183. Auth-protected LEA forensics API. v6.2.2: Image1==Image2 determinism (MOCK linear), Golden Hour hidden for LOW, ML isolated fix.'
 )
 
 # CORS — restricted but demo-friendly (explicit allowlist + localhost for dev)
@@ -1806,7 +1805,7 @@ def health():
         live_generated = LIVE_SAMPLE_DATA.get("generated_at")
     return {
         'status': 'healthy',
-        'version': '6.2.1-CRYSEC',
+        'version': '6.2.2-CRYSEC',
         'team': 'CrySec',
         'project': 'Cyclops',
         'sih_problem': 'SIH26183',

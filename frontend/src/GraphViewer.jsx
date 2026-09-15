@@ -309,10 +309,52 @@ const DEMO_STEPS = [
 // ==================== PATCH NOTES — complete & concise ====================
 const PATCH_NOTES = [
     {
-        version: 'v6.2.1 — Determinism & Empty-Trail LOW',
+        version: 'v6.2.2 — Image Fix: Name/Graph + Golden Hour hidden + ML LOW',
         date: '15 Sept 2026',
         badge: 'Current',
         tag: 'Fix',
+        summary: 'Image1==Image2: re-tracing 0x9999…e4a1 keeps Rajeshwari/Iyer + 4-node linear graph (MOCK dust removed); Golden Hour hidden for LOW/no hops; ML shows ISOLATED_NO_ACTIVITY 8.2% not EXTORTION.',
+        sections: [
+            {
+                title: 'Wallet Name/Graph Determinism — Image1 == Image2',
+                icon: '◎',
+                items: [
+                    'Bug: Run trace on 0x9999…e4a1 changed Active Docket to LIVE-9999A3/Subject and branched graph (5 edges, parallel mules) vs initial NCRP-2026-DEL-1092/Rajeshwari Iyer 4 nodes (Image1 vs Image2).',
+                    'Root: frontend handleTraceWallet always built LIVE-…/Subject and backend MOCK had dust branches 0x9999→0x8888 0.15 + 0x7777→0x6666 0.35, so backend 6 nodes vs CHAIN_DATASETS 4 nodes.',
+                    'Fix: backend MOCK_WALLET_TRAILS now linear only (0x9999→0x7777 4.85 →0x5555 4.50 →Binance) — 3 edges 4 nodes; frontend preserves knownDatasetMatch.caseMeta (Rajeshwari/Iyer, Aakash/Verma etc.) and golden_hour_seconds, and renders knownDatasetMatch.ml_features for known wallets. Re-tracing same known addr now byte-identical caseMeta + graph.',
+                ]
+            },
+            {
+                title: 'Golden Hour Hidden for LOW / No Hops',
+                icon: '◷',
+                items: [
+                    'Bug: Golden Hour response clock 01:37:11 shown even for isolated LOW wallets (Image3 1A1z… LOW 12 still showed 03:13:57), misleading judges.',
+                    'Fix: isIsolated = risk LOW || edges==0 || no primaryAttr; when true, Golden Hour block replaced with neutral panel “Golden Hour — no window: Isolated wallet — no outgoing hops. No VASP freeze required; monitoring only. Threat LOW.” Applies to ethereum/tron/bitcoin/multichain.',
+                ]
+            },
+            {
+                title: 'ML Heuristic for Isolated — No EXTORTION',
+                icon: '⬡',
+                items: [
+                    'Bug: Image3 isolated 1A1z… LOW 12 still showed ML EXTORTION_DIRECT_DEPOSIT 88.5%/76.4% (CHAI N_DATASETS.bitcoin high), wrong for no-hop.',
+                    'Fix: isIsolated true → mlData overridden to ISOLATED_NO_ACTIVITY (Rule-Based Fallback) 92.4% confidence, laundering 8.2%, features all NORMAL/CLEAR/No hops; VASP card also neutral “No VASP identified — monitoring only” not “Distance: hops · Confidence: %”.',
+                ]
+            },
+            {
+                title: 'Website + Paper Trail',
+                icon: '▣',
+                items: [
+                    'RiskRing gray <=20 already, .vasp-card.neutral, dossier PDF isolated row “No hops — isolated wallet”.',
+                    'Version bump 6.2.1→6.2.2 in main.py:1380 FastAPI + health, README, landing CHANGELOG · v6.2.2 15 Sept 24 fixes.',
+                ]
+            },
+        ]
+    },
+    {
+        version: 'v6.2.1 — Determinism & Empty-Trail LOW',
+        date: '15 Sept 2026',
+        badge: 'Previous',
+        tag: 'Previous',
         summary: 'Re-tracing same wallet now deterministic; isolated wallets show LOW not HIGH; strict ETH 0x+40 hex validation across all chains.',
         sections: [
             {
@@ -739,10 +781,10 @@ function PatchNotesModal({ open, onClose }) {
                             <div>
                                 <div style={{ fontSize: 11, letterSpacing: '0.08em', color: '#8b8d9c', fontWeight: 700 }}>CYCLOPS · SIH26183</div>
                                 <div style={{ fontSize: 18, fontWeight: 800, color: '#14140f', marginTop: 2, display:'flex', alignItems:'center', gap:8 }}>
-                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.2.1</span>
+                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.2.2</span>
                                     <span style={{ fontSize: 11, color:'#6d6f7d', fontWeight:600 }}>Complete & concise</span>
                                 </div>
-                                <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.2.1: same wallet → same graph, isolated → LOW.</div>
+                                <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.2.2: Image1==Image2, Golden Hour hidden for LOW, ML isolated.</div>
                             </div>
                             <button className="patchnotes-close" onClick={onClose} aria-label="Close patch notes">✕</button>
                         </div>
@@ -790,7 +832,7 @@ function PatchNotesModal({ open, onClose }) {
                             })}
                         </div>
                         <div className="patchnotes-foot">
-                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.2.1 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
+                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.2.2 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
                             <button className="btn btn-navy btn-sm" onClick={onClose}>Close</button>
                         </div>
                     </motion.div>
@@ -1297,23 +1339,46 @@ export default function GraphViewer() {
         setSelectedNode(null);
         setAuthError('');
 
+        // v6.2.2: preserve known demo victim/docket — fixes Image2 LIVE-Subject vs Image1 Rajeshwari mismatch
+        const knownDatasetMatch = Object.values(CHAIN_DATASETS).find(d => d.suspect_wallet.toLowerCase() === normalizedAddr.toLowerCase());
         let displayVictim = `Subject (${normalizedAddr.slice(0, 6)}...${normalizedAddr.slice(-4)})`;
         if (normalizedAddr.toLowerCase() === '0xd8da6bf26964af9d7eed9e03e53415d37aa96045') {
             displayVictim = 'Vitalik Buterin (vitalik.eth)';
         }
-
-        const updatedCaseMeta = {
-            docket_no: `LIVE-${normalizedAddr.slice(2, 8).toUpperCase()}`,
-            victim_name: displayVictim,
-            category: 'On-Demand Live Forensic Inquiry',
-            reported_loss: 'Live On-Chain Balance'
-        };
+        let updatedCaseMeta;
+        if (knownDatasetMatch) {
+            updatedCaseMeta = { ...knownDatasetMatch.caseMeta };
+            // keep chain tab and Golden Hour in sync with dataset
+            const matchedKey = Object.keys(CHAIN_DATASETS).find(k => CHAIN_DATASETS[k].suspect_wallet.toLowerCase() === normalizedAddr.toLowerCase());
+            if (matchedKey && matchedKey !== selectedChainKey) setSelectedChainKey(matchedKey);
+            if (knownDatasetMatch.golden_hour_seconds) setSecondsRemaining(knownDatasetMatch.golden_hour_seconds);
+        } else {
+            updatedCaseMeta = {
+                docket_no: `LIVE-${normalizedAddr.slice(2, 8).toUpperCase()}`,
+                victim_name: displayVictim,
+                category: 'On-Demand Live Forensic Inquiry',
+                reported_loss: 'Live On-Chain Balance'
+            };
+        }
 
         const buildIsolatedElements = (addr) => ({
             nodes: [{ data: { id: addr, label: `Suspect (${addr.slice(0,6)}...${addr.slice(-4)})`, full_address: addr, entity_type: 'SUSPECT', entity_name: 'Reported Suspect Wallet', tag: 'Isolated — No Outgoing Hops', risk_score: 12, hop_level: 0 }, position: { x: 400, y: 260 } }],
             edges: []
         });
         const lowRisk = { overall_risk_score: 12, risk_rating: 'LOW', detected_patterns: ['No outgoing transactions found — isolated wallet, no fund flow detected'], summary: 'No outgoing hops detected. Wallet shows no dispersion to exchanges/mixers. Monitor or request additional chain expansion before freeze.', peel_chain_detected: false, mixer_interaction: false, terminal_exchange_identified: false };
+        const isolatedML = {
+            model_name: 'No Activity — Isolated Wallet (Rule-Based Fallback)',
+            predicted_type: 'ISOLATED_NO_ACTIVITY',
+            confidence: 92.4,
+            laundering_probability: 8.2,
+            features: [
+                { name: 'Mean Holding Velocity', value: '—', normal: '> 24 hrs', status: 'NORMAL' },
+                { name: 'Balance Sweep Ratio', value: '0.0%', normal: '< 40%', status: 'NORMAL' },
+                { name: 'UTXO Co-Spend Cluster Size', value: '1 address', normal: '1 address', status: 'NORMAL' },
+                { name: 'CoinJoin / Wasabi Obfuscation', value: 'None Detected', normal: 'Clean', status: 'CLEAR' },
+                { name: 'Hop Distance to VASP', value: 'No hops', normal: '> 3 Hops', status: 'CLEAR' },
+            ]
+        };
 
         try {
             const headers = { 'Content-Type': 'application/json' };
@@ -1335,7 +1400,7 @@ export default function GraphViewer() {
                 setAuthError(String(msg));
                 // Show single-node LOW so graph doesn't keep old default HIGH
                 const iso = buildIsolatedElements(normalizedAddr);
-                setActiveDataset(prev => ({ ...(prev||{}), caseMeta: updatedCaseMeta, suspect_wallet: normalizedAddr, elements: iso, attributions: [], risk_assessment: lowRisk, custody_trail: [] }));
+                setActiveDataset(prev => ({ ...(prev||{}), caseMeta: updatedCaseMeta, suspect_wallet: normalizedAddr, elements: iso, attributions: [], risk_assessment: lowRisk, custody_trail: [], ml_features: isolatedML }));
                 renderCytoscapeGraph(iso);
                 setTracingLive(false);
                 return;
@@ -1363,6 +1428,14 @@ export default function GraphViewer() {
                         const effectiveAttributions = hasEdges ? (data.attributions || []) : [];
                         const effectiveCustody = hasEdges ? (data.custody_trail || []) : [];
                         if (data.data_provenance) setProvenance(data.data_provenance);
+                        // For isolated, prefer isolatedML; for known demo, preserve its ML so re-trace stays identical (Image1==Image2)
+                        const effectiveML = !hasEdges ? isolatedML : (knownDatasetMatch?.ml_features || data.ml_analysis ? {
+                            model_name: data.ml_analysis?.model_name || knownDatasetMatch?.ml_features?.model_name || 'Heuristic Classifier',
+                            predicted_type: data.ml_analysis?.predicted_type || knownDatasetMatch?.ml_features?.predicted_type || 'UNKNOWN',
+                            confidence: data.ml_analysis?.confidence || knownDatasetMatch?.ml_features?.confidence || 78,
+                            laundering_probability: knownDatasetMatch?.ml_features?.laundering_probability ?? (data.ml_analysis ? Math.round((data.ml_analysis.confidence || 0) * 0.95) : undefined),
+                            features: data.ml_analysis?.features || knownDatasetMatch?.ml_features?.features || []
+                        } : (knownDatasetMatch?.ml_features || isolatedML));
                         // Functional update — fixes stale activeDataset closure causing different graph on retype
                         setActiveDataset(prev => {
                             const base = prev || {};
@@ -1373,7 +1446,8 @@ export default function GraphViewer() {
                                 elements: effectiveElements,
                                 attributions: effectiveAttributions,
                                 risk_assessment: hasEdges ? (effectiveRisk) : lowRisk,
-                                custody_trail: effectiveCustody
+                                custody_trail: effectiveCustody,
+                                ml_features: hasEdges ? (effectiveML || base.ml_features) : isolatedML
                             };
                         });
                         renderCytoscapeGraph(effectiveElements);
@@ -1389,7 +1463,7 @@ export default function GraphViewer() {
 
         // Final fallback — never reuse old graph; show deterministic isolated LOW
         const isoFallback = buildIsolatedElements(normalizedAddr);
-        setActiveDataset(prev => ({ ...(prev||{}), caseMeta: updatedCaseMeta, suspect_wallet: normalizedAddr, elements: isoFallback, attributions: [], risk_assessment: lowRisk, custody_trail: [] }));
+        setActiveDataset(prev => ({ ...(prev||{}), caseMeta: updatedCaseMeta, suspect_wallet: normalizedAddr, elements: isoFallback, attributions: [], risk_assessment: lowRisk, custody_trail: [], ml_features: isolatedML }));
         renderCytoscapeGraph(isoFallback);
         setTracingLive(false);
     };
@@ -1810,7 +1884,23 @@ Cyber Crime Division`;
 
     const risk = activeDataset?.risk_assessment || { overall_risk_score: 12, risk_rating: 'LOW', detected_patterns: ['No outgoing transactions found — isolated wallet, no fund flow detected'], summary: 'No outgoing hops detected. Wallet shows no dispersion to exchanges/mixers.' };
     const primaryAttr = activeDataset?.attributions?.[0] || null;
-    const mlData = activeDataset.ml_features;
+    // v6.2.2: isolated wallet detection — used to hide Golden Hour, VASP freeze, and ML anomaly
+    const isIsolated = risk.risk_rating === 'LOW' || (activeDataset?.elements?.edges?.length === 0) || (!primaryAttr && (activeDataset?.custody_trail?.length === 0));
+    const mlDataRaw = activeDataset.ml_features;
+    // v6.2.2: override ML for isolated — no laundering signal, not EXTORTION_DIRECT_DEPOSIT
+    const mlData = isIsolated ? {
+        model_name: 'No Activity — Isolated Wallet (Rule-Based Fallback)',
+        predicted_type: 'ISOLATED_NO_ACTIVITY',
+        confidence: 92.4,
+        laundering_probability: 8.2,
+        features: [
+            { name: 'Mean Holding Velocity', value: '—', normal: '> 24 hrs', status: 'NORMAL' },
+            { name: 'Balance Sweep Ratio', value: '0.0%', normal: '< 40%', status: 'NORMAL' },
+            { name: 'UTXO Co-Spend Cluster Size', value: '1 address', normal: '1 address', status: 'NORMAL' },
+            { name: 'CoinJoin / Wasabi Obfuscation', value: 'None Detected', normal: 'Clean', status: 'CLEAR' },
+            { name: 'Hop Distance to VASP', value: 'No hops', normal: '> 3 Hops', status: 'CLEAR' },
+        ]
+    } : mlDataRaw;
     const currentStreamItem = LIVE_COMPLAINT_STREAM[streamIndex];
     // Dossier display: prefer backend dossierData when it has a meaningful trail; otherwise fall back to the activeDataset (local CHAIN_DATASETS) so Bitcoin/Multi-chain never show empty
     const displayDossier = useMemo(() => {
@@ -2131,21 +2221,21 @@ Cyber Crime Division`;
                                 <div className="ledger-orb" style={{ background: 'linear-gradient(135deg, #f2e8d4, #e8dcc3)', borderColor: '#d9bd83', color: '#8a5a12' }}>✎</div>
                             </div>
                             <div className="ledger-body">
-                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.2.1</div>
+                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.2.2</div>
                                 <h2>Patch Notes — Complete & Concise</h2>
                                 <p>
-                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. v6.2.1: same wallet → same graph, isolated → <strong>LOW</strong> not HIGH, strict ETH check.
+                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. v6.2.2: Image1==Image2 determinism, Golden Hour hidden for LOW, ML isolated.
                                 </p>
                                 <div className="check-list">
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Determinism: re-tracing 0x9999…e4a1 now identical</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Isolated wallets → LOW 12 + gray ring + neutral VASP</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Strict ETH 0x+40 hex (422) — truncated rejected</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Name/graph preserved: Rajeshwari Iyer on re-trace</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Golden Hour hidden + VASP neutral when LOW/no hops</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> ML → ISOLATED_NO_ACTIVITY 8.2% not EXTORTION</div>
                                 </div>
                             </div>
                             <div className="ledger-action">
                                 <div className="ledger-metric">
                                     <div className="n" style={{ color:'#8a5a12' }}>15 Sept</div>
-                                    <div className="l">v6.2.1 · 23 fixes</div>
+                                    <div className="l">v6.2.2 · 24 fixes</div>
                                 </div>
                                 <motion.button className="btn btn-block" style={{ background:'#8a5a12', borderColor:'#8a5a12', color:'#fff' }} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}>
                                     View patch notes →
@@ -2597,6 +2687,7 @@ Cyber Crime Division`;
 
                                 {/* LEFT SIDEBAR */}
                                 <div className="ws-sidebar" style={{ width: isMobile ? '100%' : 320, display: (!isMobile || mobileViewTab === 'threat') ? 'flex' : 'none' }}>
+                                    {!isIsolated ? (
                                     <div className={`golden-hour${goldenHourUrgent ? ' golden-hour-urgent' : ''}`}>
                                         <div className="golden-hour-row">
                                             <span className="golden-hour-label">Golden Hour response clock</span>
@@ -2604,6 +2695,12 @@ Cyber Crime Division`;
                                         </div>
                                         <div className="golden-hour-desc">Critical window to mandate a VASP debit freeze before liquidation.</div>
                                     </div>
+                                    ) : (
+                                    <div className="ws-panel" style={{ background: 'rgba(107,114,128,0.08)', border: '1px solid #3a3f52', borderLeft: '3px solid #6d6f7d' }}>
+                                        <div style={{ fontSize: 11, fontWeight: 800, color: '#9aa0b4', letterSpacing: '0.04em' }}>Golden Hour — no window</div>
+                                        <div style={{ fontSize: 11, color: '#8b8d9c', marginTop: 4, lineHeight: 1.45 }}>Isolated wallet — no outgoing hops detected. No VASP freeze required; monitoring only. Threat <strong style={{ color:'#6d6f7d' }}>LOW</strong>.</div>
+                                    </div>
+                                    )}
 
                                     <div className="ws-panel">
                                         <div className="k">Active docket · {activeDataset.caseMeta.docket_no}</div>
@@ -2621,6 +2718,7 @@ Cyber Crime Division`;
                                         </div>
                                     </div>
 
+                                    {!isIsolated && primaryAttr ? (
                                     <div className={`vasp-card ${primaryAttr?.category === 'CEX' ? 'hit' : 'warn'}`}>
                                         <div className="head" style={{ color: primaryAttr?.category === 'CEX' ? '#4caf7d' : '#e0876f' }}>Actionable VASP identified — Section 91 target</div>
                                         <div className="name">{primaryAttr?.entity_name}</div>
@@ -2640,6 +2738,14 @@ Cyber Crime Division`;
                                             Live: {formatISTTime(nowIST)} IST · One-click SAHYOG gateway
                                         </div>
                                     </div>
+                                    ) : (
+                                    <div className="vasp-card neutral">
+                                        <div className="head" style={{ color: '#9aa0b4' }}>No VASP identified — monitoring only</div>
+                                        <div className="name" style={{ color: '#e7e5dd', fontSize: 14 }}>Isolated wallet — no Section 91 target</div>
+                                        <div className="meta">No outgoing hops to exchange/mixer/bridge. Threat LOW — no debit freeze required at this time.</div>
+                                        <div className="contact" style={{ color: '#6d6f7d' }}><strong>Status:</strong> Monitoring · Expand max_depth if new hops appear</div>
+                                    </div>
+                                    )}
 
                                     {provenance && (
                                         <div style={{ fontSize: 11, padding: '9px 10px', borderRadius: 4, background: provenance.includes('DEMO_MOCK_DATA') ? 'rgba(217,164,65,0.12)' : 'rgba(76,175,125,0.12)', border: `1px solid ${provenance.includes('DEMO_MOCK_DATA') ? '#d9a441' : '#4caf7d'}`, color: provenance.includes('DEMO_MOCK_DATA') ? '#f0c56e' : '#4caf7d' }}>

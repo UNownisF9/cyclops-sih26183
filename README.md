@@ -1,7 +1,7 @@
 # PROJECT CYCLOPS — SIH26183
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v6.2.1-blue?style=for-the-badge" alt="version" />
+  <img src="https://img.shields.io/badge/version-v6.2.2-blue?style=for-the-badge" alt="version" />
   <img src="https://img.shields.io/badge/SIH-26183-orange?style=for-the-badge" alt="SIH26183" />
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="python" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="react" />
@@ -25,16 +25,16 @@
 
 ---
 
-## ✨ What's New in v6.2.1
+## ✨ What's New in v6.2.2
 
 | Area | Before | After |
 |---|---|---|
-| **Trace determinism** | Re-tracing `0x9999…e4a1` (delete+retype same addr) showed different graph — stale `activeDataset` closure + case/whitespace-sensitive cache | `main.py:934`/`994` `strip()+lower` normalization + `GraphViewer.jsx:1225` functional `setActiveDataset(prev=>...)` — same input → byte-identical graph, all chains |
-| **Empty trail** | Zero-hop wallet still rendered default multi-hop graph + `HIGH 72` `analyze_trace_risk:1208` false positive | `analyze_trace_risk:1188` early `edges==0` → `LOW 12` + isolated single-node graph, gray ring, `VASP neutral` — judges see no freeze when nothing to freeze |
-| **Validation** | `validate_wallet_format:187` lenient `len>=10` for `0x` — truncated `0x9999…e4a` (41 chars) still passed | Strict: `^0x[a-fA-F0-9]{40}$` ETH, `^T...33-34` Tron, BTC regex; `TraceRequest:1470` 422 `Invalid Ethereum wallet — expected 0x + 40 hex (42 total)` |
-| **Dataset/Security/Layout** | v6.2.0 features retained | `25 LIVE` provenance, `PBKDF2 100k` + `bcrypt`, topbar `1580/1480` wrap — unchanged |
+| **Name/graph (Image1==Image2)** | `0x9999…e4a1` initial `NCRP-2026-DEL-1092 Rajeshwari Iyer` 4 nodes, after `Run trace` became `LIVE-9999A3 Subject` 6 nodes branched (dust `0x8888`/`0x6666`) | `MOCK_WALLET_TRAILS` now linear 3 edges/4 nodes (`0x9999→0x7777→0x5555→Binance`); `handleTraceWallet` preserves `knownDatasetMatch.caseMeta` + `golden_hour_seconds` + `ml_features` — re-trace byte-identical |
+| **Golden Hour** | `01:37:11` + `03:13:57` shown even for `LOW 12` isolated (Image3 `1A1z…vfba` no hops) | `isIsolated = LOW \|\| edges==0` → Golden Hour hidden, neutral panel `Golden Hour — no window: Isolated wallet — no outgoing hops. No VASP freeze required.` |
+| **ML heuristic** | Isolated `LOW` still showed `EXTORTION_DIRECT_DEPOSIT 88.5%`/`76.4%` (Image3 `DBSCAN SYBIL`) | `isIsolated ? ISOLATED_NO_ACTIVITY 92.4%/8.2% NORMAL/CLEAR/No hops : original` — VASP card also `neutral` `No VASP identified — monitoring only` |
+| **Validation/Dataset** | v6.2.1 strict ETH kept | `25 LIVE`, `PBKDF2 100k+bcrypt` unchanged; landing `CHANGELOG · v6.2.2` `24 fixes` |
 
-> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.2.1`, `v6.2.0`, `v6.0.0` expandable sections.
+> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.2.2`, `v6.2.1`, `v6.0.0` expandable sections.
 
 ---
 
@@ -177,7 +177,7 @@ Citizen portal needs no login — file a complaint to get a docket like `NCRP-20
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/` | — | Service banner + `v6.2.1` feature list |
+| `GET` | `/` | — | Service banner + `v6.2.2` feature list |
 | `GET` | `/api/health` | — | Health, `entities:30`, `security` flags, `citizen_tracking` |
 | `GET` | `/api/security/status` | — | Field encryption algo, rate-limit, headers |
 | `POST` | `/api/security/encrypt-demo` | — | `{"text":"…"}` → `enc:…` demo |
@@ -233,10 +233,11 @@ curl -X POST http://localhost:8000/api/trace \
 
 ## 📝 Patch Notes
 
-Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.2.1` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
+Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.2.2` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
 
-- **v6.2.1 — Determinism & Empty-Trail LOW (15 Sept 2026, Current/Fix)** — Re-trace `0x9999…e4a1` deterministic + isolated wallet `LOW 12` not `HIGH 72` + strict ETH `0x+40 hex` 422.
-- **v6.2.0 — Live Dataset + Bcrypt (10 Sept 2026, Major)** — `25 LIVE` provenance (`Etherscan V2`/`Blockstream`), `PBKDF2 100k` + `bcrypt`, headers `nonce`+`X-Request-ID`.
+- **v6.2.2 — Image Fix: Name/Graph + Golden Hour hidden + ML LOW (15 Sept 2026, Current/Fix)** — `Image1==Image2` `Rajeshwari Iyer` preserved + `MOCK` linear `4 nodes` + Golden Hour hidden for `LOW` + `ISOLATED_NO_ACTIVITY 8.2%`.
+- **v6.2.1 — Determinism & Empty-Trail LOW (15 Sept 2026, Previous)** — Re-trace `0x9999…e4a1` deterministic + isolated wallet `LOW 12` not `HIGH 72` + strict ETH `0x+40 hex` 422.
+- **v6.2.0 — Live Dataset + Bcrypt (10 Sept 2026, Previous)** — `25 LIVE` provenance (`Etherscan V2`/`Blockstream`), `PBKDF2 100k` + `bcrypt`, headers `nonce`+`X-Request-ID`.
 - **v6.1.1 — Layout & Single-Source Notes (09 Sept 2026, Previous)** — Topbar `Court Dossier`/`IST` overlap fixed (wrap at `1580/1480px`, compress at `1520–1481`), patch-notes consolidated to one ledger entry.
 - **v6.1.0 — Secure & Live (09 Sept 2026, Previous)** — Security hardening, citizen 6-stage live tracker (`GET /api/citizen/track`), dossier/PDF fix (now `Deepak Chawla → CoinDCX (3 hops)` correct for Multi-chain, plus `1A1z…` BTC & `0x1111…`), forensics `BRIDGE→CEX`.
 - **v6.0.0 — CrySec (08 Sept 2026, Baseline)** — Multi-chain tracer, VASP registry, risk/ML, Cytoscape graph, dossier, NCRP queue. See in-app modal for full bullet list.
