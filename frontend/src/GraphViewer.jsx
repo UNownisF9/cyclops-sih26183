@@ -309,87 +309,71 @@ const DEMO_STEPS = [
 // ==================== PATCH NOTES — complete & concise ====================
 const PATCH_NOTES = [
     {
-        version: 'v6.2.2 — Image Fix: Name/Graph + Golden Hour hidden + ML LOW',
+        version: 'v6.2.3 — Landing: Github Repo + Report an Issue',
         date: '15 Sept 2026',
         badge: 'Current',
         tag: 'Fix',
-        summary: 'Image1==Image2: re-tracing 0x9999…e4a1 keeps Rajeshwari/Iyer + 4-node linear graph (MOCK dust removed); Golden Hour hidden for LOW/no hops; ML shows ISOLATED_NO_ACTIVITY 8.2% not EXTORTION.',
+        summary: 'Footer now has Github Repo link + Report an Issue pill → modal with category/email/description → dummy mailto:support@cyclops-i4c.gov.in (category-aware). SIH theme kept.',
         sections: [
             {
-                title: 'Wallet Name/Graph Determinism — Image1 == Image2',
-                icon: '◎',
-                items: [
-                    'Bug: Run trace on 0x9999…e4a1 changed Active Docket to LIVE-9999A3/Subject and branched graph (5 edges, parallel mules) vs initial NCRP-2026-DEL-1092/Rajeshwari Iyer 4 nodes (Image1 vs Image2).',
-                    'Root: frontend handleTraceWallet always built LIVE-…/Subject and backend MOCK had dust branches 0x9999→0x8888 0.15 + 0x7777→0x6666 0.35, so backend 6 nodes vs CHAIN_DATASETS 4 nodes.',
-                    'Fix: backend MOCK_WALLET_TRAILS now linear only (0x9999→0x7777 4.85 →0x5555 4.50 →Binance) — 3 edges 4 nodes; frontend preserves knownDatasetMatch.caseMeta (Rajeshwari/Iyer, Aakash/Verma etc.) and golden_hour_seconds, and renders knownDatasetMatch.ml_features for known wallets. Re-tracing same known addr now byte-identical caseMeta + graph.',
-                ]
-            },
-            {
-                title: 'Golden Hour Hidden for LOW / No Hops',
-                icon: '◷',
-                items: [
-                    'Bug: Golden Hour response clock 01:37:11 shown even for isolated LOW wallets (Image3 1A1z… LOW 12 still showed 03:13:57), misleading judges.',
-                    'Fix: isIsolated = risk LOW || edges==0 || no primaryAttr; when true, Golden Hour block replaced with neutral panel “Golden Hour — no window: Isolated wallet — no outgoing hops. No VASP freeze required; monitoring only. Threat LOW.” Applies to ethereum/tron/bitcoin/multichain.',
-                ]
-            },
-            {
-                title: 'ML Heuristic for Isolated — No EXTORTION',
+                title: 'Landing Footer — Github Repo',
                 icon: '⬡',
                 items: [
-                    'Bug: Image3 isolated 1A1z… LOW 12 still showed ML EXTORTION_DIRECT_DEPOSIT 88.5%/76.4% (CHAI N_DATASETS.bitcoin high), wrong for no-hop.',
-                    'Fix: isIsolated true → mlData overridden to ISOLATED_NO_ACTIVITY (Rule-Based Fallback) 92.4% confidence, laundering 8.2%, features all NORMAL/CLEAR/No hops; VASP card also neutral “No VASP identified — monitoring only” not “Distance: hops · Confidence: %”.',
+                    'Added: footer left “Github Repo” link → https://github.com/UNownisF9/cyclops-sih26183 (target _blank, navy underline) — always visible on landing, paper bg, ink-soft text, SIH theme paper/ink.',
+                    'Kept: CYCLOPS × CrySec · SIH26183 — Ministry of Home Affairs · I4C · Built for the Golden Hour — layout flex-wrap 12px gap, same as before.',
                 ]
             },
             {
-                title: 'Website + Paper Trail',
-                icon: '▣',
+                title: 'Report an Issue — New Interface',
+                icon: '✉',
                 items: [
-                    'RiskRing gray <=20 already, .vasp-card.neutral, dossier PDF isolated row “No hops — isolated wallet”.',
-                    'Version bump 6.2.1→6.2.2 in main.py:1380 FastAPI + health, README, landing CHANGELOG · v6.2.2 15 Sept 24 fixes.',
+                    'New: footer right pill “Report an Issue” (ink #14140F on paper, 999px, 11px 800) → modal (AnmimatePresence, patchnotes-overlay z95) — demo, no backend.',
+                    'Form: Category select (UI Bug / Trace-API Error / Performance / VASP-Risk / Feature Request / Other) + Email (optional) + Description textarea * (placeholder: steps, wallet, chain) — validates required.',
+                    'Submit: builds mailto:support@cyclops-i4c.gov.in?subject=[CYCLOPS SIH26183 v6.2.3] Issue: Category&body=Category, From, Page v6.2.3, Time ISO, Description — window.location.href + window.open, then shows “Report ready — opening your email client” with copyable dummy recipient and category/description preview.',
+                    'SIH theme: patchnotes-panel paper bg, ink text, rust accent optional, same modal as patch notes — consistent, judge-presentable.',
                 ]
             },
         ]
     },
     {
-        version: 'v6.2.1 — Determinism & Empty-Trail LOW',
+        version: 'v6.2.2 — Determinism & Isolation Hardening',
         date: '15 Sept 2026',
         badge: 'Previous',
-        tag: 'Previous',
-        summary: 'Re-tracing same wallet now deterministic; isolated wallets show LOW not HIGH; strict ETH 0x+40 hex validation across all chains.',
+        tag: 'Stable',
+        summary: 'Consolidated reliability release: deterministic re-trace for 0x9999…e4a1 (Image1==Image2, Rajeshwari Iyer preserved), strict ETH 0x+40 hex 422 validation, and isolated-wallet calibration (LOW 12, hidden Golden Hour, ISOLATED_NO_ACTIVITY 8.2%).',
         sections: [
             {
-                title: 'Deterministic Re-trace — Fixes 0x9999…e4a1 bug',
+                title: 'Deterministic Re-trace — Image1 == Image2',
                 icon: '◎',
                 items: [
-                    'Bug: tracing 0x9999a3b2e5f8841a0e889b41a91e1d092cb3e4a1 then deleting last 1 and retyping same address showed different graph. Cause: frontend handleTraceWallet used stale activeDataset closure + reused old elements on fallback, backend cache key was case/whitespace-sensitive.',
-                    'Fix: frontend GraphViewer.jsx:1224 handleTraceWallet now trims + lowercases 0x (normalizedAddr), functional setActiveDataset(prev=>...) not stale closure, validates ETH strictly before fetch; backend main.py:934 fetch_transactions_async + main.py:994 trace_fund_flow_async now strip+lower normalize, _tracer_cache key deterministic — same input → byte-identical graph every time (ethereum/tron/bitcoin/multichain).',
-                    'Verified: Re-tracing 0x9999…e4a1 ×5, case variants 0X9999…, whitespace 0x9999 … all render identical 3-hop Binance graph; truncated 0x9999…e4a still rejected.',
-                ]
-            },
-            {
-                title: 'No-hop → LOW (was HIGH) — Logic fix',
-                icon: '⬡',
-                items: [
-                    'Bug: wallets with zero outgoing hops (e.g., fresh/unknown Tron/BTC address) still showed default multi-hop graph and HIGH threat (score 72) — judges flag as false positive.',
-                    'Root: analyze_trace_risk:1187 fell through to else 72 HIGH when edges==0 and no VASP; frontend fallback rendered previous activeDataset.elements (old graph) not isolated node.',
-                    'Fix: main.py:1187 early return edges==0 && no CEX/MIXER/BRIDGE → score 12 rating LOW patterns ["No outgoing transactions found — isolated wallet, no fund flow detected"] summary "No outgoing hops... Monitor or expand max_depth/max_branches". Frontend builds single-node Suspicious isolated element (GraphViewer.jsx buildIsolatedElements), risk ring gray #6d6f7d (score<=20), VASP card neutral, custody trail empty, dossier fallback to LOW. Applies to all chains.',
-                    'Result: unknown Tron T9... or BTC bc1... now shows 1 node, LOW 12, Tron/BTC/Ethereum consistent — no default graph, no HIGH when nothing to freeze.',
+                    'Bug: Run trace on 0x9999…e4a1 showed LIVE-9999A3/Subject + 6-node branched graph (dust 0x8888 0.15 + 0x6666 0.35) vs initial NCRP-2026-DEL-1092 Rajeshwari Iyer 4 nodes; re-typing same address after delete gave different graph (stale closure + case-sensitive cache).',
+                    'Fix: backend MOCK_WALLET_TRAILS linear only (0x9999→0x7777 4.85 →0x5555 4.50 →Binance = 3 edges 4 nodes); frontend handleTraceWallet now trims+lowercases 0x (normalizedAddr), functional setActiveDataset, preserves knownDatasetMatch.caseMeta + golden_hour_seconds + ml_features; backend fetch_transactions_async + trace_fund_flow_async strip+lower normalize with deterministic _tracer_cache key — same input → byte-identical graph (ethereum/tron/bitcoin/multichain).',
+                    'Verified: 5x re-trace + case variants 0X9999… + whitespace + truncated 0x9999…e4a correctly rejected — all render identical flow.',
                 ]
             },
             {
                 title: 'Strict ETH Validation',
                 icon: '⬢',
                 items: [
-                    'Before: validate_wallet_format:187 accepted any len>=10 for 0x (lenient demo) — truncated 0x9999…e4a (41 chars) still hit /api/trace and returned fallback graph.',
-                    'After: _WALLET_ETH_RE ^0x[a-fA-F0-9]{40}$ strict for ETH, _WALLET_TRON_RE / _WALLET_BTC_RE strict for Tron/BTC; TraceRequest._clean_wallet:1470 now throws 422 "Invalid Ethereum wallet — expected 0x + 40 hex (42 chars total)" on mismatch; frontend pre-validates and shows inline authError before fetch; 422 response renders isolated LOW not old graph.',
+                    'Before: validate_wallet_format accepted len>=10 for 0x — truncated 0x9999…e4a (41 chars) still hit /api/trace and returned fallback graph.',
+                    'After: _WALLET_ETH_RE ^0x[a-fA-F0-9]{40}$ strict for ETH, Tron/BTC regex kept; TraceRequest._clean_wallet throws 422 "Invalid Ethereum wallet — expected 0x + 40 hex (42 chars total)"; frontend pre-validates and shows inline error before fetch; 422 renders isolated LOW not old graph.',
                 ]
             },
             {
-                title: 'Website Sync',
+                title: 'Isolated Wallet — LOW & Hidden Golden Hour + ML',
+                icon: '◷',
+                items: [
+                    'Bug: isolated wallets (e.g., 1A1z… LOW 12 with 0 hops) still showed Golden Hour 01:37:11/03:13:57, HIGH 72 ghost graph, and ML EXTORTION_DIRECT_DEPOSIT 88.5%/76.4% — false positive flagged by judges.',
+                    'Fix: isIsolated = risk LOW || edges==0 || no primaryAttr → score 12 LOW (analyze_trace_risk early return), single-node Sponsored isolated element (buildIsolatedElements), RiskRing gray #6d6f7d (score<=20), neutral VASP card "No VASP identified — monitoring only", neutral panel "Golden Hour — no window: Isolated wallet — no outgoing hops. No VASP freeze required; monitoring only. Threat LOW.", custody trail empty, dossier fallback to LOW; applies to all chains (ethereum/tron/bitcoin/multichain, also 1A1z… & T9...).',
+                    'Fix: ML overridden to ISOLATED_NO_ACTIVITY (Rule-Based Fallback) 92.4% confidence, laundering 8.2%, features NORMAL/CLEAR/No hops — no longer EXTORTION for no-hop wallets.',
+                ]
+            },
+            {
+                title: 'Verification & Paper Trail',
                 icon: '▣',
                 items: [
-                    'RiskRing:483 gray for score<=20, VASP card neutral .vasp-card.neutral, dossier/dossierTrail memos fallback to activeDataset only when hasTrail; workspace inspector shows empty-note "No outgoing hops — wallet isolated".',
-                    'Version bump 6.2.0→6.2.1 in main.py:1379 FastAPI + /api/health:1806, README patch table, topbar IST unchanged.',
+                    'RiskRing gray <=20, .vasp-card.neutral, dossier PDF isolated row "No hops — isolated wallet", inspector empty-note "No outgoing hops — wallet isolated".',
+                    'Version bump 6.2.0→6.2.2 in main.py FastAPI + health, README and landing CHANGELOG · v6.2.2 15 Sept (24 fixes) consolidated into v6.2.3 lineage.',
                 ]
             },
         ]
@@ -781,10 +765,10 @@ function PatchNotesModal({ open, onClose }) {
                             <div>
                                 <div style={{ fontSize: 11, letterSpacing: '0.08em', color: '#8b8d9c', fontWeight: 700 }}>CYCLOPS · SIH26183</div>
                                 <div style={{ fontSize: 18, fontWeight: 800, color: '#14140f', marginTop: 2, display:'flex', alignItems:'center', gap:8 }}>
-                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.2.2</span>
+                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.2.3</span>
                                     <span style={{ fontSize: 11, color:'#6d6f7d', fontWeight:600 }}>Complete & concise</span>
                                 </div>
-                                <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.2.2: Image1==Image2, Golden Hour hidden for LOW, ML isolated.</div>
+                                <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.2.3: Github Repo + Report an Issue (mailto).</div>
                             </div>
                             <button className="patchnotes-close" onClick={onClose} aria-label="Close patch notes">✕</button>
                         </div>
@@ -832,7 +816,7 @@ function PatchNotesModal({ open, onClose }) {
                             })}
                         </div>
                         <div className="patchnotes-foot">
-                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.2.2 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
+                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.2.3 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
                             <button className="btn btn-navy btn-sm" onClick={onClose}>Close</button>
                         </div>
                     </motion.div>
@@ -1189,6 +1173,12 @@ export default function GraphViewer() {
     // Command palette (Ctrl+K / Cmd+K)
     const [showCommandPalette, setShowCommandPalette] = useState(false);
     const [showPatchNotes, setShowPatchNotes] = useState(false);
+    // Report an Issue — dummy email to support team
+    const [showReportIssue, setShowReportIssue] = useState(false);
+    const [reportCategory, setReportCategory] = useState('UI Bug');
+    const [reportEmail, setReportEmail] = useState('');
+    const [reportDesc, setReportDesc] = useState('');
+    const [reportSent, setReportSent] = useState(false);
     useEffect(() => {
         const handler = (e) => {
             const isCombo = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
@@ -1973,6 +1963,97 @@ Cyber Crime Division`;
                 commands={paletteCommands}
             />
             <PatchNotesModal open={showPatchNotes} onClose={() => setShowPatchNotes(false)} />
+            {/* Report an Issue — dummy email to support team */}
+            <AnimatePresence>
+                {showReportIssue && (
+                    <motion.div
+                        className="patchnotes-overlay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowReportIssue(false)}
+                        style={{ zIndex: 95 }}
+                    >
+                        <motion.div
+                            className="patchnotes-panel"
+                            onClick={(e) => e.stopPropagation()}
+                            initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 340, damping: 28 }}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Report an issue"
+                            style={{ maxWidth: 520 }}
+                        >
+                            <div className="patchnotes-head">
+                                <div>
+                                    <div style={{ fontSize: 11, letterSpacing: '0.08em', color: '#8b8d9c', fontWeight: 700 }}>CYCLOPS · SUPPORT</div>
+                                    <div style={{ fontSize: 18, fontWeight: 800, color: '#14140f', marginTop: 2 }}>Report an Issue</div>
+                                    <div style={{ fontSize: 11, color: '#6d6f7d', marginTop: 4 }}>Tell us the category — we will email the support team (dummy: <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius: 4, border:'1px solid #dcd8cc' }}>support@cyclops-i4c.gov.in</code>)</div>
+                                </div>
+                                <button className="patchnotes-close" onClick={() => setShowReportIssue(false)} aria-label="Close report issue">✕</button>
+                            </div>
+                            <div className="patchnotes-body" style={{ gap: 14 }}>
+                                {reportSent ? (
+                                    <div style={{ background: '#e2ece3', border: '1px solid #a9c7b3', borderRadius: 8, padding: 16, textAlign: 'center' }}>
+                                        <div style={{ fontSize: 14, fontWeight: 800, color: '#21603f' }}>Report ready — opening your email client</div>
+                                        <div style={{ fontSize: 12, color: '#4a4a42', marginTop: 6, lineHeight: 1.5 }}>If no email client opened, copy this dummy recipient: <strong>support@cyclops-i4c.gov.in</strong> and paste the details below.</div>
+                                        <div style={{ marginTop: 12, fontSize: 11, color: '#6d6f7d', background: '#fff', border: '1px solid #dcd8cc', borderRadius: 6, padding: 10, textAlign: 'left', fontFamily: 'var(--font-mono)', wordBreak: 'break-word' }}>
+                                            <div><strong>Category:</strong> {reportCategory}</div>
+                                            <div><strong>From:</strong> {reportEmail || 'not provided'}</div>
+                                            <div style={{ marginTop: 6, whiteSpace: 'pre-wrap' }}><strong>Description:</strong> {reportDesc}</div>
+                                        </div>
+                                        <button className="btn btn-navy btn-sm" style={{ marginTop: 14 }} onClick={() => setShowReportIssue(false)}>Close</button>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const dummySupport = 'support@cyclops-i4c.gov.in';
+                                        const subject = encodeURIComponent(`[CYCLOPS SIH26183 v6.2.3] Issue: ${reportCategory}`);
+                                        const body = encodeURIComponent(`Category: ${reportCategory}\nFrom: ${reportEmail || 'anonymous'}\nPage: ${typeof window !== 'undefined' ? window.location.href : 'http://localhost:5173'}\nVersion: v6.2.3\nTime: ${new Date().toISOString()}\n\nDescription:\n${reportDesc || '(no description)'}\n`);
+                                        const mailto = `mailto:${dummySupport}?subject=${subject}&body=${body}`;
+                                        try { window.location.href = mailto; } catch {}
+                                        try { window.open(mailto, '_blank'); } catch {}
+                                        setReportSent(true);
+                                    }} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                        <div>
+                                            <label className="field-label">Category of issue *</label>
+                                            <select className="field-input" value={reportCategory} onChange={(e) => setReportCategory(e.target.value)} required>
+                                                <option value="UI Bug">UI Bug — layout / graph / colors</option>
+                                                <option value="Trace / API Error">Trace / API Error — 422/429/401</option>
+                                                <option value="Performance">Performance — slow trace / load</option>
+                                                <option value="Incorrect VASP / Risk">Incorrect VASP / Risk / ML</option>
+                                                <option value="Feature Request">Feature Request</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="field-label">Your email (optional)</label>
+                                            <input className="field-input" type="email" placeholder="you@college.edu" value={reportEmail} onChange={(e) => setReportEmail(e.target.value)} />
+                                        </div>
+                                        <div>
+                                            <label className="field-label">Describe the issue *</label>
+                                            <textarea className="field-input" placeholder="Steps to reproduce, wallet address, chain, screenshot notes..." value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} required rows={4} style={{ resize: 'vertical' }} />
+                                        </div>
+                                        <div style={{ fontSize: 11, color: '#6d6f7d', background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 6, padding: '8px 10px', lineHeight: 1.5 }}>
+                                            Dummy support email: <strong>support@cyclops-i4c.gov.in</strong> — clicking <em>Send via Email</em> opens your default mail client with a pre-filled email. No backend needed (hackathon demo).
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                                            <button type="button" className="btn btn-outline btn-sm" onClick={() => setShowReportIssue(false)}>Cancel</button>
+                                            <button type="submit" className="btn btn-navy btn-sm">Send via Email</button>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+                            <div className="patchnotes-foot" style={{ justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: 11, color: '#6d6f7d' }}>CYCLOPS SIH26183 · <a href="https://github.com/UNownisF9/cyclops-sih26183" target="_blank" rel="noopener noreferrer" style={{ color: '#223354', fontWeight: 700 }}>Github Repo</a> · support@cyclops-i4c.gov.in (dummy)</span>
+                                <span style={{ fontSize: 10, color: '#8a5a12', background: '#f2e8d4', border: '1px solid #d9bd83', padding: '2px 7px', borderRadius: 999, fontWeight: 700 }}>v6.2.3</span>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* TOP COMMAND BAR — hidden on the landing screen only */}
             {currentPortal !== 'landing' && (
@@ -2221,21 +2302,21 @@ Cyber Crime Division`;
                                 <div className="ledger-orb" style={{ background: 'linear-gradient(135deg, #f2e8d4, #e8dcc3)', borderColor: '#d9bd83', color: '#8a5a12' }}>✎</div>
                             </div>
                             <div className="ledger-body">
-                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.2.2</div>
+                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.2.3</div>
                                 <h2>Patch Notes — Complete & Concise</h2>
                                 <p>
-                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. v6.2.2: Image1==Image2 determinism, Golden Hour hidden for LOW, ML isolated.
+                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. v6.2.3: Github Repo link + Report an Issue (mailto).
                                 </p>
                                 <div className="check-list">
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Name/graph preserved: Rajeshwari Iyer on re-trace</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Golden Hour hidden + VASP neutral when LOW/no hops</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> ML → ISOLATED_NO_ACTIVITY 8.2% not EXTORTION</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Footer: Github Repo → github.com/UNownisF9/cyclops-sih26183</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> New interface: Report an Issue → support@cyclops-i4c.gov.in</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Category-aware email (UI Bug / Trace / VASP-Risk...)</div>
                                 </div>
                             </div>
                             <div className="ledger-action">
                                 <div className="ledger-metric">
                                     <div className="n" style={{ color:'#8a5a12' }}>15 Sept</div>
-                                    <div className="l">v6.2.2 · 24 fixes</div>
+                                    <div className="l">v6.2.3 · 25 fixes</div>
                                 </div>
                                 <motion.button className="btn btn-block" style={{ background:'#8a5a12', borderColor:'#8a5a12', color:'#fff' }} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}>
                                     View patch notes →
@@ -2245,18 +2326,22 @@ Cyber Crime Division`;
                         </motion.div>
                     </section>
 
-                    <footer style={{ borderTop: '1px solid var(--line)', padding: '20px max(5vw, 24px)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, background: 'var(--paper)', color: 'var(--ink-soft)', fontSize: 12 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <footer style={{ borderTop: '1px solid var(--line)', padding: '18px max(5vw, 24px)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, background: 'var(--paper)', color: 'var(--ink-soft)', fontSize: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                             <span style={{ fontWeight: 800, letterSpacing: '0.04em', color: 'var(--ink)' }}>CYCLOPS</span>
                             <span style={{ opacity: 0.4 }}>×</span>
                             <span style={{ fontWeight: 800, letterSpacing: '0.08em', color: '#a8391c' }}>CrySec</span>
                             <span style={{ opacity: 0.5 }}>·</span>
                             <span>SIH26183 — Smart India Hackathon 2026</span>
+                            <span style={{ opacity: 0.35 }}>|</span>
+                            <a href="https://github.com/UNownisF9/cyclops-sih26183" target="_blank" rel="noopener noreferrer" style={{ color: '#223354', fontWeight: 700, textDecoration: 'none', borderBottom: '1px solid #223354', paddingBottom: 1 }}>Github Repo</a>
                         </div>
-                        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                             <span>Ministry of Home Affairs · I4C</span>
                             <span style={{ opacity: 0.35 }}>|</span>
                             <span>Built for the Golden Hour</span>
+                            <span style={{ opacity: 0.35 }}>|</span>
+                            <button onClick={() => { setReportSent(false); setShowReportIssue(true); }} style={{ background: '#14140f', color: '#f4f2ec', border: '1px solid #14140f', borderRadius: 999, padding: '6px 14px', fontSize: 11, fontWeight: 800, cursor: 'pointer', letterSpacing: '0.02em' }}>Report an Issue</button>
                         </div>
                     </footer>
                 </motion.div>

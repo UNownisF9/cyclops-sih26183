@@ -1,7 +1,7 @@
 # PROJECT CYCLOPS — SIH26183
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v6.2.2-blue?style=for-the-badge" alt="version" />
+  <img src="https://img.shields.io/badge/version-v6.2.3-blue?style=for-the-badge" alt="version" />
   <img src="https://img.shields.io/badge/SIH-26183-orange?style=for-the-badge" alt="SIH26183" />
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="python" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="react" />
@@ -21,24 +21,23 @@
   <a href="#security--demo-grade-judge-verifiable">Security</a>
 </p>
 
-> **Hackathon prototype.** VASP registry, “ML” classifier and Section 91 notice are simplified demo implementations — see [Limitations](#limitations--disclaimer) before treating output as real evidence.
+> **Hackathon prototype.** VASP registry, "ML" classifier and Section 91 notice are simplified demo implementations — see [Limitations](#limitations--disclaimer) before treating output as real evidence.
 
 ---
 
-## **What's New in v6.2.2**
+## What's New in v6.2.3
 
 | Area | Before | After |
 |---|---|---|
-| **Name/graph (Image1==Image2)** | `0x9999…e4a1` initial `NCRP-2026-DEL-1092 Rajeshwari Iyer` 4 nodes, after `Run trace` became `LIVE-9999A3 Subject` 6 nodes branched (dust `0x8888`/`0x6666`) | `MOCK_WALLET_TRAILS` now linear 3 edges/4 nodes (`0x9999→0x7777→0x5555→Binance`); `handleTraceWallet` preserves `knownDatasetMatch.caseMeta` + `golden_hour_seconds` + `ml_features` — re-trace byte-identical |
-| **Golden Hour** | `01:37:11` + `03:13:57` shown even for `LOW 12` isolated (Image3 `1A1z…vfba` no hops) | `isIsolated = LOW \|\| edges==0` → Golden Hour hidden, neutral panel `Golden Hour — no window: Isolated wallet — no outgoing hops. No VASP freeze required.` |
-| **ML heuristic** | Isolated `LOW` still showed `EXTORTION_DIRECT_DEPOSIT 88.5%`/`76.4%` (Image3 `DBSCAN SYBIL`) | `isIsolated ? ISOLATED_NO_ACTIVITY 92.4%/8.2% NORMAL/CLEAR/No hops : original` — VASP card also `neutral` `No VASP identified — monitoring only` |
-| **Validation/Dataset** | v6.2.1 strict ETH kept | `25 LIVE`, `PBKDF2 100k+bcrypt` unchanged; landing `CHANGELOG · v6.2.2` `24 fixes` |
+| **Landing footer** | Footer only `CYCLOPS × CrySec · SIH26183 · Built for Golden Hour` — no repo, no feedback | Footer adds **`Github Repo`** link → `https://github.com/UNownisF9/cyclops-sih26183` (new) + **`Report an Issue`** pill → modal → dummy `support@cyclops-i4c.gov.in` mailto |
+| **Report an Issue** | No in-app feedback | New `Report an Issue` interface: **Category** (UI Bug / Trace-API / Performance / VASP-Risk / Feature Request / Other) + **Email** + **Description** → `mailto:support@cyclops-i4c.gov.in?subject=[CYCLOPS v6.2.3] Category` + `body: category, email, page v6.2.3, time` — opens default mail client (hackathon demo, no backend) |
+| **Determinism & Isolation (v6.2.2 Stable retained)** | Consolidated hardening: deterministic `0x9999…e4a1`, strict ETH validation, isolated `LOW` | `MOCK` linear `4 nodes` (`0x9999→0x7777→0x5555→Binance`), `isIsolated` hides Golden Hour, `ISOLATED_NO_ACTIVITY 8.2%` neutral VASP; landing `CHANGELOG · v6.2.3` `25 fixes` |
 
-> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.2.2`, `v6.2.1`, `v6.0.0` expandable sections.
+> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.2.3`, `v6.2.2`, `v6.0.0` expandable sections.
 
 ---
 
-## **Architecture**
+## Architecture
 
 ```
 ┌────────────────────────────┐         ┌──────────────────────────────┐
@@ -63,7 +62,7 @@
 
 ---
 
-## **Key Features**
+## Key Features
 
 - **Multi-chain tracing** — Ethereum (ETH + ERC-20 via Etherscan), Tron (TRC-20 USDT via TronGrid), Bitcoin (Blockstream Esplora, keyless). Deterministic `MOCK_WALLET_TRAILS` for offline demos.
 - **VASP registry** — 30 hardcoded CEX/bridge/mixer entries (Binance, CoinDCX, WazirX, Gate.io, Tornado, Polygon Bridge…) with FIU-IND status & compliance contact.
@@ -75,14 +74,14 @@
 
 ---
 
-## **Tech Stack**
+## Tech Stack
 
 **Backend** `Python 3.11` · `FastAPI` · `Uvicorn` · `Pydantic` · `requests`/`httpx` · `reportlab` · `cryptography` (Fernet) · `python-dotenv`  
 **Frontend** `React 19` · `Vite 8` · `Cytoscape 3.34` · `framer-motion 11` · plain CSS (`index.css`, `App.css`)
 
 ---
 
-## **Project Structure**
+## Project Structure
 
 ```
 .
@@ -104,7 +103,7 @@
 
 ---
 
-## **Quick Start (GitHub)**
+## Quick Start (GitHub)
 
 ### **Prerequisites**
 
@@ -173,11 +172,11 @@ Citizen portal needs no login — file a complaint to get a docket like `NCRP-20
 
 ---
 
-## **API Reference**
+## API Reference
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/` | — | Service banner + `v6.2.2` feature list |
+| `GET` | `/` | — | Service banner + `v6.2.3` feature list |
 | `GET` | `/api/health` | — | Health, `entities:30`, `security` flags, `citizen_tracking` |
 | `GET` | `/api/security/status` | — | Field encryption algo, rate-limit, headers |
 | `POST` | `/api/security/encrypt-demo` | — | `{"text":"…"}` → `enc:…` demo |
@@ -211,7 +210,7 @@ curl -X POST http://localhost:8000/api/trace \
 
 ---
 
-## **How the Trace Works**
+## How the Trace Works
 
 1. Starts at `suspect_address` hop 0.
 2. Calls `fetch_transactions_async()` — checks `MOCK_WALLET_TRAILS` first (deterministic demo), else live `Etherscan/TronGrid/Blockstream` (cached 5 min).
@@ -220,7 +219,7 @@ curl -X POST http://localhost:8000/api/trace \
 
 ---
 
-## **Security — Demo-grade, judge-verifiable**
+## Security — Demo-grade, judge-verifiable
 
 - **Field encryption** — `encrypt_field()`/`decrypt_field()` (`cryptography.fernet.Fernet`, **PBKDF2-HMAC-SHA256 100k** + deterministic salt, fallback `SHA256` for old `enc:…` decrypt); `Fernet.generate_key()` from `CYCLOPS_ENCRYPTION_KEY` else `CYCLOPS_AUTH_SECRET`; stored as `enc:…`, masked via `mask_address()`/`mask_phone()`; citizen masked, LEA decrypts (`GET /api/citizen/complaint/{docket}` with Bearer).
 - **Auth** — **bcrypt** per-password salt (`bcrypt.hashpw` + `gensalt()` per officer at startup, `HAS_BCRYPT` + `passlib` fallback) + **SHA256 fallback** for zero-downtime migration; `hmac.compare_digest` for SHA path; `Bearer` 8h token, `GET /api/audit/log` (200 events). See `main.py:360` `HAS_BCRYPT`.
@@ -231,12 +230,12 @@ curl -X POST http://localhost:8000/api/trace \
 
 ---
 
-## **Patch Notes**
+## Patch Notes
 
-Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.2.2` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
+Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.2.3` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
 
-- **v6.2.2 — Image Fix: Name/Graph + Golden Hour hidden + ML LOW (15 Sept 2026, Current/Fix)** — `Image1==Image2` `Rajeshwari Iyer` preserved + `MOCK` linear `4 nodes` + Golden Hour hidden for `LOW` + `ISOLATED_NO_ACTIVITY 8.2%`.
-- **v6.2.1 — Determinism & Empty-Trail LOW (15 Sept 2026, Previous)** — Re-trace `0x9999…e4a1` deterministic + isolated wallet `LOW 12` not `HIGH 72` + strict ETH `0x+40 hex` 422.
+- **v6.2.3 — Landing: Github Repo + Report an Issue (15 Sept 2026, Current/Fix)** — Footer `Github Repo` → `https://github.com/UNownisF9/cyclops-sih26183` + `Report an Issue` pill → modal (Category/Email/Description) → dummy `mailto:support@cyclops-i4c.gov.in` — category-aware, opens mail client.
+- **v6.2.2 — Determinism & Isolation Hardening (15 Sept 2026, Stable)** — Consolidated reliability release: deterministic re-trace for `0x9999…e4a1` (byte-identical `Rajeshwari Iyer` / `NCRP-2026-DEL-1092`, normalized `strip+lower` cache, functional dataset update, linear 4-node `MOCK`), strict ETH `0x+40 hex` 422 validation, and isolated-wallet calibration (`LOW 12` instead of `HIGH 72`, hidden Golden Hour, `ISOLATED_NO_ACTIVITY 8.2%` neutral VASP).
 - **v6.2.0 — Live Dataset + Bcrypt (10 Sept 2026, Previous)** — `25 LIVE` provenance (`Etherscan V2`/`Blockstream`), `PBKDF2 100k` + `bcrypt`, headers `nonce`+`X-Request-ID`.
 - **v6.1.1 — Layout & Single-Source Notes (09 Sept 2026, Previous)** — Topbar `Court Dossier`/`IST` overlap fixed (wrap at `1580/1480px`, compress at `1520–1481`), patch-notes consolidated to one ledger entry.
 - **v6.1.0 — Secure & Live (09 Sept 2026, Previous)** — Security hardening, citizen 6-stage live tracker (`GET /api/citizen/track`), dossier/PDF fix (now `Deepak Chawla → CoinDCX (3 hops)` correct for Multi-chain, plus `1A1z…` BTC & `0x1111…`), forensics `BRIDGE→CEX`.
@@ -246,7 +245,7 @@ For the complete concise list, open the app landings ledger card or `Ctrl+K` →
 
 ---
 
-## **Deployment**
+## Deployment
 
 - **Backend** → Render/Fly/VM: `pip install -r requirements.txt` then `uvicorn main:app --host 0.0.0.0 --port $PORT`. Set `ETHERSCAN_API_KEY`, `TRONGRID_API_KEY`, `CYCLOPS_AUTH_SECRET`, `CYCLOPS_ENCRYPTION_KEY`, `CYCLOPS_CORS_ORIGINS`.
 - **Frontend** → Vercel/Netlify: `cd frontend && npm install && npm run build` (`dist/`), env not required. Update `API_BASE` in `GraphViewer.jsx` if backend URL changes.
@@ -254,7 +253,7 @@ For the complete concise list, open the app landings ledger card or `Ctrl+K` →
 
 ---
 
-## **Troubleshooting**
+## Troubleshooting
 
 | Issue | Fix |
 |---|---|
@@ -267,7 +266,7 @@ For the complete concise list, open the app landings ledger card or `Ctrl+K` →
 
 ---
 
-## **Limitations & Disclaimer**
+## Limitations & Disclaimer
 
 - **VASP registry hardcoded** — only demo addresses (Binance, CoinDCX, WazirX, Gate, Tornado, Polygon Bridge) recognized; others → generic mule.
 - **“ML” heuristic, not trained** — thresholds on holding velocity, sweep ratio, peel asymmetry.
@@ -276,7 +275,7 @@ For the complete concise list, open the app landings ledger card or `Ctrl+K` →
 
 ---
 
-## **Team CrySec — SIH26183**
+## Team CrySec — SIH26183
 
 - **CYCLOPS** · Ministry of Home Affairs · Indian Cyber Crime Coordination Centre (I4C) · National Cybercrime Reporting Portal (NCRP) & SAHYOG Grid
 - Built for the Golden Hour — file to freeze before the trail goes cold.

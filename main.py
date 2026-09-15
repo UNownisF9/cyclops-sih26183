@@ -1379,8 +1379,8 @@ def generate_pdf(case_data: dict) -> bytes:
 # ==================== FASTAPI APP ====================
 app = FastAPI(
     title='SIH26183 CryptoForensics Platform',
-    version='6.2.2',
-    description='Cyclops by CrySec - SIH26183. Auth-protected LEA forensics API. v6.2.2: Image1==Image2 determinism (MOCK linear), Golden Hour hidden for LOW, ML isolated fix.'
+    version='6.2.3',
+    description='Cyclops by CrySec - SIH26183. Auth-protected LEA forensics API. v6.2.3: landing Github Repo + Report an Issue (mailto dummy support@cyclops-i4c.gov.in).'
 )
 
 # CORS — restricted but demo-friendly (explicit allowlist + localhost for dev)
@@ -1805,7 +1805,7 @@ def health():
         live_generated = LIVE_SAMPLE_DATA.get("generated_at")
     return {
         'status': 'healthy',
-        'version': '6.2.2-CRYSEC',
+        'version': '6.2.3-CRYSEC',
         'team': 'CrySec',
         'project': 'Cyclops',
         'sih_problem': 'SIH26183',
