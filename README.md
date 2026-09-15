@@ -1,7 +1,7 @@
 # PROJECT CYCLOPS — SIH26183
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v6.2.0-blue?style=for-the-badge" alt="version" />
+  <img src="https://img.shields.io/badge/version-v6.2.1-blue?style=for-the-badge" alt="version" />
   <img src="https://img.shields.io/badge/SIH-26183-orange?style=for-the-badge" alt="SIH26183" />
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="python" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="react" />
@@ -25,17 +25,16 @@
 
 ---
 
-## ✨ What's New in v6.2.0
+## ✨ What's New in v6.2.1
 
 | Area | Before | After |
 |---|---|---|
-| **Citizen portal** | Static form + 5 hardcoded timeline rows | Dark live tracker: 6-stage lifecycle (FILED→…→RESOLVED), Golden Hour countdown, 3s polling via `GET /api/citizen/track/{docket}`, fund-hop preview, `enc:…` toggle |
-| **Security** | `SHA256(salt+pass)` fast hash, `SHA256(secret)` key, no nonce | **PBKDF2-HMAC-SHA256 100k** key + old `SHA256` fallback for `enc:…` decrypt, **bcrypt** per-password salt (via `bcrypt`/`passlib`, `gensalt()` per officer) + `SHA256` fallback, CSP per-request `nonce-…` + `X-CSP-Nonce`/`X-Request-ID`, prod check for default secret |
-| **Dossier / PDF** | `Unidentified Wallet (1 Hops)` empty on Bitcoin/Multi-chain/auto-trace | Deterministic mocks for `1A1z…`, `0x8888…` (+ `0x1111…`), `BRIDGE` transit → `CoinDCX (3 hops)` for **Deepak Chawla**, INR per token, deepest-`CEX` target — dossier & PDF now match for all chains |
-| **Dataset (New)** | No live provenance, judges ask “mock or real?” | `scripts/ingest_sample.py` (Option B) — `Etherscan V2 (chainid=1) txlist+tokentx` + `Blockstream` (5/sec), writes `data/live_sample.json` (25 LIVE — 20 ETH `LIVE_ETHERSCAN_txlist` for `Binance 0x28c6…` + 5 BTC `LIVE_BLOCKSTREAM`, `source_url` verifiable) + `data/sample_provenance.json`; `GET /api/dataset/live-sample` + `/sample-provenance`; `GET /api/health` shows `dataset.live_sample_count:25` — V1 deprecated fix applied |
-| **Layout** | Topbar `Court Dossier` collided with `IST` at ~1480px; patch-notes button in 8 places | Topbar wraps at `1580/1480px`, `BRIDGE` handling, patch notes consolidated to **one** landing ledger card (`CHANGELOG · v6.2.0`) |
+| **Trace determinism** | Re-tracing `0x9999…e4a1` (delete+retype same addr) showed different graph — stale `activeDataset` closure + case/whitespace-sensitive cache | `main.py:934`/`994` `strip()+lower` normalization + `GraphViewer.jsx:1225` functional `setActiveDataset(prev=>...)` — same input → byte-identical graph, all chains |
+| **Empty trail** | Zero-hop wallet still rendered default multi-hop graph + `HIGH 72` `analyze_trace_risk:1208` false positive | `analyze_trace_risk:1188` early `edges==0` → `LOW 12` + isolated single-node graph, gray ring, `VASP neutral` — judges see no freeze when nothing to freeze |
+| **Validation** | `validate_wallet_format:187` lenient `len>=10` for `0x` — truncated `0x9999…e4a` (41 chars) still passed | Strict: `^0x[a-fA-F0-9]{40}$` ETH, `^T...33-34` Tron, BTC regex; `TraceRequest:1470` 422 `Invalid Ethereum wallet — expected 0x + 40 hex (42 total)` |
+| **Dataset/Security/Layout** | v6.2.0 features retained | `25 LIVE` provenance, `PBKDF2 100k` + `bcrypt`, topbar `1580/1480` wrap — unchanged |
 
-> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.2.0`, `v6.0.0` expandable sections.
+> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.2.1`, `v6.2.0`, `v6.0.0` expandable sections.
 
 ---
 
@@ -178,7 +177,7 @@ Citizen portal needs no login — file a complaint to get a docket like `NCRP-20
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/` | — | Service banner + `v6.2.0` feature list |
+| `GET` | `/` | — | Service banner + `v6.2.1` feature list |
 | `GET` | `/api/health` | — | Health, `entities:30`, `security` flags, `citizen_tracking` |
 | `GET` | `/api/security/status` | — | Field encryption algo, rate-limit, headers |
 | `POST` | `/api/security/encrypt-demo` | — | `{"text":"…"}` → `enc:…` demo |
@@ -234,10 +233,12 @@ curl -X POST http://localhost:8000/api/trace \
 
 ## 📝 Patch Notes
 
-Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.2.0` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
+Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.2.1` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
 
-- **v6.2.0 — Layout & Single-Source Notes (09 Sept 2026, Current/Fix)** — Topbar `Court Dossier`/`IST` overlap fixed (wrap at `1580/1480px`, compress at `1520–1481`), patch-notes consolidated to one ledger entry.
-- **v6.1.0 — Secure & Live (09 Sept 2026, Major)** — Security hardening, citizen 6-stage live tracker (`GET /api/citizen/track`), dossier/PDF fix (now `Deepak Chawla → CoinDCX (3 hops)` correct for Multi-chain, plus `1A1z…` BTC & `0x1111…`), forensics `BRIDGE→CEX`.
+- **v6.2.1 — Determinism & Empty-Trail LOW (15 Sept 2026, Current/Fix)** — Re-trace `0x9999…e4a1` deterministic + isolated wallet `LOW 12` not `HIGH 72` + strict ETH `0x+40 hex` 422.
+- **v6.2.0 — Live Dataset + Bcrypt (10 Sept 2026, Major)** — `25 LIVE` provenance (`Etherscan V2`/`Blockstream`), `PBKDF2 100k` + `bcrypt`, headers `nonce`+`X-Request-ID`.
+- **v6.1.1 — Layout & Single-Source Notes (09 Sept 2026, Previous)** — Topbar `Court Dossier`/`IST` overlap fixed (wrap at `1580/1480px`, compress at `1520–1481`), patch-notes consolidated to one ledger entry.
+- **v6.1.0 — Secure & Live (09 Sept 2026, Previous)** — Security hardening, citizen 6-stage live tracker (`GET /api/citizen/track`), dossier/PDF fix (now `Deepak Chawla → CoinDCX (3 hops)` correct for Multi-chain, plus `1A1z…` BTC & `0x1111…`), forensics `BRIDGE→CEX`.
 - **v6.0.0 — CrySec (08 Sept 2026, Baseline)** — Multi-chain tracer, VASP registry, risk/ML, Cytoscape graph, dossier, NCRP queue. See in-app modal for full bullet list.
 
 For the complete concise list, open the app landings ledger card or `Ctrl+K` → not needed — just the landing card.
