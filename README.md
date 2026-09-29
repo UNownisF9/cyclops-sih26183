@@ -30,11 +30,11 @@
 | Area | Before | After |
 |---|---|---|
 | **Landing footer** | Footer only `CYCLOPS × CrySec · SIH26183 · Built for Golden Hour` — no repo, no feedback | Footer adds **`Github Repo`** link → `https://github.com/UNownisF9/cyclops-sih26183` (new) + **`Report an Issue`** pill → modal → dummy `support@cyclops-i4c.gov.in` mailto |
-| **Report an Issue** | No in-app feedback | New `Report an Issue` interface: **Category** (UI Bug / Trace-API / Performance / VASP-Risk / Feature Request / Other) + **Email** + **Description** → `mailto:support@cyclops-i4c.gov.in?subject=[CYCLOPS v6.2.3] Category` + `body: category, email, page v6.2.3, time` — opens default mail client (hackathon demo, no backend) |
+| **Report an Issue** | No in-app feedback | New `Report an Issue` interface: **Category** (UI Bug / Trace-API / Performance / VASP-Risk / Feature Request / Other) + **Email** + **Description** → `mailto:support@cyclops-i4c.gov.in?subject=[CYCLOPS v6.3] Category` + `body: category, email, page v6.3, time` — opens default mail client (hackathon demo, no backend) |
 | **Trained ML (v6.3 Major)** | Heuristic thresholds (holding/sweep/peel) — fixed 94.6% | Trained `RandomForestClassifier` 150 trees, 9 features, `98.6% test / 98.9% CV` on 1050 rows — `models/cyclops_rf.pkl` auto-loaded, `/api/ml/info` & `/api/ml/classify` (Bearer) — UI & dossier now show RF confidence (e.g., MULE 92.8%) |
 | **Determinism & Isolation (v6.2.2 Stable retained)** | Consolidated hardening: deterministic `0x9999…e4a1`, strict ETH validation, isolated `LOW` | `MOCK` linear `4 nodes` (`0x9999→0x7777→0x5555→Binance`), `isIsolated` hides Golden Hour, `ISOLATED_NO_ACTIVITY 8.2%` neutral VASP; landing `CHANGELOG · v6.3` `25 fixes` |
 
-> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.2.3`, `v6.2.2`, `v6.0.0` expandable sections.
+> Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.3`, `v6.2.3`, `v6.2.2`, `v6.0.0` expandable sections.
 
 ---
 
