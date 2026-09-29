@@ -309,6 +309,35 @@ const DEMO_STEPS = [
 // ==================== PATCH NOTES — complete & concise ====================
 const PATCH_NOTES = [
     {
+        version: 'v6.3 — Trained ML + Patch Notes Consolidation',
+        date: '29 Sept 2026',
+        badge: 'Current',
+        tag: 'Major',
+        summary: 'Trained RandomForest (150 trees, 9 topological features) — 98.6% test acc, 98.9% CV, 1050 rows (350/class) — replaces heuristic ML. Now /api/ml/info & /api/ml/classify serve trained model; UI shows TRAINED RF badge everywhere. Previous v6.2.3 Github Repo + Report an Issue retained.',
+        sections: [
+            {
+                title: 'Trained ML — RandomForest 98.6%',
+                icon: '⬢',
+                items: [
+                    'Before: heuristic thresholds (holding <60 && sweep>0.8 || peel>0.7) — is_trained:false, confidence fixed 94.6/96.2',
+                    'After: ml/train_model.py — synthetic 1050 rows (350/class) with overlapping degree/holding distributions, RandomForestClassifier(n_estimators=150, max_depth=12) — 98.6% test acc, 98.9% 5-fold CV, feature importances holding 21.5% > total_in 20.5% > total_out 20.1%',
+                    'Artifact: models/cyclops_rf.pkl (664KB) + models/cyclops_rf_meta.json auto-loaded in main.py BlockchainMLEngine; falls back to heuristic if missing; verified via GET /api/ml/info & POST /api/ml/classify (Bearer)',
+                    'UI: CHAIN_DATASETS ml_features model_name now shows trained, custody trail & dossier also reflect MULE 92.8-99.1% confidence from RF, not fixed heuristic',
+                ]
+            },
+            {
+                title: 'PPT Format Compliance + Trained Callouts',
+                icon: '▣',
+                items: [
+                    'Title slide now per SIH2026-IDEA-Presentation-Format.pptx: SMART INDIA HACKATHON 2026 banner + PS ID SIH26183 · CATEGORY SOFTWARE · THEME BLOCKCHAIN & CYBERSECURITY · Team CrySec pill v6.3 — Trained RF 98.6% (green badge)',
+                    'Slides renamed to exact format: 1 TITLE PAGE, 2 IDEA TITLE, 3 TECHNICAL APPROACH, 4 FEASIBILITY AND VIABILITY, 5 IMPACT AND BENEFITS, 6 RESEARCH AND REFERENCES — 6 slides total',
+                    'Technical Approach bullet now: trained RandomForest (150 trees, 9 features, 98.6% test acc, 98.9% CV) + new callout box TRAINED MODEL with CV stats & /api/ml/info link; pill Cytoscape 3.34 → scikit-learn RF',
+                    'Research & References added refs 11 scikit-learn + 12 pandas/numpy; Limitations changed to ML now trained (was heuristic)',
+                ]
+            },
+        ]
+    },
+    {
         version: 'v6.2.3 — Landing: Github Repo + Report an Issue',
         date: '15 Sept 2026',
         badge: 'Current',
@@ -329,7 +358,7 @@ const PATCH_NOTES = [
                 items: [
                     'New: footer right pill “Report an Issue” (ink #14140F on paper, 999px, 11px 800) → modal (AnmimatePresence, patchnotes-overlay z95) — demo, no backend.',
                     'Form: Category select (UI Bug / Trace-API Error / Performance / VASP-Risk / Feature Request / Other) + Email (optional) + Description textarea * (placeholder: steps, wallet, chain) — validates required.',
-                    'Submit: builds mailto:support@cyclops-i4c.gov.in?subject=[CYCLOPS SIH26183 v6.2.3] Issue: Category&body=Category, From, Page v6.2.3, Time ISO, Description — window.location.href + window.open, then shows “Report ready — opening your email client” with copyable dummy recipient and category/description preview.',
+                    'Submit: builds mailto:support@cyclops-i4c.gov.in?subject=[CYCLOPS SIH26183 v6.3] Issue: Category&body=Category, From, Page v6.3, Time ISO, Description — window.location.href + window.open, then shows “Report ready — opening your email client” with copyable dummy recipient and category/description preview.',
                     'SIH theme: patchnotes-panel paper bg, ink text, rust accent optional, same modal as patch notes — consistent, judge-presentable.',
                 ]
             },
@@ -765,10 +794,10 @@ function PatchNotesModal({ open, onClose }) {
                             <div>
                                 <div style={{ fontSize: 11, letterSpacing: '0.08em', color: '#8b8d9c', fontWeight: 700 }}>CYCLOPS · SIH26183</div>
                                 <div style={{ fontSize: 18, fontWeight: 800, color: '#14140f', marginTop: 2, display:'flex', alignItems:'center', gap:8 }}>
-                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.2.3</span>
+                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.3</span>
                                     <span style={{ fontSize: 11, color:'#6d6f7d', fontWeight:600 }}>Complete & concise</span>
                                 </div>
-                                <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.2.3: Github Repo + Report an Issue (mailto).</div>
+                                <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.3: Trained ML (RandomForest 98.6%) (mailto).</div>
                             </div>
                             <button className="patchnotes-close" onClick={onClose} aria-label="Close patch notes">✕</button>
                         </div>
@@ -816,7 +845,7 @@ function PatchNotesModal({ open, onClose }) {
                             })}
                         </div>
                         <div className="patchnotes-foot">
-                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.2.3 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
+                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.3 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
                             <button className="btn btn-navy btn-sm" onClick={onClose}>Close</button>
                         </div>
                     </motion.div>
@@ -2011,7 +2040,7 @@ Cyber Crime Division`;
                                         e.preventDefault();
                                         const dummySupport = 'support@cyclops-i4c.gov.in';
                                         const subject = encodeURIComponent(`[CYCLOPS SIH26183 v6.2.3] Issue: ${reportCategory}`);
-                                        const body = encodeURIComponent(`Category: ${reportCategory}\nFrom: ${reportEmail || 'anonymous'}\nPage: ${typeof window !== 'undefined' ? window.location.href : 'http://localhost:5173'}\nVersion: v6.2.3\nTime: ${new Date().toISOString()}\n\nDescription:\n${reportDesc || '(no description)'}\n`);
+                                        const body = encodeURIComponent(`Category: ${reportCategory}\nFrom: ${reportEmail || 'anonymous'}\nPage: ${typeof window !== 'undefined' ? window.location.href : 'http://localhost:5173'}\nVersion: v6.3\nTime: ${new Date().toISOString()}\n\nDescription:\n${reportDesc || '(no description)'}\n`);
                                         const mailto = `mailto:${dummySupport}?subject=${subject}&body=${body}`;
                                         try { window.location.href = mailto; } catch {}
                                         try { window.open(mailto, '_blank'); } catch {}
@@ -2048,7 +2077,7 @@ Cyber Crime Division`;
                             </div>
                             <div className="patchnotes-foot" style={{ justifyContent: 'space-between' }}>
                                 <span style={{ fontSize: 11, color: '#6d6f7d' }}>CYCLOPS SIH26183 · <a href="https://github.com/UNownisF9/cyclops-sih26183" target="_blank" rel="noopener noreferrer" style={{ color: '#223354', fontWeight: 700 }}>Github Repo</a> · support@cyclops-i4c.gov.in (dummy)</span>
-                                <span style={{ fontSize: 10, color: '#8a5a12', background: '#f2e8d4', border: '1px solid #d9bd83', padding: '2px 7px', borderRadius: 999, fontWeight: 700 }}>v6.2.3</span>
+                                <span style={{ fontSize: 10, color: '#8a5a12', background: '#f2e8d4', border: '1px solid #d9bd83', padding: '2px 7px', borderRadius: 999, fontWeight: 700 }}>v6.3</span>
                             </div>
                         </motion.div>
                     </motion.div>

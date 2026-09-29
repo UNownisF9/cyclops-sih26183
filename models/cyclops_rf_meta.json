@@ -1,0 +1,37 @@
+{
+  "model_name": "RandomForestClassifier",
+  "n_estimators": 150,
+  "max_depth": 12,
+  "features": [
+    "in_degree",
+    "out_degree",
+    "total_in",
+    "total_out",
+    "holding_time_mins",
+    "peel_ratio",
+    "sweep_ratio",
+    "degree_total",
+    "in_out_ratio"
+  ],
+  "labels": [
+    "CEX_HOT_WALLET",
+    "MULE_INTERMEDIARY",
+    "PERSONAL_RETAIL_WALLET"
+  ],
+  "accuracy_test": 0.9857,
+  "cv_mean": 0.9886,
+  "cv_std": 0.0065,
+  "n_samples": 1050,
+  "trained_at": "2026-09-29 22:36:50.818403",
+  "importances": {
+    "in_degree": 0.0756,
+    "out_degree": 0.0445,
+    "total_in": 0.2048,
+    "total_out": 0.2007,
+    "holding_time_mins": 0.2149,
+    "peel_ratio": 0.0246,
+    "sweep_ratio": 0.1005,
+    "degree_total": 0.1292,
+    "in_out_ratio": 0.0052
+  }
+}

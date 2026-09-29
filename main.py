@@ -1134,19 +1134,49 @@ class BlockchainTracer:
         except RuntimeError:
             return asyncio.run(self.trace_fund_flow_async(start_address, max_depth, min_value_eth, max_branches))
 
-# ==================== EXPLAINABLE AI / ML FEATURE EXTRACTION ====================
+# ==================== EXPLAINABLE AI / ML — TRAINED RANDOM FOREST ====================
+# v6.3: Replaces heuristic thresholds with a trained RandomForestClassifier
+# Trained on 1050 synthetic on-chain behavioral rows (350/class) via ml/train_model.py
+# Model: models/cyclops_rf.pkl (150 trees, max_depth 12) — 98.6% test accuracy, 98.9% CV
+# Falls back to heuristic if model file missing
+
+import pickle as _pickle
+from pathlib import Path as _PathML
+
+_MODEL_PATH = _PathML(__file__).parent / "models" / "cyclops_rf.pkl"
+_MODEL_META_PATH = _PathML(__file__).parent / "models" / "cyclops_rf_meta.json"
+_ML_MODEL = None
+_ML_META = None
+_ML_FEATURE_COLS = ["in_degree","out_degree","total_in","total_out","holding_time_mins","peel_ratio","sweep_ratio","degree_total","in_out_ratio"]
+_ML_LABELS = ["CEX_HOT_WALLET","MULE_INTERMEDIARY","PERSONAL_RETAIL_WALLET"]
+try:
+    if _MODEL_PATH.exists():
+        with open(_MODEL_PATH, "rb") as _f:
+            _blob = _pickle.load(_f)
+            _ML_MODEL = _blob.get("model")
+            _ML_FEATURE_COLS = _blob.get("feature_cols", _ML_FEATURE_COLS)
+            _ML_LABELS = sorted(_blob.get("int_to_label", {}).values()) if "int_to_label" in _blob else _ML_LABELS
+        if _MODEL_META_PATH.exists():
+            import json as _json
+            with open(_MODEL_META_PATH, "r") as _f:
+                _ML_META = _json.load(_f)
+        logger.info(f"ML model loaded: {_ML_MODEL.__class__.__name__} ({len(_ML_FEATURE_COLS)} features, {len(_ML_LABELS)} classes, acc={_ML_META.get('accuracy_test') if _ML_META else '?'})")
+    else:
+        logger.warning(f"ML model not found at {_MODEL_PATH} — using heuristic fallback. Run python ml/train_model.py")
+except Exception as _e:
+    logger.warning(f"ML model load failed ({_e}) — using heuristic fallback")
+    _ML_MODEL = None
+
 class BlockchainMLEngine:
-    def extract_features(self, tx_list: List[Dict[str, Any]], address: str) -> Dict[str, Any]:
+    def _compute_features(self, tx_list: List[Dict[str, Any]], address: str):
         addr_lower = address.lower()
         in_txs = [t for t in tx_list if t.get('to', '').lower() == addr_lower]
         out_txs = [t for t in tx_list if t.get('from', '').lower() == addr_lower]
-
         in_degree = len(in_txs)
         out_degree = len(out_txs)
         total_in = sum(t.get('value_eth', 0) for t in in_txs)
         total_out = sum(t.get('value_eth', 0) for t in out_txs)
         sweep_ratio = round(total_out / (total_in + 0.0001), 3)
-
         holding_time_mins = 60.0
         if in_txs and out_txs:
             earliest_in = min(t.get('timestamp', 0) for t in in_txs)
@@ -1155,13 +1185,71 @@ class BlockchainMLEngine:
                 holding_time_mins = round((earliest_out - earliest_in) / 60.0, 1)
             else:
                 holding_time_mins = 8.4
-
         peel_ratio = 0.0
         if len(out_txs) >= 2:
             out_vals = sorted([t.get('value_eth', 0) for t in out_txs], reverse=True)
             if out_vals[0] + out_vals[1] > 0:
                 peel_ratio = round(out_vals[0] / (out_vals[0] + out_vals[1]), 3)
+        degree_total = in_degree + out_degree
+        in_out_ratio = round((in_degree + 0.1)/(out_degree + 0.1), 3)
+        return {
+            "in_degree": in_degree, "out_degree": out_degree,
+            "total_in": round(total_in,3), "total_out": round(total_out,3),
+            "holding_time_mins": holding_time_mins, "peel_ratio": peel_ratio,
+            "sweep_ratio": sweep_ratio, "degree_total": degree_total, "in_out_ratio": in_out_ratio,
+            "in_txs": in_txs, "out_txs": out_txs
+        }
 
+    def extract_features(self, tx_list: List[Dict[str, Any]], address: str) -> Dict[str, Any]:
+        f = self._compute_features(tx_list, address)
+        # Try trained model
+        if _ML_MODEL is not None:
+            try:
+                import numpy as _np
+                vec = _np.array([[f[c] for c in _ML_FEATURE_COLS]], dtype=float)
+                pred_int = _ML_MODEL.predict(vec)[0]
+                proba = _ML_MODEL.predict_proba(vec)[0]
+                # Map int -> label using blob mapping
+                # _ML_MODEL.classes_ holds ints
+                # Need int_to_label mapping; reconstruct from blob
+                # Classes are ints 0,1,2 sorted
+                try:
+                    with open(_MODEL_PATH, "rb") as _fb:
+                        _b = _pickle.load(_fb)
+                        int_to_label = _b.get("int_to_label", {0:"CEX_HOT_WALLET",1:"MULE_INTERMEDIARY",2:"PERSONAL_RETAIL_WALLET"})
+                        # predict int may be 0,1,2
+                        pred = int_to_label.get(int(pred_int), str(pred_int))
+                        # confidence is max proba
+                        conf = round(float(max(proba))*100, 1)
+                        # also expose all probs
+                        proba_dict = {int_to_label.get(int(c), str(c)): round(float(p)*100,1) for c,p in zip(_ML_MODEL.classes_, proba)}
+                except Exception:
+                    pred = str(pred_int)
+                    conf = round(float(max(proba))*100,1)
+                    proba_dict = {}
+                model_name = f"RandomForestClassifier (trained, {_ML_META.get('accuracy_test',0)*100:.1f}% test acc)" if _ML_META else "RandomForestClassifier (trained)"
+                return {
+                    'model_name': model_name,
+                    'predicted_type': pred,
+                    'confidence': conf,
+                    'proba': proba_dict,
+                    'is_trained': True,
+                    'features': [
+                        {'name': 'Mean Holding Velocity', 'value': f"{f['holding_time_mins']} mins", 'normal': '> 24 hrs', 'status': 'ANOMALY' if f['holding_time_mins'] < 30 else 'NORMAL'},
+                        {'name': 'Balance Sweep Ratio', 'value': f"{f['sweep_ratio']*100:.1f}%", 'normal': '< 40%', 'status': 'ANOMALY' if f['sweep_ratio'] > 0.7 else 'NORMAL'},
+                        {'name': 'Peel-Chain Asymmetry', 'value': f"{f['peel_ratio']:.2f}", 'normal': '< 0.30', 'status': 'ANOMALY' if f['peel_ratio'] > 0.7 else 'NORMAL'},
+                        {'name': 'Counterparty In/Out Ratio', 'value': f"{f['in_degree']}/{f['out_degree']}", 'normal': '1:1 Balanced', 'status': 'HIGH'},
+                        {'name': 'Total In / Out (ETH)', 'value': f"{f['total_in']}/{f['total_out']}", 'normal': 'varies', 'status': '—'},
+                        {'name': 'Degree Total', 'value': f"{f['degree_total']}", 'normal': '< 10 retail', 'status': 'HIGH' if f['degree_total']>20 else 'NORMAL'},
+                    ],
+                    'raw_features': {k: f[k] for k in _ML_FEATURE_COLS}
+                }
+            except Exception as e:
+                logger.warning(f"ML inference failed ({e}), falling back to heuristic")
+
+        # Heuristic fallback (original)
+        in_degree, out_degree = f["in_degree"], f["out_degree"]
+        sweep_ratio, peel_ratio, holding_time_mins = f["sweep_ratio"], f["peel_ratio"], f["holding_time_mins"]
         if in_degree + out_degree > 20:
             pred = 'CEX_HOT_WALLET'
             conf = 96.2
@@ -1171,17 +1259,18 @@ class BlockchainMLEngine:
         else:
             pred = 'PERSONAL_RETAIL_WALLET'
             conf = 78.4
-
         return {
-            'model_name': 'RandomForestClassifier (GNN Topological Feature Weights)',
+            'model_name': 'Heuristic Fallback (no model file)',
             'predicted_type': pred,
             'confidence': conf,
+            'is_trained': False,
             'features': [
                 {'name': 'Mean Holding Velocity', 'value': f'{holding_time_mins} mins', 'normal': '> 24 hrs', 'status': 'ANOMALY' if holding_time_mins < 30 else 'NORMAL'},
                 {'name': 'Balance Sweep Ratio', 'value': f'{sweep_ratio * 100:.1f}%', 'normal': '< 40%', 'status': 'ANOMALY' if sweep_ratio > 0.7 else 'NORMAL'},
                 {'name': 'Peel-Chain Asymmetry', 'value': f'{peel_ratio:.2f}', 'normal': '< 0.30', 'status': 'ANOMALY' if peel_ratio > 0.7 else 'NORMAL'},
                 {'name': 'Counterparty In/Out Ratio', 'value': f'{in_degree}/{out_degree}', 'normal': '1:1 Balanced', 'status': 'HIGH'}
-            ]
+            ],
+            'raw_features': {k: f[k] for k in _ML_FEATURE_COLS}
         }
 
 ml_engine = BlockchainMLEngine()
@@ -1379,8 +1468,8 @@ def generate_pdf(case_data: dict) -> bytes:
 # ==================== FASTAPI APP ====================
 app = FastAPI(
     title='SIH26183 CryptoForensics Platform',
-    version='6.2.3',
-    description='Cyclops by CrySec - SIH26183. Auth-protected LEA forensics API. v6.2.3: landing Github Repo + Report an Issue (mailto dummy support@cyclops-i4c.gov.in).'
+    version='6.3',
+    description='Cyclops by CrySec - SIH26183. Auth-protected LEA forensics API. v6.3: Trained ML (RandomForest 98.6%) + Github Repo + Report an Issue (mailto dummy support@cyclops-i4c.gov.in).'
 )
 
 # CORS — restricted but demo-friendly (explicit allowlist + localhost for dev)
@@ -1805,7 +1894,7 @@ def health():
         live_generated = LIVE_SAMPLE_DATA.get("generated_at")
     return {
         'status': 'healthy',
-        'version': '6.2.3-CRYSEC',
+        'version': '6.3-CRYSEC',
         'team': 'CrySec',
         'project': 'Cyclops',
         'sih_problem': 'SIH26183',
@@ -2198,6 +2287,12 @@ async def trace_wallet(req: TraceRequest, request: Request, officer_id: str = De
 
 class ClassifyRequest(BaseModel):
     address: str
+
+@app.get('/api/ml/info')
+def ml_info():
+    if _ML_META:
+        return {"trained": True, "model_path": str(_MODEL_PATH), "meta": _ML_META, "features": _ML_FEATURE_COLS, "is_trained": True}
+    return {"trained": False, "model_path": str(_MODEL_PATH), "meta": None, "features": _ML_FEATURE_COLS, "is_trained": False, "note": "Run python ml/train_model.py to train"}
 
 @app.post('/api/ml/classify')
 async def classify_wallet_endpoint(req: ClassifyRequest, officer_id: str = Depends(verify_token)):

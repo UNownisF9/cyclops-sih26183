@@ -8,3 +8,6 @@ reportlab
 cryptography
 bcrypt
 passlib[bcrypt]
+scikit-learn
+pandas
+numpy

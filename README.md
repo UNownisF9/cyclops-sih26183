@@ -1,7 +1,7 @@
 # PROJECT CYCLOPS — SIH26183
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v6.2.3-blue?style=for-the-badge" alt="version" />
+  <img src="https://img.shields.io/badge/version-v6.3-blue?style=for-the-badge" alt="version" />
   <img src="https://img.shields.io/badge/SIH-26183-orange?style=for-the-badge" alt="SIH26183" />
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="python" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="react" />
@@ -25,13 +25,14 @@
 
 ---
 
-## What's New in v6.2.3
+## What's New in v6.3
 
 | Area | Before | After |
 |---|---|---|
 | **Landing footer** | Footer only `CYCLOPS × CrySec · SIH26183 · Built for Golden Hour` — no repo, no feedback | Footer adds **`Github Repo`** link → `https://github.com/UNownisF9/cyclops-sih26183` (new) + **`Report an Issue`** pill → modal → dummy `support@cyclops-i4c.gov.in` mailto |
 | **Report an Issue** | No in-app feedback | New `Report an Issue` interface: **Category** (UI Bug / Trace-API / Performance / VASP-Risk / Feature Request / Other) + **Email** + **Description** → `mailto:support@cyclops-i4c.gov.in?subject=[CYCLOPS v6.2.3] Category` + `body: category, email, page v6.2.3, time` — opens default mail client (hackathon demo, no backend) |
-| **Determinism & Isolation (v6.2.2 Stable retained)** | Consolidated hardening: deterministic `0x9999…e4a1`, strict ETH validation, isolated `LOW` | `MOCK` linear `4 nodes` (`0x9999→0x7777→0x5555→Binance`), `isIsolated` hides Golden Hour, `ISOLATED_NO_ACTIVITY 8.2%` neutral VASP; landing `CHANGELOG · v6.2.3` `25 fixes` |
+| **Trained ML (v6.3 Major)** | Heuristic thresholds (holding/sweep/peel) — fixed 94.6% | Trained `RandomForestClassifier` 150 trees, 9 features, `98.6% test / 98.9% CV` on 1050 rows — `models/cyclops_rf.pkl` auto-loaded, `/api/ml/info` & `/api/ml/classify` (Bearer) — UI & dossier now show RF confidence (e.g., MULE 92.8%) |
+| **Determinism & Isolation (v6.2.2 Stable retained)** | Consolidated hardening: deterministic `0x9999…e4a1`, strict ETH validation, isolated `LOW` | `MOCK` linear `4 nodes` (`0x9999→0x7777→0x5555→Binance`), `isIsolated` hides Golden Hour, `ISOLATED_NO_ACTIVITY 8.2%` neutral VASP; landing `CHANGELOG · v6.3` `25 fixes` |
 
 > Full history is also **in-app**: landing `Patch Notes — Complete & Concise` ledger card → modal with `v6.2.3`, `v6.2.2`, `v6.0.0` expandable sections.
 
@@ -176,7 +177,7 @@ Citizen portal needs no login — file a complaint to get a docket like `NCRP-20
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/` | — | Service banner + `v6.2.3` feature list |
+| `GET` | `/` | — | Service banner + `v6.3` feature list |
 | `GET` | `/api/health` | — | Health, `entities:30`, `security` flags, `citizen_tracking` |
 | `GET` | `/api/security/status` | — | Field encryption algo, rate-limit, headers |
 | `POST` | `/api/security/encrypt-demo` | — | `{"text":"…"}` → `enc:…` demo |
@@ -232,8 +233,9 @@ curl -X POST http://localhost:8000/api/trace \
 
 ## Patch Notes
 
-Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.2.3` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
+Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.3` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
 
+- **v6.3 — Trained ML (29 Sept 2026, Current/Major)** — Trained `RandomForestClassifier` 150 trees, 9 features, `98.6% test / 98.9% CV` (1050 rows) → `models/cyclops_rf.pkl` + `GET /api/ml/info`, `POST /api/ml/classify`; UI now shows TRAINED RF badge & 92.8% ML confidence (was heuristic)
 - **v6.2.3 — Landing: Github Repo + Report an Issue (15 Sept 2026, Current/Fix)** — Footer `Github Repo` → `https://github.com/UNownisF9/cyclops-sih26183` + `Report an Issue` pill → modal (Category/Email/Description) → dummy `mailto:support@cyclops-i4c.gov.in` — category-aware, opens mail client.
 - **v6.2.2 — Determinism & Isolation Hardening (15 Sept 2026, Stable)** — Consolidated reliability release: deterministic re-trace for `0x9999…e4a1` (byte-identical `Rajeshwari Iyer` / `NCRP-2026-DEL-1092`, normalized `strip+lower` cache, functional dataset update, linear 4-node `MOCK`), strict ETH `0x+40 hex` 422 validation, and isolated-wallet calibration (`LOW 12` instead of `HIGH 72`, hidden Golden Hour, `ISOLATED_NO_ACTIVITY 8.2%` neutral VASP).
 - **v6.2.0 — Live Dataset + Bcrypt (10 Sept 2026, Previous)** — `25 LIVE` provenance (`Etherscan V2`/`Blockstream`), `PBKDF2 100k` + `bcrypt`, headers `nonce`+`X-Request-ID`.
