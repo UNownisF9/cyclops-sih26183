@@ -309,9 +309,28 @@ const DEMO_STEPS = [
 // ==================== PATCH NOTES — complete & concise ====================
 const PATCH_NOTES = [
     {
+        version: 'v6.4 — Train-Serve Matched ML + Honesty Guards',
+        date: '30 Sept 2026',
+        badge: 'Current',
+        tag: 'Major',
+        summary: 'Retrained RandomForest v2 (150 trees, 9 features) — 99.0% synthetic test, 99.2% CV, 1500 rows (500/class) — mirrors live _compute (sweep cap 5.0, holding 60/8.4 defaults, 0-in fresh-suspect + 1-in-1-out chain edge cases). Demo trail now MULE 100% (was 57.9%); empty wallets return INSUFFICIENT_DATA instead of forced MULE. Synthetic benchmark only, not real-world accuracy.',
+        sections: [
+            {
+                title: 'Retrained ML — RandomForest v2 99.0% (synthetic)',
+                icon: '⬢',
+                items: [
+                    'Before: v1 synth (1050 rows) missed live edge cases — 0-in fresh suspects exploded sweep to 48500, MULE demo only 57.9%, empty wallets forced MULE 54%',
+                    'After: ml/train_model.py v2 — 1500 rows (500/class), sweep capped 5.0 both sides, 0-in/1-in-1-out/hodler cases, 30% hard overlap — 99.0% test, 99.2% 5-fold CV, balanced 99.0%',
+                    'Artifact: models/cyclops_rf.pkl + models/cyclops_rf_meta.json (synthetic:true, per-class P/R/F1, confusion, data_hash) auto-loaded; /api/ml/info exposes honest meta',
+                    'Guards: main.py sweep cap 5.0 + INSUFFICIENT_DATA 0% on zero-tx addresses — no fake verdicts offline',
+                ]
+            },
+        ]
+    },
+    {
         version: 'v6.3 — Trained ML + Patch Notes Consolidation',
         date: '29 Sept 2026',
-        badge: 'Current',
+        badge: 'Previous',
         tag: 'Major',
         summary: 'Trained RandomForest (150 trees, 9 topological features) — 98.6% test acc, 98.9% CV, 1050 rows (350/class) — replaces heuristic ML. Now /api/ml/info & /api/ml/classify serve trained model; UI shows TRAINED RF badge everywhere. Previous v6.2.3 Github Repo + Report an Issue retained.',
         sections: [
@@ -794,10 +813,10 @@ function PatchNotesModal({ open, onClose }) {
                             <div>
                                 <div style={{ fontSize: 11, letterSpacing: '0.08em', color: '#8b8d9c', fontWeight: 700 }}>CYCLOPS · SIH26183</div>
                                 <div style={{ fontSize: 18, fontWeight: 800, color: '#14140f', marginTop: 2, display:'flex', alignItems:'center', gap:8 }}>
-                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.3</span>
+                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.4</span>
                                     <span style={{ fontSize: 11, color:'#6d6f7d', fontWeight:600 }}>Complete & concise</span>
                                 </div>
-                                <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.3: Trained ML (RandomForest 98.6%) (mailto).</div>
+                                <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.4: Matched ML v2 (RF 99.0% synthetic) (mailto).</div>
                             </div>
                             <button className="patchnotes-close" onClick={onClose} aria-label="Close patch notes">✕</button>
                         </div>
@@ -845,7 +864,7 @@ function PatchNotesModal({ open, onClose }) {
                             })}
                         </div>
                         <div className="patchnotes-foot">
-                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.3 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
+                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.4 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
                             <button className="btn btn-navy btn-sm" onClick={onClose}>Close</button>
                         </div>
                     </motion.div>
@@ -2039,8 +2058,8 @@ Cyber Crime Division`;
                                     <form onSubmit={(e) => {
                                         e.preventDefault();
                                         const dummySupport = 'support@cyclops-i4c.gov.in';
-                                        const subject = encodeURIComponent(`[CYCLOPS SIH26183 v6.3] Issue: ${reportCategory}`);
-                                        const body = encodeURIComponent(`Category: ${reportCategory}\nFrom: ${reportEmail || 'anonymous'}\nPage: ${typeof window !== 'undefined' ? window.location.href : 'http://localhost:5173'}\nVersion: v6.3\nTime: ${new Date().toISOString()}\n\nDescription:\n${reportDesc || '(no description)'}\n`);
+                                        const subject = encodeURIComponent(`[CYCLOPS SIH26183 v6.4] Issue: ${reportCategory}`);
+                                        const body = encodeURIComponent(`Category: ${reportCategory}\nFrom: ${reportEmail || 'anonymous'}\nPage: ${typeof window !== 'undefined' ? window.location.href : 'http://localhost:5173'}\nVersion: v6.4\nTime: ${new Date().toISOString()}\n\nDescription:\n${reportDesc || '(no description)'}\n`);
                                         const mailto = `mailto:${dummySupport}?subject=${subject}&body=${body}`;
                                         try { window.location.href = mailto; } catch {}
                                         try { window.open(mailto, '_blank'); } catch {}
@@ -2077,7 +2096,7 @@ Cyber Crime Division`;
                             </div>
                             <div className="patchnotes-foot" style={{ justifyContent: 'space-between' }}>
                                 <span style={{ fontSize: 11, color: '#6d6f7d' }}>CYCLOPS SIH26183 · <a href="https://github.com/UNownisF9/cyclops-sih26183" target="_blank" rel="noopener noreferrer" style={{ color: '#223354', fontWeight: 700 }}>Github Repo</a> · support@cyclops-i4c.gov.in (dummy)</span>
-                                <span style={{ fontSize: 10, color: '#8a5a12', background: '#f2e8d4', border: '1px solid #d9bd83', padding: '2px 7px', borderRadius: 999, fontWeight: 700 }}>v6.3</span>
+                                <span style={{ fontSize: 10, color: '#8a5a12', background: '#f2e8d4', border: '1px solid #d9bd83', padding: '2px 7px', borderRadius: 999, fontWeight: 700 }}>v6.4</span>
                             </div>
                         </motion.div>
                     </motion.div>
@@ -2228,7 +2247,7 @@ Cyber Crime Division`;
                                 transition={{ delay:1.1, duration:0.5 }}
                                 style={{ marginTop:18, display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}
                             >
-                                <span style={{ fontSize:11, fontWeight:800, letterSpacing:'0.08em', color:'#e0654a', background:'rgba(224,101,74,0.12)', border:'1px solid rgba(224,101,74,0.28)', padding:'4px 10px', borderRadius:999 }}>NEW IN v6.3 — Trained ML</span>
+                                <span style={{ fontSize:11, fontWeight:800, letterSpacing:'0.08em', color:'#e0654a', background:'rgba(224,101,74,0.12)', border:'1px solid rgba(224,101,74,0.28)', padding:'4px 10px', borderRadius:999 }}>NEW IN v6.4 — Matched ML v2</span>
                                 <span style={{ fontSize:11, color:'rgba(244,242,236,0.78)', display:'inline-flex', alignItems:'center', gap:6 }}><span style={{ width:7, height:7, background:'#4caf7d', borderRadius:'50%', display:'inline-block', boxShadow:'0 0 8px #4caf7d' }} /> Citizen live tracking (6 stages, 3s poll)</span>
                                 <span style={{ fontSize:11, color:'rgba(244,242,236,0.78)', display:'inline-flex', alignItems:'center', gap:6 }}><span>🔒</span> AES-128 field encryption</span>
                                 <span style={{ fontSize:11, color:'rgba(244,242,236,0.62)' }}>Rate-limited · CSP/HSTS · Audit-logged</span>
@@ -2331,21 +2350,21 @@ Cyber Crime Division`;
                                 <div className="ledger-orb" style={{ background: 'linear-gradient(135deg, #f2e8d4, #e8dcc3)', borderColor: '#d9bd83', color: '#8a5a12' }}>✎</div>
                             </div>
                             <div className="ledger-body">
-                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.3</div>
+                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.4</div>
                                 <h2>Patch Notes — Complete & Concise</h2>
                                 <p>
-                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. v6.3: Trained ML (RandomForest 98.6%) + Github Repo + Report an Issue.
+                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. v6.4: Matched ML v2 (RF 99.0% synthetic) + honesty guards.
                                 </p>
                                 <div className="check-list">
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Trained RF: 150 trees · 98.6% test acc · 98.9% CV · 1050 rows</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> New: /api/ml/info & /api/ml/classify (Bearer) — MULE 92.8%</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Matched RF v2: 150 trees · 99.0% test (synthetic) · 99.2% CV · 1500 rows</div>
+                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Demo trail MULE 100% · empty wallets INSUFFICIENT_DATA</div>
                                     <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> + Github Repo & Report an Issue (mailto)</div>
                                 </div>
                             </div>
                             <div className="ledger-action">
                                 <div className="ledger-metric">
-                                    <div className="n" style={{ color:'#8a5a12' }}>29 Sept</div>
-                                    <div className="l">v6.3 · Trained ML</div>
+                                    <div className="n" style={{ color:'#8a5a12' }}>30 Sept</div>
+                                    <div className="l">v6.4 · Matched ML v2</div>
                                 </div>
                                 <motion.button className="btn btn-block" style={{ background:'#8a5a12', borderColor:'#8a5a12', color:'#fff' }} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}>
                                     View patch notes →
@@ -3304,7 +3323,7 @@ Cyber Crime Division`}
                                     <div style={{ textAlign: 'right' }}>
                                         <div style={{ fontWeight: 'bold' }}>Investigating Officer (Cyber Crime PS)</div>
                                         <div>Indian Cyber Crime Coordination Centre (I4C)</div>
-                                        <div style={{ fontSize: 10, marginTop: 4, color: '#64748b' }}>Team CrySec · Cyclops v6.3 · Trained RF 98.6% · Risk: {dossierRisk} {provenance && provenance.includes('DEMO_MOCK_DATA') ? '· Demo' : '· Live'}</div>
+                                        <div style={{ fontSize: 10, marginTop: 4, color: '#64748b' }}>Team CrySec · Cyclops v6.4 · RF v2 99.0% synth · Risk: {dossierRisk} {provenance && provenance.includes('DEMO_MOCK_DATA') ? '· Demo' : '· Live'}</div>
                                         <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                                             <button
                                                 onClick={handleExportPDF}

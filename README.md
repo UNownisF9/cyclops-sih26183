@@ -1,7 +1,7 @@
 # PROJECT CYCLOPS — SIH26183
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v6.3-blue?style=for-the-badge" alt="version" />
+  <img src="https://img.shields.io/badge/version-v6.4-blue?style=for-the-badge" alt="version" />
   <img src="https://img.shields.io/badge/SIH-26183-orange?style=for-the-badge" alt="SIH26183" />
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="python" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="react" />
@@ -25,7 +25,14 @@
 
 ---
 
-## What's New in v6.3
+## What's New in v6.4
+
+| Area | Before | After |
+|---|---|---|
+| **Matched ML v2 (v6.4 Major)** | v1 synth (1050 rows) missed live edge cases — `0x9999` fresh-suspect sweep exploded to 48500, MULE demo only 57.9%, empty wallets forced MULE 54% | Retrained `RandomForestClassifier` 150 trees, 9 features, `99.0% synthetic test / 99.2% CV` on 1500 rows (500/class, sweep cap 5.0, 0-in/1-in-1-out/hodler cases) — `models/cyclops_rf.pkl` + honest meta (`synthetic:true`, per-class P/R/F1, confusion) — demo trail now MULE 100%, empty wallets `INSUFFICIENT_DATA` |
+| **Honesty guards** | Sweep uncapped, forced label on zero-tx | `main.py` sweep cap 5.0 (train-serve matched) + `INSUFFICIENT_DATA 0%` guard — no fake verdicts offline |
+
+## What's New in v6.3 (retained)
 
 | Area | Before | After |
 |---|---|---|
@@ -235,7 +242,8 @@ curl -X POST http://localhost:8000/api/trace \
 
 Patch notes are **single-sourced** in-app: landing `CHANGELOG · v6.3` ledger card → modal (also via footer on landing — no longer in topbar/forensics/citizen/dossier/intel to avoid crowding).
 
-- **v6.3 — Trained ML (29 Sept 2026, Current/Major)** — Trained `RandomForestClassifier` 150 trees, 9 features, `98.6% test / 98.9% CV` (1050 rows) → `models/cyclops_rf.pkl` + `GET /api/ml/info`, `POST /api/ml/classify`; UI now shows TRAINED RF badge & 92.8% ML confidence (was heuristic)
+- **v6.4 — Matched ML v2 + Honesty Guards (30 Sept 2026, Current/Major)** — Retrained `RandomForestClassifier` 150 trees, 9 features, `99.0% synthetic test / 99.2% CV` (1500 rows, 500/class, sweep cap 5.0) → `models/cyclops_rf.pkl` + honest `meta.json` (`synthetic:true`); demo trail MULE 100%; empty wallets `INSUFFICIENT_DATA`
+- **v6.3 — Trained ML (29 Sept 2026, Previous/Major)** — Trained `RandomForestClassifier` 150 trees, 9 features, `98.6% test / 98.9% CV` (1050 rows) → `models/cyclops_rf.pkl` + `GET /api/ml/info`, `POST /api/ml/classify`; UI now shows TRAINED RF badge & 92.8% ML confidence (was heuristic)
 - **v6.2.3 — Landing: Github Repo + Report an Issue (15 Sept 2026, Current/Fix)** — Footer `Github Repo` → `https://github.com/UNownisF9/cyclops-sih26183` + `Report an Issue` pill → modal (Category/Email/Description) → dummy `mailto:support@cyclops-i4c.gov.in` — category-aware, opens mail client.
 - **v6.2.2 — Determinism & Isolation Hardening (15 Sept 2026, Stable)** — Consolidated reliability release: deterministic re-trace for `0x9999…e4a1` (byte-identical `Rajeshwari Iyer` / `NCRP-2026-DEL-1092`, normalized `strip+lower` cache, functional dataset update, linear 4-node `MOCK`), strict ETH `0x+40 hex` 422 validation, and isolated-wallet calibration (`LOW 12` instead of `HIGH 72`, hidden Golden Hour, `ISOLATED_NO_ACTIVITY 8.2%` neutral VASP).
 - **v6.2.0 — Live Dataset + Bcrypt (10 Sept 2026, Previous)** — `25 LIVE` provenance (`Etherscan V2`/`Blockstream`), `PBKDF2 100k` + `bcrypt`, headers `nonce`+`X-Request-ID`.
@@ -271,7 +279,7 @@ For the complete concise list, open the app landings ledger card or `Ctrl+K` →
 ## Limitations & Disclaimer
 
 - **VASP registry hardcoded** — only demo addresses (Binance, CoinDCX, WazirX, Gate, Tornado, Polygon Bridge) recognized; others → generic mule.
-- **“ML” heuristic, not trained** — thresholds on holding velocity, sweep ratio, peel asymmetry.
+- **“ML” is a synthetic benchmark, not production evidence** — RF v2 trained on 1500 synthetic behavioral rows (99.0% test / 99.2% CV); real CEX/mule/retail chain labels needed before any real-world accuracy claim. Empty wallets return `INSUFFICIENT_DATA`.
 - **Mock fallback** — without keys or for unknown addresses, deterministic fake trails are used so UI never white-screens.
 - **PDF/Sec.91 notice are templates** — for hackathon demo, not vetted legal instruments. Report explicitly does not establish liability/ownership/intent — blockchain evidence + investigator review remain authoritative.
 

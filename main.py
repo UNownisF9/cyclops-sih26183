@@ -1135,10 +1135,10 @@ class BlockchainTracer:
             return asyncio.run(self.trace_fund_flow_async(start_address, max_depth, min_value_eth, max_branches))
 
 # ==================== EXPLAINABLE AI / ML — TRAINED RANDOM FOREST ====================
-# v6.3: Replaces heuristic thresholds with a trained RandomForestClassifier
-# Trained on 1050 synthetic on-chain behavioral rows (350/class) via ml/train_model.py
-# Model: models/cyclops_rf.pkl (150 trees, max_depth 12) — 98.6% test accuracy, 98.9% CV
-# Falls back to heuristic if model file missing
+# v6.4: Train-serve matched RandomForestClassifier (ml/train_model.py v2)
+# Trained on 1500 synthetic on-chain behavioral rows (500/class)
+# Model: models/cyclops_rf.pkl (150 trees, max_depth 12) — 99.0% test accuracy, 99.2% CV
+# Synthetic benchmark only (NOT real chain labels). Falls back to heuristic if model file missing
 
 import pickle as _pickle
 from pathlib import Path as _PathML
@@ -1176,7 +1176,11 @@ class BlockchainMLEngine:
         out_degree = len(out_txs)
         total_in = sum(t.get('value_eth', 0) for t in in_txs)
         total_out = sum(t.get('value_eth', 0) for t in out_txs)
-        sweep_ratio = round(total_out / (total_in + 0.0001), 3)
+        # v6.4 ML fix: cap sweep so fresh single-side wallets (total_in=0)
+        # don't explode to 48500 and go out-of-distribution vs training.
+        # Training (ml/train_model.py v2) uses the same 5.0 cap.
+        sweep_raw = total_out / (total_in + 0.0001)
+        sweep_ratio = round(min(sweep_raw, 5.0), 3)
         holding_time_mins = 60.0
         if in_txs and out_txs:
             earliest_in = min(t.get('timestamp', 0) for t in in_txs)
@@ -1202,6 +1206,26 @@ class BlockchainMLEngine:
 
     def extract_features(self, tx_list: List[Dict[str, Any]], address: str) -> Dict[str, Any]:
         f = self._compute_features(tx_list, address)
+        # v6.4 honesty guard: no transactions = insufficient data, don't force a label.
+        # (Offline CEX lookup without API keys returns empty; claiming MULE 54% would be fraudulent.)
+        if f["degree_total"] == 0 and f["total_in"] == 0 and f["total_out"] == 0:
+            return {
+                'model_name': 'RandomForestClassifier (trained, no-data guard)',
+                'predicted_type': 'INSUFFICIENT_DATA',
+                'confidence': 0.0,
+                'proba': {},
+                'is_trained': True,
+                'note': 'No transactions found for address (offline/demo without live API). No ML verdict.',
+                'features': [
+                    {'name': 'Mean Holding Velocity', 'value': "n/a", 'normal': '> 24 hrs', 'status': '—'},
+                    {'name': 'Balance Sweep Ratio', 'value': "n/a", 'normal': '< 40%', 'status': '—'},
+                    {'name': 'Peel-Chain Asymmetry', 'value': "n/a", 'normal': '< 0.30', 'status': '—'},
+                    {'name': 'Counterparty In/Out Ratio', 'value': "0/0", 'normal': '1:1 Balanced', 'status': '—'},
+                    {'name': 'Total In / Out (ETH)', 'value': "0/0", 'normal': 'varies', 'status': '—'},
+                    {'name': 'Degree Total', 'value': "0", 'normal': '< 10 retail', 'status': '—'},
+                ],
+                'raw_features': {k: f[k] for k in _ML_FEATURE_COLS}
+            }
         # Try trained model
         if _ML_MODEL is not None:
             try:
@@ -1468,8 +1492,8 @@ def generate_pdf(case_data: dict) -> bytes:
 # ==================== FASTAPI APP ====================
 app = FastAPI(
     title='SIH26183 CryptoForensics Platform',
-    version='6.3',
-    description='Cyclops by CrySec - SIH26183. Auth-protected LEA forensics API. v6.3: Trained ML (RandomForest 98.6%) + Github Repo + Report an Issue (mailto dummy support@cyclops-i4c.gov.in).'
+    version='6.4',
+    description='Cyclops by CrySec - SIH26183. Auth-protected LEA forensics API. v6.4: Train-serve matched ML (RandomForest 99.0% synthetic test / 99.2% CV, 1500 rows) + sweep-cap fix + INSUFFICIENT_DATA guard.'
 )
 
 # CORS — restricted but demo-friendly (explicit allowlist + localhost for dev)
@@ -1894,7 +1918,7 @@ def health():
         live_generated = LIVE_SAMPLE_DATA.get("generated_at")
     return {
         'status': 'healthy',
-        'version': '6.3-CRYSEC',
+        'version': '6.4-CRYSEC',
         'team': 'CrySec',
         'project': 'Cyclops',
         'sih_problem': 'SIH26183',
@@ -2608,7 +2632,7 @@ def root():
         "docs": "/docs",
         "sih_problem": "SIH26183",
         "auth": "Bearer token required for /api/trace, /api/report/pdf, /api/forensics/*, /api/ml/* — obtain via POST /api/auth/login",
-        "version": "6.2.0",
+        "version": "6.4",
         "security": "AES-256 field encryption (Fernet), masked PII, rate limiting, security headers, hashed auth, audit logging",
         "citizen_portal": "Real-time tracking via GET /api/citizen/track/{docket_no} — 6-stage lifecycle, Golden Hour countdown, encrypted at rest",
         "new_in_6_1": ["Field-level AES encryption for wallet/phone", "Citizen real-time timeline (poll every 3s)", "Rate limiting (60/min, 10/min auth)", "Security headers (CSP, HSTS, nosniff)", "Hashed credentials + audit log", "Input sanitization (XSS/stripper)", "CORS allowlist + body-size guard"]

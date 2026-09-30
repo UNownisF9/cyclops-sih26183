@@ -40,6 +40,28 @@ Thumbs.db
 *.tmp
 *.bak
 
+# Pitch decks & presentation artifacts (local only — never push to GitHub)
+*.pptx
+*.ppt
+*CYCLOPS*Pitch_Deck*
+*Pitch_Deck*
+SIH2026-IDEA-Presentation-Format.pptx
+PRESENTATION_SCRIPT*.pdf
+TEAM_PRESENTATION_SCRIPT*.pdf
+QA_PREP*.pdf
+CYCLOPS_SIH26183_PPT_Instructions.pdf
+document.pdf
+scripts/build_deck*.py
+scripts/extract_pptx.py
+scripts/render_eye_logo.py
+scripts/cyclops_eye_*.png
+scripts/cyclops_qr*.png
+
+# Local scratch
+.freebuff/
+backend.err.log
+backend.out.log
+
 # Word temp
 ~$*
 *.tmp

@@ -1,7 +1,10 @@
 {
   "model_name": "RandomForestClassifier",
+  "version": "v2-train-serve-matched",
   "n_estimators": 150,
   "max_depth": 12,
+  "min_samples_leaf": 2,
+  "random_state": 42,
   "features": [
     "in_degree",
     "out_degree",
@@ -18,20 +21,80 @@
     "MULE_INTERMEDIARY",
     "PERSONAL_RETAIL_WALLET"
   ],
-  "accuracy_test": 0.9857,
-  "cv_mean": 0.9886,
-  "cv_std": 0.0065,
-  "n_samples": 1050,
-  "trained_at": "2026-09-29 22:36:50.818403",
+  "sweep_cap": 5.0,
+  "accuracy_test": 0.99,
+  "balanced_accuracy_test": 0.99,
+  "cv_mean": 0.992,
+  "cv_std": 0.004,
+  "cv_folds": [
+    0.99,
+    0.9867,
+    0.99,
+    0.9967,
+    0.9967
+  ],
+  "per_class": {
+    "CEX_HOT_WALLET": {
+      "precision": 0.9802,
+      "recall": 0.99,
+      "f1": 0.9851,
+      "support": 100
+    },
+    "MULE_INTERMEDIARY": {
+      "precision": 0.9901,
+      "recall": 1.0,
+      "f1": 0.995,
+      "support": 100
+    },
+    "PERSONAL_RETAIL_WALLET": {
+      "precision": 1.0,
+      "recall": 0.98,
+      "f1": 0.9899,
+      "support": 100
+    }
+  },
+  "confusion_matrix": [
+    [
+      99,
+      1,
+      0
+    ],
+    [
+      0,
+      100,
+      0
+    ],
+    [
+      2,
+      0,
+      98
+    ]
+  ],
+  "confusion_labels": [
+    "CEX_HOT_WALLET",
+    "MULE_INTERMEDIARY",
+    "PERSONAL_RETAIL_WALLET"
+  ],
+  "n_samples": 1500,
+  "n_per_class": 500,
+  "test_size": 0.2,
+  "data_source": "synthetic-behavioral-v2 (NOT real chain labels)",
+  "synthetic": true,
+  "seed": 42,
+  "data_hash": "9c49904ca0939b2d",
+  "train_serve_note": "Synth mirrors main.py _compute_features incl. sweep cap 5.0, holding defaults 60.0/8.4, peel 0.0 for <2 outs, plus 0-in fresh-suspect and 1-in-1-out chain edge cases.",
+  "limitations": "Synthetic benchmark only \u2014 NOT real-world accuracy. Real CEX/mule/retail labels from chain needed for production claims. Use for demo triage, not evidence.",
+  "intended_use": "Hackathon demo triage ranking; investigator review authoritative.",
+  "trained_at": "2026-09-30 14:17:20.228094",
   "importances": {
-    "in_degree": 0.0756,
-    "out_degree": 0.0445,
-    "total_in": 0.2048,
-    "total_out": 0.2007,
-    "holding_time_mins": 0.2149,
-    "peel_ratio": 0.0246,
-    "sweep_ratio": 0.1005,
-    "degree_total": 0.1292,
-    "in_out_ratio": 0.0052
+    "in_degree": 0.0809,
+    "out_degree": 0.0564,
+    "total_in": 0.0468,
+    "total_out": 0.082,
+    "holding_time_mins": 0.2957,
+    "peel_ratio": 0.0428,
+    "sweep_ratio": 0.2294,
+    "degree_total": 0.1599,
+    "in_out_ratio": 0.0061
   }
 }
