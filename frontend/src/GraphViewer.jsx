@@ -42,7 +42,7 @@ function currentDateStr() {
         return new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-').toUpperCase();
     } catch {
         const d = new Date();
-        return `${String(d.getDate()).padStart(2,'0')}-${d.toLocaleString('en', {month:'short'}).toUpperCase()}-${d.getFullYear()}`;
+        return `${String(d.getDate()).padStart(2, '0')}-${d.toLocaleString('en', { month: 'short' }).toUpperCase()}-${d.getFullYear()}`;
     }
 }
 
@@ -313,7 +313,7 @@ const PATCH_NOTES = [
         date: '30 Sept 2026',
         badge: 'Current',
         tag: 'Major',
-        summary: 'Retrained RandomForest v2 (150 trees, 9 features) — 99.0% synthetic test, 99.2% CV, 1500 rows (500/class) — mirrors live _compute (sweep cap 5.0, holding 60/8.4 defaults, 0-in fresh-suspect + 1-in-1-out chain edge cases). Demo trail now MULE 100% (was 57.9%); empty wallets return INSUFFICIENT_DATA instead of forced MULE. Synthetic benchmark only, not real-world accuracy.',
+        summary: 'Retrained RandomForest v2 (150 trees, 9 features) — 99.0% synthetic test, 99.2% CV, 1500 rows (500/class) — mirrors live _compute (sweep cap 5.0, holding 60/8.4 defaults, 0-in fresh-suspect + 1-in-1-out chain edge cases). Demo trail now MULE 100% (was 57.9%); empty wallets return INSUFFICIENT_DATA instead of forced MULE. Report an Issue fixed: single mailto handoff (no blank tab / no gesture error) + Copy report clipboard fallback. Synthetic benchmark only, not real-world accuracy.',
         sections: [
             {
                 title: 'Retrained ML — RandomForest v2 99.0% (synthetic)',
@@ -323,6 +323,16 @@ const PATCH_NOTES = [
                     'After: ml/train_model.py v2 — 1500 rows (500/class), sweep capped 5.0 both sides, 0-in/1-in-1-out/hodler cases, 30% hard overlap — 99.0% test, 99.2% 5-fold CV, balanced 99.0%',
                     'Artifact: models/cyclops_rf.pkl + models/cyclops_rf_meta.json (synthetic:true, per-class P/R/F1, confusion, data_hash) auto-loaded; /api/ml/info exposes honest meta',
                     'Guards: main.py sweep cap 5.0 + INSUFFICIENT_DATA 0% on zero-tx addresses — no fake verdicts offline',
+                ]
+            },
+            {
+                title: 'Report an Issue — Fixed (blank tab / nothing sent)',
+                icon: '✉',
+                items: [
+                    'Bug: Send via Email opened a blank tab and did nothing — window.open(mailto, "_blank") fired after window.location.href, so Chrome raised "Not allowed to launch mailto:… because a user gesture is required" and the popup blocker swallowed the handler.',
+                    'Fix: single handoff — one window.location.href = mailto inside the submit gesture, window.open removed entirely (GraphViewer.jsx buildReport/submit).',
+                    'Fallback: Copy report button (form + success panel) puts To/Subject/body on the clipboard via navigator.clipboard.writeText with execCommand("copy") textarea fallback — works with no mail client configured.',
+                    'Success panel now shows the full pre-filled message (scrollable, mono) instead of only category/from/description.',
                 ]
             },
         ]
@@ -572,28 +582,28 @@ function CyclopsEmblem() {
 function ShieldCheckIcon({ size = 18 }) {
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M12 2.8L4.2 5.8V12.1C4.2 15.9 6.8 19.4 12 21.2C17.2 19.4 19.8 15.9 19.8 12.1V5.8L12 2.8Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" fill="none"/>
-            <path d="M8.8 12.2L11.2 14.6L15.8 9.1" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 2.8L4.2 5.8V12.1C4.2 15.9 6.8 19.4 12 21.2C17.2 19.4 19.8 15.9 19.8 12.1V5.8L12 2.8Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" fill="none" />
+            <path d="M8.8 12.2L11.2 14.6L15.8 9.1" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     );
 }
 function LockShieldIcon({ size = 18 }) {
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M12 2.8L4.2 5.8V12.1C4.2 15.9 6.8 19.4 12 21.2C17.2 19.4 19.8 15.9 19.8 12.1V5.8L12 2.8Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" fill="none"/>
-            <rect x="8.2" y="11.2" width="7.6" height="6.2" rx="1.4" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-            <path d="M10.1 11.2V9.6C10.1 8.5 10.9 7.6 12 7.6C13.1 7.6 13.9 8.5 13.9 9.6V11.2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-            <circle cx="12" cy="14.3" r="1.1" fill="currentColor"/>
+            <path d="M12 2.8L4.2 5.8V12.1C4.2 15.9 6.8 19.4 12 21.2C17.2 19.4 19.8 15.9 19.8 12.1V5.8L12 2.8Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" fill="none" />
+            <rect x="8.2" y="11.2" width="7.6" height="6.2" rx="1.4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <path d="M10.1 11.2V9.6C10.1 8.5 10.9 7.6 12 7.6C13.1 7.6 13.9 8.5 13.9 9.6V11.2" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <circle cx="12" cy="14.3" r="1.1" fill="currentColor" />
         </svg>
     );
 }
 function SearchTraceIcon({ size = 18 }) {
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.7"/>
-            <path d="M15.3 15.3L19.2 19.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-            <path d="M8.5 11H13.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.9"/>
-            <path d="M11 8.5V13.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.9"/>
+            <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.7" />
+            <path d="M15.3 15.3L19.2 19.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <path d="M8.5 11H13.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.9" />
+            <path d="M11 8.5V13.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.9" />
         </svg>
     );
 }
@@ -628,18 +638,18 @@ function RiskRing({ score }) {
 }
 
 class ErrorBoundary extends React.Component {
-    constructor(props){ super(props); this.state={hasError:false, error:null}; }
-    static getDerivedStateFromError(error){ return {hasError:true, error}; }
-    componentDidCatch(error, info){ console.error('Cyclops tab crash:', error, info); }
-    render(){
-        if(this.state.hasError){
+    constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+    static getDerivedStateFromError(error) { return { hasError: true, error }; }
+    componentDidCatch(error, info) { console.error('Cyclops tab crash:', error, info); }
+    render() {
+        if (this.state.hasError) {
             return (
-                <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', background:'#0f1117', color:'#f2f1ea', padding:32, textAlign:'center' }}>
-                    <div style={{ maxWidth:560, background:'#191b26', border:'1px solid #262838', borderRadius:8, padding:24 }}>
-                        <div style={{ fontSize:14, fontWeight:800, color:'#e0654a', marginBottom:8 }}>This panel hit a render issue — but your case is safe.</div>
-                        <div style={{ fontSize:12, color:'#8b8d9c', marginBottom:12 }}>{String(this.state.error?.message || this.state.error || 'Unknown render error')}</div>
-                        <div style={{ fontSize:11, color:'#c9c8c1', marginBottom:16 }}>Try switching chain, or re-open the tab. If it persists, the fallback dossier is still available via PDF.</div>
-                        <button className="btn btn-navy btn-sm" onClick={()=> this.setState({hasError:false, error:null})}>Retry render</button>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f1117', color: '#f2f1ea', padding: 32, textAlign: 'center' }}>
+                    <div style={{ maxWidth: 560, background: '#191b26', border: '1px solid #262838', borderRadius: 8, padding: 24 }}>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: '#e0654a', marginBottom: 8 }}>This panel hit a render issue — but your case is safe.</div>
+                        <div style={{ fontSize: 12, color: '#8b8d9c', marginBottom: 12 }}>{String(this.state.error?.message || this.state.error || 'Unknown render error')}</div>
+                        <div style={{ fontSize: 11, color: '#c9c8c1', marginBottom: 16 }}>Try switching chain, or re-open the tab. If it persists, the fallback dossier is still available via PDF.</div>
+                        <button className="btn btn-navy btn-sm" onClick={() => this.setState({ hasError: false, error: null })}>Retry render</button>
                     </div>
                 </div>
             );
@@ -812,11 +822,11 @@ function PatchNotesModal({ open, onClose }) {
                         <div className="patchnotes-head">
                             <div>
                                 <div style={{ fontSize: 11, letterSpacing: '0.08em', color: '#8b8d9c', fontWeight: 700 }}>CYCLOPS · SIH26183</div>
-                                <div style={{ fontSize: 18, fontWeight: 800, color: '#14140f', marginTop: 2, display:'flex', alignItems:'center', gap:8 }}>
-                                    Patch Notes <span style={{ fontSize: 11, padding:'2px 7px', borderRadius:999, background:'#1e3a8a', color:'#fff', fontWeight:700 }}>v6.4</span>
-                                    <span style={{ fontSize: 11, color:'#6d6f7d', fontWeight:600 }}>Complete & concise</span>
+                                <div style={{ fontSize: 18, fontWeight: 800, color: '#14140f', marginTop: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    Patch Notes <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 999, background: '#1e3a8a', color: '#fff', fontWeight: 700 }}>v6.4</span>
+                                    <span style={{ fontSize: 11, color: '#6d6f7d', fontWeight: 600 }}>Complete & concise</span>
                                 </div>
-                                <div style={{ fontSize: 11, color:'#6d6f7d', marginTop:4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.4: Matched ML v2 (RF 99.0% synthetic) (mailto).</div>
+                                <div style={{ fontSize: 11, color: '#6d6f7d', marginTop: 4 }}>Every fix that makes Citizen → Wallet → VASP → Freeze verifiable. v6.4: Matched ML v2 (RF 99.0% synthetic) + Report an Issue fixed (mailto).</div>
                             </div>
                             <button className="patchnotes-close" onClick={onClose} aria-label="Close patch notes">✕</button>
                         </div>
@@ -826,23 +836,23 @@ function PatchNotesModal({ open, onClose }) {
                                 return (
                                     <div key={rel.version} className={`patchnotes-release ${isOpen ? 'open' : ''}`}>
                                         <button className="patchnotes-release-head" onClick={() => toggle(idx)} aria-expanded={isOpen}>
-                                            <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-                                                <span style={{ fontSize:13, fontWeight:800, color:'#14140f' }}>{rel.version}</span>
-                                                <span style={{ fontSize:10, padding:'2px 7px', borderRadius:999, background: rel.badge==='Current' ? '#21603f' : '#e4e7ee', color: rel.badge==='Current' ? '#fff' : '#223354', fontWeight:700, border:`1px solid ${rel.badge==='Current' ? '#21603f' : '#cbd5e1'}` }}>{rel.badge}</span>
-                                                <span style={{ fontSize:11, color:'#6d6f7d' }}>{rel.date}</span>
-                                                <span style={{ fontSize:10, padding:'2px 6px', borderRadius:999, background:'#f4f2ec', border:'1px solid #dcd8cc', color:'#8a5a12', fontWeight:700 }}>{rel.tag}</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                                                <span style={{ fontSize: 13, fontWeight: 800, color: '#14140f' }}>{rel.version}</span>
+                                                <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 999, background: rel.badge === 'Current' ? '#21603f' : '#e4e7ee', color: rel.badge === 'Current' ? '#fff' : '#223354', fontWeight: 700, border: `1px solid ${rel.badge === 'Current' ? '#21603f' : '#cbd5e1'}` }}>{rel.badge}</span>
+                                                <span style={{ fontSize: 11, color: '#6d6f7d' }}>{rel.date}</span>
+                                                <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 999, background: '#f4f2ec', border: '1px solid #dcd8cc', color: '#8a5a12', fontWeight: 700 }}>{rel.tag}</span>
                                             </div>
-                                            <span style={{ color:'#6d6f7d', fontSize:14, transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition:'transform 0.2s' }}>▾</span>
+                                            <span style={{ color: '#6d6f7d', fontSize: 14, transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▾</span>
                                         </button>
-                                        <div style={{ fontSize:12, color:'#4a4a42', margin:'6px 0 10px', lineHeight:1.5 }}>{rel.summary}</div>
+                                        <div style={{ fontSize: 12, color: '#4a4a42', margin: '6px 0 10px', lineHeight: 1.5 }}>{rel.summary}</div>
                                         <AnimatePresence initial={false}>
                                             {isOpen && (
                                                 <motion.div
-                                                    initial={{ height:0, opacity:0 }}
-                                                    animate={{ height:'auto', opacity:1 }}
-                                                    exit={{ height:0, opacity:0 }}
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
                                                     transition={{ duration: reduceMotion ? 0 : 0.22 }}
-                                                    style={{ overflow:'hidden' }}
+                                                    style={{ overflow: 'hidden' }}
                                                 >
                                                     <div className="patchnotes-sections">
                                                         {rel.sections.map((sec, sIdx) => (
@@ -864,7 +874,7 @@ function PatchNotesModal({ open, onClose }) {
                             })}
                         </div>
                         <div className="patchnotes-foot">
-                            <span style={{ fontSize:11, color:'#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.4 on <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius:4, border:'1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
+                            <span style={{ fontSize: 11, color: '#6d6f7d' }}>Team CrySec · Ministry of Home Affairs · I4C · SIH26183 · v6.4 on <code style={{ background: '#f4f2ec', padding: '1px 5px', borderRadius: 4, border: '1px solid #dcd8cc' }}>http://localhost:5173</code> / <code style={{ background: '#f4f2ec', padding: '1px 5px', borderRadius: 4, border: '1px solid #dcd8cc' }}>http://localhost:8000/docs</code></span>
                             <button className="btn btn-navy btn-sm" onClick={onClose}>Close</button>
                         </div>
                     </motion.div>
@@ -1087,11 +1097,11 @@ export default function GraphViewer() {
             })
             .then(() => setIsPoliceAuth(true))
             .catch(() => {
-                try { localStorage.removeItem('cyclops_token'); localStorage.removeItem('cyclops_officer'); } catch {}
+                try { localStorage.removeItem('cyclops_token'); localStorage.removeItem('cyclops_officer'); } catch { }
                 setAuthToken('');
                 setIsPoliceAuth(false);
             });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Police Layers: 'forensics' | 'dashboard' | 'dossier'
@@ -1187,7 +1197,7 @@ export default function GraphViewer() {
                 })
                 .finally(() => setIntelLoading(false));
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeLayer, isPoliceAuth, authToken]);
 
     // Court Dossier — always in sync with the CURRENT subject (chain switch / auto-trace / manual trace)
@@ -1210,7 +1220,7 @@ export default function GraphViewer() {
             })
             .finally(() => { if (!cancelled) setDossierLoading(false); });
         return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeLayer, isPoliceAuth, authToken, dossierAddress]);
 
     // Modals
@@ -1227,6 +1237,46 @@ export default function GraphViewer() {
     const [reportEmail, setReportEmail] = useState('');
     const [reportDesc, setReportDesc] = useState('');
     const [reportSent, setReportSent] = useState(false);
+    const [reportBody, setReportBody] = useState('');
+    const [reportCopied, setReportCopied] = useState(false);
+
+    const SUPPORT_MAILBOX = 'support@cyclops-i4c.gov.in';
+
+    const buildReport = () => {
+        const subject = `[CYCLOPS SIH26183 v6.4] Issue: ${reportCategory}`;
+        const body = `Category: ${reportCategory}\n`
+            + `From: ${reportEmail || 'anonymous'}\n`
+            + `Page: ${typeof window !== 'undefined' ? window.location.href : ''}\n`
+            + `Version: v6.4\n`
+            + `Time: ${new Date().toISOString()}\n\n`
+            + `Description:\n${reportDesc || '(no description)'}\n`;
+        return { subject, body };
+    };
+
+    const copyReport = async () => {
+        const { subject, body } = buildReport();
+        const text = `To: ${SUPPORT_MAILBOX}\nSubject: ${subject}\n\n${body}`;
+        let ok = false;
+        try {
+            await navigator.clipboard.writeText(text);
+            ok = true;
+        } catch {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                ok = document.execCommand('copy');
+                ta.remove();
+            } catch { ok = false; }
+        }
+        setReportCopied(ok);
+        if (ok) setTimeout(() => setReportCopied(false), 3000);
+    };
+
     useEffect(() => {
         const handler = (e) => {
             const isCombo = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
@@ -1280,7 +1330,7 @@ export default function GraphViewer() {
             try {
                 localStorage.setItem('cyclops_token', token);
                 localStorage.setItem('cyclops_officer', officerId.trim());
-            } catch {}
+            } catch { }
         } catch (err) {
             // Fallback: if backend unreachable, keep demo client-side check so judges can still demo offline
             if (err.message && err.message.includes('fetch')) {
@@ -1303,8 +1353,8 @@ export default function GraphViewer() {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
             }
-        } catch {}
-        try { localStorage.removeItem('cyclops_token'); localStorage.removeItem('cyclops_officer'); } catch {}
+        } catch { }
+        try { localStorage.removeItem('cyclops_token'); localStorage.removeItem('cyclops_officer'); } catch { }
         setAuthToken('');
         setIsPoliceAuth(false);
         setCurrentPortal('landing');
@@ -1400,7 +1450,7 @@ export default function GraphViewer() {
         }
 
         const buildIsolatedElements = (addr) => ({
-            nodes: [{ data: { id: addr, label: `Suspect (${addr.slice(0,6)}...${addr.slice(-4)})`, full_address: addr, entity_type: 'SUSPECT', entity_name: 'Reported Suspect Wallet', tag: 'Isolated — No Outgoing Hops', risk_score: 12, hop_level: 0 }, position: { x: 400, y: 260 } }],
+            nodes: [{ data: { id: addr, label: `Suspect (${addr.slice(0, 6)}...${addr.slice(-4)})`, full_address: addr, entity_type: 'SUSPECT', entity_name: 'Reported Suspect Wallet', tag: 'Isolated — No Outgoing Hops', risk_score: 12, hop_level: 0 }, position: { x: 400, y: 260 } }],
             edges: []
         });
         const lowRisk = { overall_risk_score: 12, risk_rating: 'LOW', detected_patterns: ['No outgoing transactions found — isolated wallet, no fund flow detected'], summary: 'No outgoing hops detected. Wallet shows no dispersion to exchanges/mixers. Monitor or request additional chain expansion before freeze.', peel_chain_detected: false, mixer_interaction: false, terminal_exchange_identified: false };
@@ -1433,12 +1483,12 @@ export default function GraphViewer() {
                 })
             });
             if (res.status === 422 || res.status === 400) {
-                const err = await res.json().catch(()=>({detail:'Invalid wallet format'}));
+                const err = await res.json().catch(() => ({ detail: 'Invalid wallet format' }));
                 const msg = typeof err.detail === 'string' ? err.detail : (Array.isArray(err.detail) ? err.detail[0]?.msg : 'Invalid wallet format');
                 setAuthError(String(msg));
                 // Show single-node LOW so graph doesn't keep old default HIGH
                 const iso = buildIsolatedElements(normalizedAddr);
-                setActiveDataset(prev => ({ ...(prev||{}), caseMeta: updatedCaseMeta, suspect_wallet: normalizedAddr, elements: iso, attributions: [], risk_assessment: lowRisk, custody_trail: [], ml_features: isolatedML }));
+                setActiveDataset(prev => ({ ...(prev || {}), caseMeta: updatedCaseMeta, suspect_wallet: normalizedAddr, elements: iso, attributions: [], risk_assessment: lowRisk, custody_trail: [], ml_features: isolatedML }));
                 renderCytoscapeGraph(iso);
                 setTracingLive(false);
                 return;
@@ -1446,7 +1496,7 @@ export default function GraphViewer() {
             if (res.status === 401) {
                 setAuthError('Session expired. Please re-authenticate.');
                 setIsPoliceAuth(false);
-                try { localStorage.removeItem('cyclops_token'); } catch {}
+                try { localStorage.removeItem('cyclops_token'); } catch { }
                 setAuthToken('');
                 throw new Error('Unauthorized');
             }
@@ -1501,7 +1551,7 @@ export default function GraphViewer() {
 
         // Final fallback — never reuse old graph; show deterministic isolated LOW
         const isoFallback = buildIsolatedElements(normalizedAddr);
-        setActiveDataset(prev => ({ ...(prev||{}), caseMeta: updatedCaseMeta, suspect_wallet: normalizedAddr, elements: isoFallback, attributions: [], risk_assessment: lowRisk, custody_trail: [], ml_features: isolatedML }));
+        setActiveDataset(prev => ({ ...(prev || {}), caseMeta: updatedCaseMeta, suspect_wallet: normalizedAddr, elements: isoFallback, attributions: [], risk_assessment: lowRisk, custody_trail: [], ml_features: isolatedML }));
         renderCytoscapeGraph(isoFallback);
         setTracingLive(false);
     };
@@ -1670,7 +1720,7 @@ export default function GraphViewer() {
             if (res.status === 401) {
                 setAuthError('Session expired. Please re-login to export dossier.');
                 setIsPoliceAuth(false);
-                try { localStorage.removeItem('cyclops_token'); } catch {}
+                try { localStorage.removeItem('cyclops_token'); } catch { }
                 setAuthToken('');
                 throw new Error('Unauthorized');
             }
@@ -1732,7 +1782,7 @@ Cyber Crime Division`;
             `[${ts(1)} IST] Cryptographic Evidence Package Formed (SHA-256 Checksum Verified).`,
             `[${ts(2)} IST] Transmitting Statutory Section 91 Requisition to ${activeDataset.attributions[0]?.entity_name} Compliance Node...`,
             `[${ts(3)} IST] Secure Handshake with ${activeDataset.attributions[0]?.compliance_contact} Established.`,
-            `[${ts(4)} IST] SUCCESS: Requisition Ticket #IND-I4C-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random()*9000))} Acknowledged by VASP.`,
+            `[${ts(4)} IST] SUCCESS: Requisition Ticket #IND-I4C-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))} Acknowledged by VASP.`,
             `[${ts(4)} IST] BENEFICIARY ACCOUNT STATUS: TEMPORARY DEBIT RESTRICTION APPLIED — ${formatISTClock(base)}`
         ];
         steps.forEach((log, index) => {
@@ -1853,7 +1903,7 @@ Cyber Crime Division`;
                             hops_preview: []
                         });
                     }
-                } catch {}
+                } catch { }
                 if (encMeta) setCitizenEncryptionMeta(encMeta);
             }
         } catch (err) {
@@ -1896,7 +1946,7 @@ Cyber Crime Division`;
     useEffect(() => {
         // Attempt initial render if container already mounted (e.g., direct forensics link)
         if (containerRef.current) {
-            try { renderCytoscapeGraph(activeDataset.elements); } catch {}
+            try { renderCytoscapeGraph(activeDataset.elements); } catch { }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -2038,32 +2088,41 @@ Cyber Crime Division`;
                                 <div>
                                     <div style={{ fontSize: 11, letterSpacing: '0.08em', color: '#8b8d9c', fontWeight: 700 }}>CYCLOPS · SUPPORT</div>
                                     <div style={{ fontSize: 18, fontWeight: 800, color: '#14140f', marginTop: 2 }}>Report an Issue</div>
-                                    <div style={{ fontSize: 11, color: '#6d6f7d', marginTop: 4 }}>Tell us the category — we will email the support team (dummy: <code style={{ background:'#f4f2ec', padding:'1px 5px', borderRadius: 4, border:'1px solid #dcd8cc' }}>support@cyclops-i4c.gov.in</code>)</div>
+                                    <div style={{ fontSize: 11, color: '#6d6f7d', marginTop: 4 }}>Tell us the category — we will email the support team (dummy: <code style={{ background: '#f4f2ec', padding: '1px 5px', borderRadius: 4, border: '1px solid #dcd8cc' }}>support@cyclops-i4c.gov.in</code>)</div>
                                 </div>
                                 <button className="patchnotes-close" onClick={() => setShowReportIssue(false)} aria-label="Close report issue">✕</button>
                             </div>
                             <div className="patchnotes-body" style={{ gap: 14 }}>
                                 {reportSent ? (
                                     <div style={{ background: '#e2ece3', border: '1px solid #a9c7b3', borderRadius: 8, padding: 16, textAlign: 'center' }}>
-                                        <div style={{ fontSize: 14, fontWeight: 800, color: '#21603f' }}>Report ready — opening your email client</div>
-                                        <div style={{ fontSize: 12, color: '#4a4a42', marginTop: 6, lineHeight: 1.5 }}>If no email client opened, copy this dummy recipient: <strong>support@cyclops-i4c.gov.in</strong> and paste the details below.</div>
-                                        <div style={{ marginTop: 12, fontSize: 11, color: '#6d6f7d', background: '#fff', border: '1px solid #dcd8cc', borderRadius: 6, padding: 10, textAlign: 'left', fontFamily: 'var(--font-mono)', wordBreak: 'break-word' }}>
-                                            <div><strong>Category:</strong> {reportCategory}</div>
-                                            <div><strong>From:</strong> {reportEmail || 'not provided'}</div>
-                                            <div style={{ marginTop: 6, whiteSpace: 'pre-wrap' }}><strong>Description:</strong> {reportDesc}</div>
+                                        <div style={{ fontSize: 14, fontWeight: 800, color: '#21603f' }}>Report ready — your email client should have opened</div>
+                                        <div style={{ fontSize: 12, color: '#4a4a42', marginTop: 6, lineHeight: 1.5 }}>
+                                            No mail client opened (or it was blocked)? Use <strong>Copy report</strong> below and paste it into an email to <strong>{SUPPORT_MAILBOX}</strong>.
                                         </div>
-                                        <button className="btn btn-navy btn-sm" style={{ marginTop: 14 }} onClick={() => setShowReportIssue(false)}>Close</button>
+                                        <div style={{ marginTop: 12, fontSize: 11, color: '#6d6f7d', background: '#fff', border: '1px solid #dcd8cc', borderRadius: 6, padding: 10, textAlign: 'left', fontFamily: 'var(--font-mono)', maxHeight: 170, overflowY: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                            <div style={{ marginBottom: 6, whiteSpace: 'nowrap' }}>To: <strong>{SUPPORT_MAILBOX}</strong></div>
+                                            {reportBody}
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14 }}>
+                                            <button type="button" className="btn btn-outline btn-sm" onClick={copyReport}>
+                                                {reportCopied ? 'Copied to clipboard' : 'Copy report'}
+                                            </button>
+                                            <button className="btn btn-navy btn-sm" onClick={() => setShowReportIssue(false)}>Close</button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <form onSubmit={(e) => {
                                         e.preventDefault();
-                                        const dummySupport = 'support@cyclops-i4c.gov.in';
-                                        const subject = encodeURIComponent(`[CYCLOPS SIH26183 v6.4] Issue: ${reportCategory}`);
-                                        const body = encodeURIComponent(`Category: ${reportCategory}\nFrom: ${reportEmail || 'anonymous'}\nPage: ${typeof window !== 'undefined' ? window.location.href : 'http://localhost:5173'}\nVersion: v6.4\nTime: ${new Date().toISOString()}\n\nDescription:\n${reportDesc || '(no description)'}\n`);
-                                        const mailto = `mailto:${dummySupport}?subject=${subject}&body=${body}`;
-                                        try { window.location.href = mailto; } catch {}
-                                        try { window.open(mailto, '_blank'); } catch {}
+                                        const { subject, body } = buildReport();
+                                        setReportBody(body);
+                                        setReportCopied(false);
                                         setReportSent(true);
+                                        // single mailto handoff — must stay inside the click gesture,
+                                        // and must NOT window.open() (blank tab + blocked popup).
+                                        try {
+                                            window.location.href =
+                                                `mailto:${SUPPORT_MAILBOX}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                                        } catch { /* no mail client — fallback UI below still works */ }
                                     }} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                         <div>
                                             <label className="field-label">Category of issue *</label>
@@ -2085,10 +2144,13 @@ Cyber Crime Division`;
                                             <textarea className="field-input" placeholder="Steps to reproduce, wallet address, chain, screenshot notes..." value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} required rows={4} style={{ resize: 'vertical' }} />
                                         </div>
                                         <div style={{ fontSize: 11, color: '#6d6f7d', background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 6, padding: '8px 10px', lineHeight: 1.5 }}>
-                                            Dummy support email: <strong>support@cyclops-i4c.gov.in</strong> — clicking <em>Send via Email</em> opens your default mail client with a pre-filled email. No backend needed (hackathon demo).
+                                            Dummy support email: <strong>{SUPPORT_MAILBOX}</strong> — <em>Send via Email</em> opens your default mail client with a pre-filled message; <em>Copy report</em> works even when no mail client is configured. No backend needed (hackathon demo).
                                         </div>
-                                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                                             <button type="button" className="btn btn-outline btn-sm" onClick={() => setShowReportIssue(false)}>Cancel</button>
+                                            <button type="button" className="btn btn-outline btn-sm" onClick={copyReport}>
+                                                {reportCopied ? 'Copied to clipboard' : 'Copy report'}
+                                            </button>
                                             <button type="submit" className="btn btn-navy btn-sm">Send via Email</button>
                                         </div>
                                     </form>
@@ -2242,15 +2304,15 @@ Cyber Crime Division`;
                                 ))}
                             </motion.div>
                             <motion.div
-                                initial={{ opacity:0, y:10 }}
-                                animate={{ opacity:1, y:0 }}
-                                transition={{ delay:1.1, duration:0.5 }}
-                                style={{ marginTop:18, display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 1.1, duration: 0.5 }}
+                                style={{ marginTop: 18, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}
                             >
-                                <span style={{ fontSize:11, fontWeight:800, letterSpacing:'0.08em', color:'#e0654a', background:'rgba(224,101,74,0.12)', border:'1px solid rgba(224,101,74,0.28)', padding:'4px 10px', borderRadius:999 }}>NEW IN v6.4 — Matched ML v2</span>
-                                <span style={{ fontSize:11, color:'rgba(244,242,236,0.78)', display:'inline-flex', alignItems:'center', gap:6 }}><span style={{ width:7, height:7, background:'#4caf7d', borderRadius:'50%', display:'inline-block', boxShadow:'0 0 8px #4caf7d' }} /> Citizen live tracking (6 stages, 3s poll)</span>
-                                <span style={{ fontSize:11, color:'rgba(244,242,236,0.78)', display:'inline-flex', alignItems:'center', gap:6 }}><span>🔒</span> AES-128 field encryption</span>
-                                <span style={{ fontSize:11, color:'rgba(244,242,236,0.62)' }}>Rate-limited · CSP/HSTS · Audit-logged</span>
+                                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', color: '#e0654a', background: 'rgba(224,101,74,0.12)', border: '1px solid rgba(224,101,74,0.28)', padding: '4px 10px', borderRadius: 999 }}>NEW IN v6.4 — Matched ML v2</span>
+                                <span style={{ fontSize: 11, color: 'rgba(244,242,236,0.78)', display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 7, height: 7, background: '#4caf7d', borderRadius: '50%', display: 'inline-block', boxShadow: '0 0 8px #4caf7d' }} /> Citizen live tracking (6 stages, 3s poll)</span>
+                                <span style={{ fontSize: 11, color: 'rgba(244,242,236,0.78)', display: 'inline-flex', alignItems: 'center', gap: 6 }}><span>🔒</span> AES-128 field encryption</span>
+                                <span style={{ fontSize: 11, color: 'rgba(244,242,236,0.62)' }}>Rate-limited · CSP/HSTS · Audit-logged</span>
                             </motion.div>
                         </div>
                     </section>
@@ -2272,7 +2334,7 @@ Cyber Crime Division`;
                                 <div className="ledger-tag ledger-tag-green"><span className="ledger-dot-green" aria-hidden="true" /> PUBLIC · NCRP 1930</div>
                                 <h2>Citizen Intake — File &amp; Track an FIR</h2>
                                 <p>
-                                    File a cyber fraud complaint in plain language. Get an NCRP docket instantly and watch it move — <strong style={{ color:'var(--green)' }}>6 live stages</strong>, Golden Hour countdown, wallet encrypted (AES-128).
+                                    File a cyber fraud complaint in plain language. Get an NCRP docket instantly and watch it move — <strong style={{ color: 'var(--green)' }}>6 live stages</strong>, Golden Hour countdown, wallet encrypted (AES-128).
                                 </p>
                                 <div className="check-list">
                                     <div><span className="mark">✓</span> Instant NCRP docket + 3s live polling</div>
@@ -2344,29 +2406,29 @@ Cyber Crime Division`;
                             viewport={{ once: true, margin: '-60px' }}
                             transition={{ duration: 0.55, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
                             whileHover={{ y: -4, scale: 1.005 }}
-                            style={{ background: 'linear-gradient(180deg, #fff 0%, #fdfcfa 100%)', border: '1px solid var(--line)', borderLeft: '3px solid #d9a441', cursor:'pointer' }}
+                            style={{ background: 'linear-gradient(180deg, #fff 0%, #fdfcfa 100%)', border: '1px solid var(--line)', borderLeft: '3px solid #d9a441', cursor: 'pointer' }}
                         >
                             <div className="ledger-orb-wrap">
                                 <div className="ledger-orb" style={{ background: 'linear-gradient(135deg, #f2e8d4, #e8dcc3)', borderColor: '#d9bd83', color: '#8a5a12' }}>✎</div>
                             </div>
                             <div className="ledger-body">
-                                <div className="ledger-tag" style={{ color:'#8a5a12', background:'#f2e8d4', borderColor:'#d9bd83' }}><span style={{ width:7, height:7, borderRadius:'50%', background:'#8a5a12', display:'inline-block', boxShadow:'0 0 8px #8a5a12' }} /> CHANGELOG · v6.4</div>
+                                <div className="ledger-tag" style={{ color: '#8a5a12', background: '#f2e8d4', borderColor: '#d9bd83' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#8a5a12', display: 'inline-block', boxShadow: '0 0 8px #8a5a12' }} /> CHANGELOG · v6.4</div>
                                 <h2>Patch Notes — Complete & Concise</h2>
                                 <p>
-                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. v6.4: Matched ML v2 (RF 99.0% synthetic) + honesty guards.
+                                    Every fix that makes <strong>Citizen → Wallet → VASP → Freeze</strong> verifiable. v6.4: Matched ML v2 (RF 99.0% synthetic) + honesty guards + Report an Issue fix.
                                 </p>
                                 <div className="check-list">
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Matched RF v2: 150 trees · 99.0% test (synthetic) · 99.2% CV · 1500 rows</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> Demo trail MULE 100% · empty wallets INSUFFICIENT_DATA</div>
-                                    <div><span className="mark" style={{ background:'#8a5a12' }}>✓</span> + Github Repo & Report an Issue (mailto)</div>
+                                    <div><span className="mark" style={{ background: '#8a5a12' }}>✓</span> Matched RF v2: 150 trees · 99.0% test (synthetic) · 99.2% CV · 1500 rows</div>
+                                    <div><span className="mark" style={{ background: '#8a5a12' }}>✓</span> Demo trail MULE 100% · empty wallets INSUFFICIENT_DATA</div>
+                                    <div><span className="mark" style={{ background: '#8a5a12' }}>✓</span> Report an Issue fixed: single mailto (no blank tab) + Copy report</div>
                                 </div>
                             </div>
                             <div className="ledger-action">
                                 <div className="ledger-metric">
-                                    <div className="n" style={{ color:'#8a5a12' }}>30 Sept</div>
+                                    <div className="n" style={{ color: '#8a5a12' }}>30 Sept</div>
                                     <div className="l">v6.4 · Matched ML v2</div>
                                 </div>
-                                <motion.button className="btn btn-block" style={{ background:'#8a5a12', borderColor:'#8a5a12', color:'#fff' }} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}>
+                                <motion.button className="btn btn-block" style={{ background: '#8a5a12', borderColor: '#8a5a12', color: '#fff' }} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}>
                                     View patch notes →
                                 </motion.button>
                                 <div style={{ fontSize: 11, color: 'var(--ink-soft)', textAlign: 'center' }}>Single source · Judge-ready</div>
@@ -2422,36 +2484,36 @@ Cyber Crime Division`;
                     style={{ background: citizenSubmitted && citizenTrackData ? '#0f1117' : 'var(--paper)', padding: citizenSubmitted && citizenTrackData ? '18px' : '40px 20px' }}
                 >
                     {/* Docket lookup bar — always visible */}
-                    <div style={{ width: 'min(980px, 100%)', margin: '0 auto 18px', display:'flex', gap:12, alignItems:'center', background: citizenSubmitted ? '#191b26' : 'var(--panel)', border: `1px solid ${citizenSubmitted ? '#262838' : 'var(--line)'}`, borderRadius: 8, padding: '12px 14px', flexWrap:'wrap' }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:8, color: citizenSubmitted ? '#9aa0b4' : 'var(--ink-soft)', fontSize:12, fontWeight:700 }}>
-                            <span style={{ width:7, height:7, borderRadius:'50%', background: citizenTrackData ? '#4caf7d' : '#e0654a', boxShadow: citizenTrackData ? '0 0 8px #4caf7d' : '0 0 8px #e0654a', display:'inline-block', animation: citizenTrackData ? 'golden-pulse 1.2s infinite' : 'none' }} />
-                            {citizenSubmitted ? 'Live tracking' : 'Already filed?'} 
+                    <div style={{ width: 'min(980px, 100%)', margin: '0 auto 18px', display: 'flex', gap: 12, alignItems: 'center', background: citizenSubmitted ? '#191b26' : 'var(--panel)', border: `1px solid ${citizenSubmitted ? '#262838' : 'var(--line)'}`, borderRadius: 8, padding: '12px 14px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: citizenSubmitted ? '#9aa0b4' : 'var(--ink-soft)', fontSize: 12, fontWeight: 700 }}>
+                            <span style={{ width: 7, height: 7, borderRadius: '50%', background: citizenTrackData ? '#4caf7d' : '#e0654a', boxShadow: citizenTrackData ? '0 0 8px #4caf7d' : '0 0 8px #e0654a', display: 'inline-block', animation: citizenTrackData ? 'golden-pulse 1.2s infinite' : 'none' }} />
+                            {citizenSubmitted ? 'Live tracking' : 'Already filed?'}
                         </div>
-                        <form onSubmit={handleCitizenTrackLookup} style={{ display:'flex', gap:8, flex:1, minWidth:260 }}>
+                        <form onSubmit={handleCitizenTrackLookup} style={{ display: 'flex', gap: 8, flex: 1, minWidth: 260 }}>
                             <input
                                 className="field-input mono"
-                                style={{ flex:1, background: citizenSubmitted ? '#0f1117' : 'var(--panel)', borderColor: citizenSubmitted ? '#262838' : 'var(--line-strong)', color: citizenSubmitted ? '#cddcf5' : 'var(--ink)' }}
+                                style={{ flex: 1, background: citizenSubmitted ? '#0f1117' : 'var(--panel)', borderColor: citizenSubmitted ? '#262838' : 'var(--line-strong)', color: citizenSubmitted ? '#cddcf5' : 'var(--ink)' }}
                                 placeholder="Enter NCRP docket (e.g. NCRP-2026-DEL-1092)"
                                 value={citizenLookupInput}
-                                onChange={(e)=> setCitizenLookupInput(e.target.value)}
+                                onChange={(e) => setCitizenLookupInput(e.target.value)}
                             />
                             <button type="submit" className="btn btn-navy btn-sm" disabled={citizenTrackLoading}>{citizenTrackLoading ? 'Tracking…' : 'Track case'}</button>
                         </form>
                         {citizenSubmitted && citizenDocket && (
-                            <button className="btn btn-outline btn-sm" style={{ background: '#0f1117', color:'#9aa0b4', borderColor:'#262838' }} onClick={()=> { setCitizenSubmitted(false); setCitizenTrackData(null); setCitizenLookupError(''); setCitizenDocket(''); }}>File new</button>
+                            <button className="btn btn-outline btn-sm" style={{ background: '#0f1117', color: '#9aa0b4', borderColor: '#262838' }} onClick={() => { setCitizenSubmitted(false); setCitizenTrackData(null); setCitizenLookupError(''); setCitizenDocket(''); }}>File new</button>
                         )}
-                        {citizenLookupError && <div style={{ width:'100%', color:'#ff8a6a', fontSize:11, marginTop:2 }}>{citizenLookupError}</div>}
+                        {citizenLookupError && <div style={{ width: '100%', color: '#ff8a6a', fontSize: 11, marginTop: 2 }}>{citizenLookupError}</div>}
                     </div>
 
                     {!citizenSubmitted ? (
-                        <div className="form-card" style={{ width:'min(640px, 100%)' }}>
+                        <div className="form-card" style={{ width: 'min(640px, 100%)' }}>
                             <div className="form-head">
                                 <h2>National Cybercrime Citizen Helpline (1930)</h2>
                                 <p>File &amp; track in real-time — wallet &amp; phone encrypted end-to-end (AES-128)</p>
-                                <div style={{ marginTop:10, display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
-                                    <span style={{ fontSize:10, padding:'4px 8px', borderRadius:999, background:'rgba(33,96,63,0.12)', border:'1px solid #a9c7b3', color:'#21603f', fontWeight:700, display:'inline-flex', alignItems:'center', gap:6 }}><span style={{ fontSize:12 }}>🔒</span> Encrypted at rest (Fernet)</span>
-                                    <span style={{ fontSize:10, padding:'4px 8px', borderRadius:999, background:'rgba(59,90,134,0.12)', border:'1px solid #aeb8cd', color:'#223354', fontWeight:700 }}>Live timeline · 3s polling</span>
-                                    <span style={{ fontSize:10, padding:'4px 8px', borderRadius:999, background:'rgba(224,101,74,0.12)', border:'1px solid #dcae9a', color:'#a8391c', fontWeight:700 }}>Golden Hour active</span>
+                                <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+                                    <span style={{ fontSize: 10, padding: '4px 8px', borderRadius: 999, background: 'rgba(33,96,63,0.12)', border: '1px solid #a9c7b3', color: '#21603f', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ fontSize: 12 }}>🔒</span> Encrypted at rest (Fernet)</span>
+                                    <span style={{ fontSize: 10, padding: '4px 8px', borderRadius: 999, background: 'rgba(59,90,134,0.12)', border: '1px solid #aeb8cd', color: '#223354', fontWeight: 700 }}>Live timeline · 3s polling</span>
+                                    <span style={{ fontSize: 10, padding: '4px 8px', borderRadius: 999, background: 'rgba(224,101,74,0.12)', border: '1px solid #dcae9a', color: '#a8391c', fontWeight: 700 }}>Golden Hour active</span>
                                 </div>
                             </div>
                             <form onSubmit={handleCitizenSubmit} className="stack">
@@ -2461,7 +2523,7 @@ Cyber Crime Division`;
                                         <input className="field-input" type="text" placeholder="e.g. Vikramaditya Sen" value={citizenName} onChange={(e) => setCitizenName(e.target.value)} required />
                                     </div>
                                     <div>
-                                        <label className="field-label">Registered mobile <span style={{ opacity:0.6, fontWeight:400 }}>(encrypted)</span></label>
+                                        <label className="field-label">Registered mobile <span style={{ opacity: 0.6, fontWeight: 400 }}>(encrypted)</span></label>
                                         <input className="field-input" type="tel" placeholder="+91 98765-XXXXX" value={citizenPhone} onChange={(e) => setCitizenPhone(e.target.value)} required />
                                     </div>
                                 </div>
@@ -2475,9 +2537,9 @@ Cyber Crime Division`;
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="field-label">Suspect wallet address <span style={{ opacity:0.6, fontWeight:400 }}>(AES encrypted)</span></label>
+                                    <label className="field-label">Suspect wallet address <span style={{ opacity: 0.6, fontWeight: 400 }}>(AES encrypted)</span></label>
                                     <input className="field-input mono" type="text" placeholder="0x... or Tron/BTC address" value={citizenWallet} onChange={(e) => setCitizenWallet(e.target.value)} required />
-                                    <div style={{ fontSize:10, color:'#6d6f7d', marginTop:4, display:'flex', alignItems:'center', gap:6 }}><span>🔐</span> Never stored in plaintext. Shown as masked to you; LEA decrypts on demand. <span style={{ color:'#4caf7d', fontWeight:700 }}>Try inspect →</span></div>
+                                    <div style={{ fontSize: 10, color: '#6d6f7d', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}><span>🔐</span> Never stored in plaintext. Shown as masked to you; LEA decrypts on demand. <span style={{ color: '#4caf7d', fontWeight: 700 }}>Try inspect →</span></div>
                                 </div>
                                 <div>
                                     <label className="field-label">Amount defrauded (INR &amp; crypto)</label>
@@ -2494,170 +2556,170 @@ Cyber Crime Division`;
                                 <button type="submit" className="btn btn-green btn-block" style={{ marginTop: 4 }}>
                                     Submit complaint &amp; start emergency freeze
                                 </button>
-                                <div style={{ fontSize:11, color:'var(--ink-soft)', textAlign:'center', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}><span style={{ width:6, height:6, borderRadius:'50%', background:'#4caf7d', display:'inline-block' }} /> Your docket will appear instantly + live-tracked to resolution</div>
+                                <div style={{ fontSize: 11, color: 'var(--ink-soft)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4caf7d', display: 'inline-block' }} /> Your docket will appear instantly + live-tracked to resolution</div>
                             </form>
                         </div>
                     ) : (
-                        <div style={{ width:'min(980px, 100%)', margin:'0 auto', display:'flex', flexDirection:'column', gap:14 }}>
-                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', background:'#fffbeb', border:'1px solid #d9bd83', borderRadius:8, padding:'8px 12px', fontSize:11, color:'#8a5a12' }}>
+                        <div style={{ width: 'min(980px, 100%)', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fffbeb', border: '1px solid #d9bd83', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#8a5a12' }}>
                                 <span><strong>Live in v6.1:</strong> 6-stage tracking + AES encryption • Golden Hour active</span>
-                                <span style={{ fontSize:10, background:'#8a5a12', color:'#fff', padding:'2px 7px', borderRadius:999, fontWeight:700 }}>v6.1.0 Live</span>
+                                <span style={{ fontSize: 10, background: '#8a5a12', color: '#fff', padding: '2px 7px', borderRadius: 999, fontWeight: 700 }}>v6.1.0 Live</span>
                             </div>
                             {!citizenTrackData ? (
-                                <div style={{ background:'#191b26', border:'1px solid #262838', borderRadius:8, padding:24, color:'#e7e5dd', textAlign:'center' }}>
-                                    <div style={{ fontSize:14, fontWeight:800, marginBottom:8 }}>Fetching live timeline for {citizenDocket}…</div>
-                                    <div style={{ fontSize:12, color:'#8b8d9c' }}>Polling /api/citizen/track every 3 seconds. Wallet is encrypted at rest.</div>
-                                    <div style={{ marginTop:14, height:6, background:'#0f1117', borderRadius:999, overflow:'hidden', border:'1px solid #262838' }}><motion.div style={{ height:'100%', background:'#4caf7d' }} animate={{ x: ['-100%', '100%'] }} transition={{ duration:1.2, repeat:Infinity, ease:'linear' }} /></div>
+                                <div style={{ background: '#191b26', border: '1px solid #262838', borderRadius: 8, padding: 24, color: '#e7e5dd', textAlign: 'center' }}>
+                                    <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 8 }}>Fetching live timeline for {citizenDocket}…</div>
+                                    <div style={{ fontSize: 12, color: '#8b8d9c' }}>Polling /api/citizen/track every 3 seconds. Wallet is encrypted at rest.</div>
+                                    <div style={{ marginTop: 14, height: 6, background: '#0f1117', borderRadius: 999, overflow: 'hidden', border: '1px solid #262838' }}><motion.div style={{ height: '100%', background: '#4caf7d' }} animate={{ x: ['-100%', '100%'] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }} /></div>
                                 </div>
                             ) : (
                                 <>
                                     {/* Header: docket + golden hour + progress */}
-                                    <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} style={{ background:'#191b26', border:'1px solid #262838', borderRadius:8, padding:18, color:'#e7e5dd', position:'relative', overflow:'hidden' }}>
-                                        <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:'#262838' }}><motion.div style={{ height:'100%', background: citizenTrackData.progress_percent >= 80 ? '#4caf7d' : citizenTrackData.progress_percent >= 50 ? '#d9a441' : '#e0654a' }} initial={{ width:0 }} animate={{ width:`${citizenTrackData.progress_percent}%` }} transition={{ duration:0.7, ease:[0.16,1,0.3,1] }} /></div>
-                                        <div style={{ display:'flex', justifyContent:'space-between', gap:14, flexWrap:'wrap', alignItems:'flex-start' }}>
+                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#191b26', border: '1px solid #262838', borderRadius: 8, padding: 18, color: '#e7e5dd', position: 'relative', overflow: 'hidden' }}>
+                                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#262838' }}><motion.div style={{ height: '100%', background: citizenTrackData.progress_percent >= 80 ? '#4caf7d' : citizenTrackData.progress_percent >= 50 ? '#d9a441' : '#e0654a' }} initial={{ width: 0 }} animate={{ width: `${citizenTrackData.progress_percent}%` }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} /></div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                                             <div>
-                                                <div style={{ fontSize:11, letterSpacing:'0.06em', color:'#8b8d9c', fontWeight:700, display:'flex', alignItems:'center', gap:8 }}>
-                                                    <span style={{ background:'#4caf7d', color:'#fff', padding:'2px 7px', borderRadius:999, fontSize:10 }}>LIVE</span> NCRP DOCKET · {citizenTrackData.docket_no}
-                                                    <span style={{ width:6, height:6, borderRadius:'50%', background:'#4caf7d', boxShadow:'0 0 8px #4caf7d', animation:'golden-pulse 1.2s infinite' }} />
+                                                <div style={{ fontSize: 11, letterSpacing: '0.06em', color: '#8b8d9c', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                    <span style={{ background: '#4caf7d', color: '#fff', padding: '2px 7px', borderRadius: 999, fontSize: 10 }}>LIVE</span> NCRP DOCKET · {citizenTrackData.docket_no}
+                                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4caf7d', boxShadow: '0 0 8px #4caf7d', animation: 'golden-pulse 1.2s infinite' }} />
                                                     Polling 3s
                                                 </div>
-                                                <div style={{ fontSize:22, fontWeight:800, marginTop:6, color:'#fff', display:'flex', alignItems:'center', gap:10 }}>
-                                                    {citizenTrackData.victim_name} <span style={{ fontSize:11, fontWeight:600, color:'#9db4d8', background:'#0f1117', border:'1px solid #262838', padding:'3px 8px', borderRadius:999 }}>{citizenTrackData.category}</span>
+                                                <div style={{ fontSize: 22, fontWeight: 800, marginTop: 6, color: '#fff', display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                    {citizenTrackData.victim_name} <span style={{ fontSize: 11, fontWeight: 600, color: '#9db4d8', background: '#0f1117', border: '1px solid #262838', padding: '3px 8px', borderRadius: 999 }}>{citizenTrackData.category}</span>
                                                 </div>
-                                                <div style={{ fontSize:12, color:'#c9c8c1', marginTop:6 }}>Loss: <strong style={{ color:'#ff9a7a' }}>{citizenTrackData.reported_loss}</strong> · Chain: <span style={{ color:'#9db4d8' }}>{citizenTrackData.chain}</span> · Wallet: <code style={{ background:'#0f1117', padding:'2px 6px', borderRadius:4, border:'1px solid #262838', color:'#9db4d8' }}>{citizenTrackData.suspect_wallet_masked}</code></div>
-                                                <div style={{ marginTop:8, display:'flex', gap:8, flexWrap:'wrap' }}>
-                                                    <span style={{ fontSize:11, padding:'4px 8px', borderRadius:999, background:'rgba(76,175,125,0.12)', border:'1px solid rgba(76,175,125,0.28)', color:'#4caf7d', display:'inline-flex', alignItems:'center', gap:6 }}>🔒 Wallet encrypted at rest <code style={{ fontSize:10, background:'#0f1117', padding:'1px 6px', borderRadius:4 }}>{(citizenTrackData.suspect_wallet_encrypted||'').slice(0,22)}…</code></span>
-                                                    <button onClick={()=> setShowEncrypted(v=>!v)} style={{ fontSize:11, padding:'4px 10px', borderRadius:999, background: showEncrypted ? '#1e3a8a' : 'transparent', color: showEncrypted ? '#fff' : '#9aa0b4', border:'1px solid #262838', cursor:'pointer' }}>{showEncrypted ? 'Hide encrypted token' : 'Show encrypted token'}</button>
+                                                <div style={{ fontSize: 12, color: '#c9c8c1', marginTop: 6 }}>Loss: <strong style={{ color: '#ff9a7a' }}>{citizenTrackData.reported_loss}</strong> · Chain: <span style={{ color: '#9db4d8' }}>{citizenTrackData.chain}</span> · Wallet: <code style={{ background: '#0f1117', padding: '2px 6px', borderRadius: 4, border: '1px solid #262838', color: '#9db4d8' }}>{citizenTrackData.suspect_wallet_masked}</code></div>
+                                                <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                                    <span style={{ fontSize: 11, padding: '4px 8px', borderRadius: 999, background: 'rgba(76,175,125,0.12)', border: '1px solid rgba(76,175,125,0.28)', color: '#4caf7d', display: 'inline-flex', alignItems: 'center', gap: 6 }}>🔒 Wallet encrypted at rest <code style={{ fontSize: 10, background: '#0f1117', padding: '1px 6px', borderRadius: 4 }}>{(citizenTrackData.suspect_wallet_encrypted || '').slice(0, 22)}…</code></span>
+                                                    <button onClick={() => setShowEncrypted(v => !v)} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 999, background: showEncrypted ? '#1e3a8a' : 'transparent', color: showEncrypted ? '#fff' : '#9aa0b4', border: '1px solid #262838', cursor: 'pointer' }}>{showEncrypted ? 'Hide encrypted token' : 'Show encrypted token'}</button>
                                                 </div>
                                                 {showEncrypted && (
-                                                    <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:'auto' }} style={{ marginTop:10, background:'#0f1117', border:'1px solid #262838', borderRadius:6, padding:10, fontSize:11, color:'#c9c8c1' }}>
-                                                        <div style={{ fontWeight:700, color:'#e0654a', marginBottom:4 }}>🔐 Field-level encryption demo</div>
-                                                        <div style={{ fontFamily:'var(--font-mono)', wordBreak:'break-all', background:'#191b26', padding:8, borderRadius:4, border:'1px solid #262838' }}>{citizenTrackData.suspect_wallet_encrypted || citizenEncryptionMeta?.encrypted || 'enc:…'}</div>
-                                                        <div style={{ marginTop:6, color:'#8b8d9c' }}>Algorithm: <strong style={{ color:'#4caf7d' }}>{citizenEncryptionMeta?.algo || 'Fernet AES-128-CBC+HMAC'}</strong> · At rest in <code>ncrp_complaints.json</code> only as <code>enc:…</code>. Masked everywhere else. LEA decrypts with server-side key.</div>
-                                                        <div style={{ marginTop:6, display:'flex', gap:6, flexWrap:'wrap' }}>
-                                                            <span style={{ fontSize:10, background:'#191b26', border:'1px solid #262838', padding:'3px 7px', borderRadius:999 }}>Input sanitized (XSS stripped)</span>
-                                                            <span style={{ fontSize:10, background:'#191b26', border:'1px solid #262838', padding:'3px 7px', borderRadius:999 }}>Masked: {citizenTrackData.suspect_wallet_masked}</span>
-                                                            <span style={{ fontSize:10, background:'#191b26', border:'1px solid #262838', padding:'3px 7px', borderRadius:999 }}>Phone masked: {citizenTrackData.citizen_phone_masked}</span>
+                                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ marginTop: 10, background: '#0f1117', border: '1px solid #262838', borderRadius: 6, padding: 10, fontSize: 11, color: '#c9c8c1' }}>
+                                                        <div style={{ fontWeight: 700, color: '#e0654a', marginBottom: 4 }}>🔐 Field-level encryption demo</div>
+                                                        <div style={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all', background: '#191b26', padding: 8, borderRadius: 4, border: '1px solid #262838' }}>{citizenTrackData.suspect_wallet_encrypted || citizenEncryptionMeta?.encrypted || 'enc:…'}</div>
+                                                        <div style={{ marginTop: 6, color: '#8b8d9c' }}>Algorithm: <strong style={{ color: '#4caf7d' }}>{citizenEncryptionMeta?.algo || 'Fernet AES-128-CBC+HMAC'}</strong> · At rest in <code>ncrp_complaints.json</code> only as <code>enc:…</code>. Masked everywhere else. LEA decrypts with server-side key.</div>
+                                                        <div style={{ marginTop: 6, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                            <span style={{ fontSize: 10, background: '#191b26', border: '1px solid #262838', padding: '3px 7px', borderRadius: 999 }}>Input sanitized (XSS stripped)</span>
+                                                            <span style={{ fontSize: 10, background: '#191b26', border: '1px solid #262838', padding: '3px 7px', borderRadius: 999 }}>Masked: {citizenTrackData.suspect_wallet_masked}</span>
+                                                            <span style={{ fontSize: 10, background: '#191b26', border: '1px solid #262838', padding: '3px 7px', borderRadius: 999 }}>Phone masked: {citizenTrackData.citizen_phone_masked}</span>
                                                         </div>
                                                     </motion.div>
                                                 )}
                                             </div>
-                                            <div style={{ textAlign:'right', minWidth:210 }}>
-                                                <div style={{ fontSize:11, color:'#8b8d9c', fontWeight:700, letterSpacing:'0.04em', textTransform:'uppercase' }}>{citizenTrackData.golden_hour_active ? 'Golden Hour — freeze window' : citizenTrackData.golden_hour_expired ? 'Golden Hour expired' : 'Golden Hour'}</div>
-                                                <div style={{ fontFamily:'var(--font-mono)', fontSize:22, fontWeight:800, color: citizenTrackData.golden_hour_active ? '#ff9a7a' : '#8b8d9c', marginTop:4, display:'flex', alignItems:'center', gap:8, justifyContent:'flex-end' }}>
-                                                    {citizenTrackData.golden_hour_active && <span style={{ width:8, height:8, borderRadius:'50%', background:'#ff7a54', animation:'golden-pulse 1.1s infinite' }} />}
+                                            <div style={{ textAlign: 'right', minWidth: 210 }}>
+                                                <div style={{ fontSize: 11, color: '#8b8d9c', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{citizenTrackData.golden_hour_active ? 'Golden Hour — freeze window' : citizenTrackData.golden_hour_expired ? 'Golden Hour expired' : 'Golden Hour'}</div>
+                                                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 800, color: citizenTrackData.golden_hour_active ? '#ff9a7a' : '#8b8d9c', marginTop: 4, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+                                                    {citizenTrackData.golden_hour_active && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff7a54', animation: 'golden-pulse 1.1s infinite' }} />}
                                                     {citizenTrackData.golden_hour_remaining}
                                                 </div>
-                                                <div style={{ fontSize:11, color:'#9aa0b4', marginTop:4 }}>Officer: <strong style={{ color:'#4caf7d' }}>{citizenTrackData.assigned_officer}</strong></div>
-                                                <div style={{ fontSize:11, color:'#d9a441', marginTop:2 }}>ETA: {citizenTrackData.estimated_resolution}</div>
-                                                <div style={{ marginTop:10, background:'#0f1117', border:'1px solid #262838', borderRadius:999, padding:'4px 10px', display:'inline-flex', alignItems:'center', gap:8, fontSize:11, color:'#c9c8c1' }}>
-                                                    <span style={{ width:6, height:6, borderRadius:'50%', background: citizenTrackData.progress_percent>=95?'#4caf7d':'#d9a441' }} />
+                                                <div style={{ fontSize: 11, color: '#9aa0b4', marginTop: 4 }}>Officer: <strong style={{ color: '#4caf7d' }}>{citizenTrackData.assigned_officer}</strong></div>
+                                                <div style={{ fontSize: 11, color: '#d9a441', marginTop: 2 }}>ETA: {citizenTrackData.estimated_resolution}</div>
+                                                <div style={{ marginTop: 10, background: '#0f1117', border: '1px solid #262838', borderRadius: 999, padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#c9c8c1' }}>
+                                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: citizenTrackData.progress_percent >= 95 ? '#4caf7d' : '#d9a441' }} />
                                                     {citizenTrackData.current_stage_label} · {citizenTrackData.progress_percent}%
                                                 </div>
                                             </div>
                                         </div>
                                         {/* Progress dots */}
-                                        <div style={{ marginTop:16, display:'flex', gap:6, alignItems:'center' }}>
-                                            {citizenTrackData.timeline?.map((t, i)=> (
-                                                <div key={i} style={{ flex:1, height:6, borderRadius:999, background: t.status==='completed' ? '#4caf7d' : t.status==='active' ? '#d9a441' : '#262838', position:'relative', overflow:'hidden' }}>
-                                                    {t.status==='active' && <motion.div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} animate={{ x:['-100%','100%'] }} transition={{ duration:1.1, repeat:Infinity, ease:'linear' }} />}
+                                        <div style={{ marginTop: 16, display: 'flex', gap: 6, alignItems: 'center' }}>
+                                            {citizenTrackData.timeline?.map((t, i) => (
+                                                <div key={i} style={{ flex: 1, height: 6, borderRadius: 999, background: t.status === 'completed' ? '#4caf7d' : t.status === 'active' ? '#d9a441' : '#262838', position: 'relative', overflow: 'hidden' }}>
+                                                    {t.status === 'active' && <motion.div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} animate={{ x: ['-100%', '100%'] }} transition={{ duration: 1.1, repeat: Infinity, ease: 'linear' }} />}
                                                 </div>
                                             ))}
                                         </div>
-                                        <div style={{ display:'flex', justifyContent:'space-between', marginTop:6, fontSize:10, color:'#6d6f7d' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10, color: '#6d6f7d' }}>
                                             <span>0%</span><span>Live progression (auto-advances every ~8-25s)</span><span>100%</span>
                                         </div>
                                     </motion.div>
 
                                     {/* Main grid: timeline + hops + live feed */}
-                                    <div style={{ display:'grid', gridTemplateColumns:'1.2fr 0.9fr', gap:14 }}>
-                                        <div style={{ background:'#191b26', border:'1px solid #262838', borderRadius:8, padding:16 }}>
-                                            <div style={{ fontSize:12, fontWeight:800, color:'#e7e5dd', display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.9fr', gap: 14 }}>
+                                        <div style={{ background: '#191b26', border: '1px solid #262838', borderRadius: 8, padding: 16 }}>
+                                            <div style={{ fontSize: 12, fontWeight: 800, color: '#e7e5dd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                                                 <span>Investigation lifecycle — real-time</span>
-                                                <span style={{ fontSize:10, color:'#8b8d9c', background:'#0f1117', border:'1px solid #262838', padding:'3px 8px', borderRadius:999, display:'inline-flex', alignItems:'center', gap:6 }}>
-                                                    <span style={{ width:6, height:6, borderRadius:'50%', background:'#4caf7d', animation:'golden-pulse 1s infinite' }} /> Live
+                                                <span style={{ fontSize: 10, color: '#8b8d9c', background: '#0f1117', border: '1px solid #262838', padding: '3px 8px', borderRadius: 999, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4caf7d', animation: 'golden-pulse 1s infinite' }} /> Live
                                                 </span>
                                             </div>
-                                            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                                                {citizenTrackData.timeline?.map((st, idx)=> (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                {citizenTrackData.timeline?.map((st, idx) => (
                                                     <motion.div
                                                         key={st.stage}
-                                                        initial={{ opacity:0, x:-10 }}
-                                                        animate={{ opacity:1, x:0 }}
-                                                        transition={{ delay: idx*0.06 }}
+                                                        initial={{ opacity: 0, x: -10 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        transition={{ delay: idx * 0.06 }}
                                                         style={{
-                                                            display:'flex', gap:12, alignItems:'flex-start',
-                                                            padding:'11px 12px', borderRadius:8,
-                                                            background: st.status==='active' ? 'rgba(217,164,65,0.10)' : st.status==='completed' ? 'rgba(76,175,125,0.08)' : '#0f1117',
-                                                            border: `1px solid ${st.status==='active' ? 'rgba(217,164,65,0.32)' : st.status==='completed' ? 'rgba(76,175,125,0.22)' : '#262838'}`,
-                                                            position:'relative'
+                                                            display: 'flex', gap: 12, alignItems: 'flex-start',
+                                                            padding: '11px 12px', borderRadius: 8,
+                                                            background: st.status === 'active' ? 'rgba(217,164,65,0.10)' : st.status === 'completed' ? 'rgba(76,175,125,0.08)' : '#0f1117',
+                                                            border: `1px solid ${st.status === 'active' ? 'rgba(217,164,65,0.32)' : st.status === 'completed' ? 'rgba(76,175,125,0.22)' : '#262838'}`,
+                                                            position: 'relative'
                                                         }}
                                                     >
                                                         <div style={{
-                                                            width:28, height:28, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:13, fontWeight:800,
-                                                            background: st.status==='completed' ? '#4caf7d' : st.status==='active' ? '#d9a441' : '#262838',
-                                                            color: st.status==='pending' ? '#6d6f7d' : '#fff',
-                                                            border: st.status==='active' ? '2px solid #ffcc66' : 'none',
-                                                            boxShadow: st.status==='active' ? '0 0 12px rgba(217,164,65,0.5)' : st.status==='completed' ? '0 0 8px rgba(76,175,125,0.35)' : 'none'
+                                                            width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13, fontWeight: 800,
+                                                            background: st.status === 'completed' ? '#4caf7d' : st.status === 'active' ? '#d9a441' : '#262838',
+                                                            color: st.status === 'pending' ? '#6d6f7d' : '#fff',
+                                                            border: st.status === 'active' ? '2px solid #ffcc66' : 'none',
+                                                            boxShadow: st.status === 'active' ? '0 0 12px rgba(217,164,65,0.5)' : st.status === 'completed' ? '0 0 8px rgba(76,175,125,0.35)' : 'none'
                                                         }}>
-                                                            {st.status==='completed' ? '✓' : st.status==='active' ? '●' : idx+1}
+                                                            {st.status === 'completed' ? '✓' : st.status === 'active' ? '●' : idx + 1}
                                                         </div>
-                                                        <div style={{ flex:1 }}>
-                                                            <div style={{ fontSize:13, fontWeight:700, color: st.status==='pending' ? '#8b8d9c' : '#e7e5dd', display:'flex', justifyContent:'space-between', gap:8 }}>
+                                                        <div style={{ flex: 1 }}>
+                                                            <div style={{ fontSize: 13, fontWeight: 700, color: st.status === 'pending' ? '#8b8d9c' : '#e7e5dd', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                                                                 <span>{st.label}</span>
-                                                                <span style={{ fontFamily:'var(--font-mono)', fontSize:10, color: st.status==='pending' ? '#6d6f7d' : st.status==='active' ? '#d9a441' : '#4caf7d', background: st.status==='pending' ? 'transparent' : st.status==='active' ? 'rgba(217,164,65,0.14)' : 'rgba(76,175,125,0.14)', padding: st.status==='pending' ? 0 : '2px 6px', borderRadius:999, border: st.status==='pending' ? 'none' : `1px solid ${st.status==='active' ? 'rgba(217,164,65,0.28)' : 'rgba(76,175,125,0.28)'}` }}>{st.timestamp_display}</span>
+                                                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: st.status === 'pending' ? '#6d6f7d' : st.status === 'active' ? '#d9a441' : '#4caf7d', background: st.status === 'pending' ? 'transparent' : st.status === 'active' ? 'rgba(217,164,65,0.14)' : 'rgba(76,175,125,0.14)', padding: st.status === 'pending' ? 0 : '2px 6px', borderRadius: 999, border: st.status === 'pending' ? 'none' : `1px solid ${st.status === 'active' ? 'rgba(217,164,65,0.28)' : 'rgba(76,175,125,0.28)'}` }}>{st.timestamp_display}</span>
                                                             </div>
-                                                            <div style={{ fontSize:11, color: st.status==='pending' ? '#6d6f7d' : '#9db4d8', marginTop:3, lineHeight:1.45 }}>{st.desc}</div>
-                                                            {st.status==='active' && <div style={{ marginTop:8, height:4, background:'#0f1117', borderRadius:999, overflow:'hidden', border:'1px solid #262838' }}><motion.div style={{ height:'100%', background:'#d9a441' }} initial={{ width:0 }} animate={{ width:'60%' }} transition={{ duration:1.2, repeat:Infinity, repeatType:'reverse', ease:'easeInOut' }} /></div>}
+                                                            <div style={{ fontSize: 11, color: st.status === 'pending' ? '#6d6f7d' : '#9db4d8', marginTop: 3, lineHeight: 1.45 }}>{st.desc}</div>
+                                                            {st.status === 'active' && <div style={{ marginTop: 8, height: 4, background: '#0f1117', borderRadius: 999, overflow: 'hidden', border: '1px solid #262838' }}><motion.div style={{ height: '100%', background: '#d9a441' }} initial={{ width: 0 }} animate={{ width: '60%' }} transition={{ duration: 1.2, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }} /></div>}
                                                         </div>
                                                     </motion.div>
                                                 ))}
                                             </div>
                                         </div>
 
-                                        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-                                            <div style={{ background:'#191b26', border:'1px solid #262838', borderRadius:8, padding:16 }}>
-                                                <div style={{ fontSize:12, fontWeight:800, color:'#e7e5dd', marginBottom:10, display:'flex', justifyContent:'space-between' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                            <div style={{ background: '#191b26', border: '1px solid #262838', borderRadius: 8, padding: 16 }}>
+                                                <div style={{ fontSize: 12, fontWeight: 800, color: '#e7e5dd', marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
                                                     <span>Fund-flow trace (citizen view)</span>
-                                                    <span style={{ fontSize:10, color:'#6d6f7d' }}>Live hopping</span>
+                                                    <span style={{ fontSize: 10, color: '#6d6f7d' }}>Live hopping</span>
                                                 </div>
-                                                <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                                                    {(citizenTrackData.hops_preview || []).map((h, i)=> (
-                                                        <div key={i} style={{ display:'flex', gap:10, alignItems:'center', padding:'9px 10px', borderRadius:6, background: h.status==='completed' ? 'rgba(76,175,125,0.08)' : h.status==='active' ? 'rgba(217,164,65,0.10)' : '#0f1117', border:`1px solid ${h.status==='completed' ? 'rgba(76,175,125,0.2)' : h.status==='active' ? 'rgba(217,164,65,0.3)' : '#262838'}` }}>
-                                                            <div style={{ width:26, height:26, borderRadius:6, background: h.status==='completed' ? '#4caf7d' : h.status==='active' ? '#d9a441' : '#262838', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800 }}>{i+1}</div>
-                                                            <div style={{ flex:1 }}>
-                                                                <div style={{ fontSize:11, fontWeight:700, color: h.status==='pending' ? '#6d6f7d' : '#e7e5dd' }}>{h.label}</div>
-                                                                <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'#9db4d8' }}>{h.addr_masked}</div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                    {(citizenTrackData.hops_preview || []).map((h, i) => (
+                                                        <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '9px 10px', borderRadius: 6, background: h.status === 'completed' ? 'rgba(76,175,125,0.08)' : h.status === 'active' ? 'rgba(217,164,65,0.10)' : '#0f1117', border: `1px solid ${h.status === 'completed' ? 'rgba(76,175,125,0.2)' : h.status === 'active' ? 'rgba(217,164,65,0.3)' : '#262838'}` }}>
+                                                            <div style={{ width: 26, height: 26, borderRadius: 6, background: h.status === 'completed' ? '#4caf7d' : h.status === 'active' ? '#d9a441' : '#262838', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 }}>{i + 1}</div>
+                                                            <div style={{ flex: 1 }}>
+                                                                <div style={{ fontSize: 11, fontWeight: 700, color: h.status === 'pending' ? '#6d6f7d' : '#e7e5dd' }}>{h.label}</div>
+                                                                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#9db4d8' }}>{h.addr_masked}</div>
                                                             </div>
-                                                            <span style={{ fontSize:10, fontWeight:700, padding:'2px 6px', borderRadius:999, background: h.status==='completed' ? 'rgba(76,175,125,0.18)' : h.status==='active' ? 'rgba(217,164,65,0.18)' : '#0f1117', color: h.status==='completed' ? '#4caf7d' : h.status==='active' ? '#d9a441' : '#6d6f7d', border:`1px solid ${h.status==='completed' ? 'rgba(76,175,125,0.28)' : h.status==='active' ? 'rgba(217,164,65,0.28)' : '#262838'}` }}>{h.status==='completed' ? 'Traced' : h.status==='active' ? 'Tracing…' : 'Pending'}</span>
+                                                            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: h.status === 'completed' ? 'rgba(76,175,125,0.18)' : h.status === 'active' ? 'rgba(217,164,65,0.18)' : '#0f1117', color: h.status === 'completed' ? '#4caf7d' : h.status === 'active' ? '#d9a441' : '#6d6f7d', border: `1px solid ${h.status === 'completed' ? 'rgba(76,175,125,0.28)' : h.status === 'active' ? 'rgba(217,164,65,0.28)' : '#262838'}` }}>{h.status === 'completed' ? 'Traced' : h.status === 'active' ? 'Tracing…' : 'Pending'}</span>
                                                         </div>
                                                     ))}
-                                                    {(!citizenTrackData.hops_preview || citizenTrackData.hops_preview.length===0) && (
-                                                        <div style={{ fontSize:11, color:'#6d6f7d', textAlign:'center', padding:12 }}>Hops will appear as the on-chain trace progresses (every ~8s).</div>
+                                                    {(!citizenTrackData.hops_preview || citizenTrackData.hops_preview.length === 0) && (
+                                                        <div style={{ fontSize: 11, color: '#6d6f7d', textAlign: 'center', padding: 12 }}>Hops will appear as the on-chain trace progresses (every ~8s).</div>
                                                     )}
                                                 </div>
-                                                <div style={{ marginTop:10, fontSize:10, color:'#6d6f7d', display:'flex', alignItems:'center', gap:6, background:'#0f1117', padding:'7px 9px', borderRadius:6, border:'1px solid #262838' }}>
-                                                    <span>🔐</span> Addresses are <strong style={{ color:'#e7e5dd' }}>encrypted (Fernet)</strong> — you see masked. Next poll: <strong style={{ color:'#4caf7d' }}>3s</strong> · Tick #{citizenPollTick}
+                                                <div style={{ marginTop: 10, fontSize: 10, color: '#6d6f7d', display: 'flex', alignItems: 'center', gap: 6, background: '#0f1117', padding: '7px 9px', borderRadius: 6, border: '1px solid #262838' }}>
+                                                    <span>🔐</span> Addresses are <strong style={{ color: '#e7e5dd' }}>encrypted (Fernet)</strong> — you see masked. Next poll: <strong style={{ color: '#4caf7d' }}>3s</strong> · Tick #{citizenPollTick}
                                                 </div>
                                             </div>
 
-                                            <div style={{ background:'#191b26', border:'1px solid #262838', borderRadius:8, padding:16 }}>
-                                                <div style={{ fontSize:12, fontWeight:800, color:'#e7e5dd', marginBottom:8 }}>What happens next?</div>
-                                                <div style={{ fontSize:11, color:'#9aa0b4', lineHeight:1.6 }}>
-                                                    Your report is now in the <strong style={{ color:'#4caf7d' }}>I4C Golden Hour</strong> queue. The forensics grid is walking the wallet hops and will dispatch a <strong style={{ color:'#d9a441' }}>Section 91</strong> freeze to the terminal VASP. You’ll be notified by SMS at each stage — this screen updates live.
+                                            <div style={{ background: '#191b26', border: '1px solid #262838', borderRadius: 8, padding: 16 }}>
+                                                <div style={{ fontSize: 12, fontWeight: 800, color: '#e7e5dd', marginBottom: 8 }}>What happens next?</div>
+                                                <div style={{ fontSize: 11, color: '#9aa0b4', lineHeight: 1.6 }}>
+                                                    Your report is now in the <strong style={{ color: '#4caf7d' }}>I4C Golden Hour</strong> queue. The forensics grid is walking the wallet hops and will dispatch a <strong style={{ color: '#d9a441' }}>Section 91</strong> freeze to the terminal VASP. You’ll be notified by SMS at each stage — this screen updates live.
                                                 </div>
-                                                <div style={{ marginTop:12, display:'flex', gap:8, flexWrap:'wrap' }}>
-                                                    <button className="btn btn-navy btn-sm" onClick={()=> navigator.clipboard?.writeText(citizenTrackData.docket_no)}>Copy docket</button>
-                                                    <button className="btn btn-outline btn-sm" style={{ background:'#0f1117', color:'#9aa0b4', borderColor:'#262838' }} onClick={()=> window.print()}>Print acknowledgement</button>
-                                                    <button className="btn btn-outline btn-sm" style={{ background:'#0f1117', color:'#9aa0b4', borderColor:'#262838' }} onClick={()=> setCurrentPortal('landing')}>Back to home</button>
+                                                <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                                    <button className="btn btn-navy btn-sm" onClick={() => navigator.clipboard?.writeText(citizenTrackData.docket_no)}>Copy docket</button>
+                                                    <button className="btn btn-outline btn-sm" style={{ background: '#0f1117', color: '#9aa0b4', borderColor: '#262838' }} onClick={() => window.print()}>Print acknowledgement</button>
+                                                    <button className="btn btn-outline btn-sm" style={{ background: '#0f1117', color: '#9aa0b4', borderColor: '#262838' }} onClick={() => setCurrentPortal('landing')}>Back to home</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div style={{ display:'flex', gap:8, justifyContent:'center', marginTop:4 }}>
-                                        <button className="btn btn-outline btn-sm" style={{ background:'#191b26', color:'#9aa0b4', borderColor:'#262838' }} onClick={()=> setCitizenSubmitted(false)}>File another report</button>
-                                        <button className="btn btn-navy btn-sm" onClick={()=> setCurrentPortal('police')}>View as investigator (LEA)</button>
+                                    <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 4 }}>
+                                        <button className="btn btn-outline btn-sm" style={{ background: '#191b26', color: '#9aa0b4', borderColor: '#262838' }} onClick={() => setCitizenSubmitted(false)}>File another report</button>
+                                        <button className="btn btn-navy btn-sm" onClick={() => setCurrentPortal('police')}>View as investigator (LEA)</button>
                                     </div>
                                 </>
                             )}
@@ -2678,10 +2740,10 @@ Cyber Crime Division`;
                         <div className="form-head">
                             <h2>I4C Cybercrime Forensic Grid</h2>
                             <p>Ministry of Home Affairs — Law Enforcement Officer (LEO) authentication</p>
-                            <div style={{ marginTop:10, display:'flex', gap:6, justifyContent:'center', flexWrap:'wrap' }}>
-                                <span style={{ fontSize:10, padding:'3px 7px', borderRadius:999, background:'rgba(33,96,63,0.10)', border:'1px solid #a9c7b3', color:'#21603f', fontWeight:700 }}>🔒 Hashed auth (HMAC)</span>
-                                <span style={{ fontSize:10, padding:'3px 7px', borderRadius:999, background:'rgba(224,101,74,0.10)', border:'1px solid #dcae9a', color:'#a8391c', fontWeight:700 }}>Rate-limit 10/min</span>
-                                <span style={{ fontSize:10, padding:'3px 7px', borderRadius:999, background:'rgba(59,90,134,0.10)', border:'1px solid #aeb8cd', color:'#223354', fontWeight:700 }}>Audit-logged</span>
+                            <div style={{ marginTop: 10, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: 10, padding: '3px 7px', borderRadius: 999, background: 'rgba(33,96,63,0.10)', border: '1px solid #a9c7b3', color: '#21603f', fontWeight: 700 }}>🔒 Hashed auth (HMAC)</span>
+                                <span style={{ fontSize: 10, padding: '3px 7px', borderRadius: 999, background: 'rgba(224,101,74,0.10)', border: '1px solid #dcae9a', color: '#a8391c', fontWeight: 700 }}>Rate-limit 10/min</span>
+                                <span style={{ fontSize: 10, padding: '3px 7px', borderRadius: 999, background: 'rgba(59,90,134,0.10)', border: '1px solid #aeb8cd', color: '#223354', fontWeight: 700 }}>Audit-logged</span>
                             </div>
                         </div>
 
@@ -2793,342 +2855,342 @@ Cyber Crime Division`;
                     </AnimatePresence>
 
                     <>
-                    {/* LAYER 1: FORENSICS CANVAS */}
-                    {activeLayer === 'forensics' && (
-                        <motion.div
-                            key="forensics"
-                            style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                        >
-                            {isMobile && (
-                                <div className="mobile-tabs">
-                                    <button className={mobileViewTab === 'threat' ? 'active' : ''} onClick={() => setMobileViewTab('threat')}>Threat &amp; case</button>
-                                    <button
-                                        className={mobileViewTab === 'canvas' ? 'active' : ''}
-                                        onClick={() => { setMobileViewTab('canvas'); setTimeout(() => { if (cyRef.current) { cyRef.current.resize(); cyRef.current.fit(undefined, 30); } }, 60); }}
-                                    >
-                                        Graph canvas
-                                    </button>
-                                    <button className={mobileViewTab === 'inspector' ? 'active' : ''} onClick={() => setMobileViewTab('inspector')}>Inspector &amp; ML</button>
-                                </div>
-                            )}
-
-                            <div className="workspace" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
-
-                                {/* LEFT SIDEBAR */}
-                                <div className="ws-sidebar" style={{ width: isMobile ? '100%' : 320, display: (!isMobile || mobileViewTab === 'threat') ? 'flex' : 'none' }}>
-                                    {!isIsolated ? (
-                                    <div className={`golden-hour${goldenHourUrgent ? ' golden-hour-urgent' : ''}`}>
-                                        <div className="golden-hour-row">
-                                            <span className="golden-hour-label">Golden Hour response clock</span>
-                                            <span className="golden-hour-clock">{formatGoldenHour(secondsRemaining)}</span>
-                                        </div>
-                                        <div className="golden-hour-desc">Critical window to mandate a VASP debit freeze before liquidation.</div>
-                                    </div>
-                                    ) : (
-                                    <div className="ws-panel" style={{ background: 'rgba(107,114,128,0.08)', border: '1px solid #3a3f52', borderLeft: '3px solid #6d6f7d' }}>
-                                        <div style={{ fontSize: 11, fontWeight: 800, color: '#9aa0b4', letterSpacing: '0.04em' }}>Golden Hour — no window</div>
-                                        <div style={{ fontSize: 11, color: '#8b8d9c', marginTop: 4, lineHeight: 1.45 }}>Isolated wallet — no outgoing hops detected. No VASP freeze required; monitoring only. Threat <strong style={{ color:'#6d6f7d' }}>LOW</strong>.</div>
-                                    </div>
-                                    )}
-
-                                    <div className="ws-panel">
-                                        <div className="k">Active docket · {activeDataset.caseMeta.docket_no}</div>
-                                        <div className="v">{activeDataset.caseMeta.victim_name}</div>
-                                        <div style={{ fontSize: 12, color: '#4caf7d', fontWeight: 600, margin: '4px 0' }}>Reported loss: {activeDataset.caseMeta.reported_loss}</div>
-                                        <div style={{ fontSize: 11 }} className="ws-muted"><strong style={{ color: '#e7e5dd' }}>Category:</strong> {activeDataset.caseMeta.category}</div>
-                                    </div>
-
-                                    <div className="ws-panel risk-block">
-                                        <RiskRing score={risk.overall_risk_score} />
-                                        <div>
-                                            <div className="k">Threat level</div>
-                                            <div className="v" style={{ color: (risk.risk_rating === 'CRITICAL' || risk.risk_rating === 'HIGH') ? '#e0654a' : '#4caf7d' }}>{risk.risk_rating}</div>
-                                            <div style={{ fontSize: 11 }} className="ws-muted">AI topological risk score</div>
-                                        </div>
-                                    </div>
-
-                                    {!isIsolated && primaryAttr ? (
-                                    <div className={`vasp-card ${primaryAttr?.category === 'CEX' ? 'hit' : 'warn'}`}>
-                                        <div className="head" style={{ color: primaryAttr?.category === 'CEX' ? '#4caf7d' : '#e0876f' }}>Actionable VASP identified — Section 91 target</div>
-                                        <div className="name">{primaryAttr?.entity_name}</div>
-                                        <div className="meta">Distance: {primaryAttr?.hop_distance} hops · Confidence: {primaryAttr?.confidence_score}% · FIU: {primaryAttr?.fiu_status}</div>
-                                        <div className="contact"><strong>VASP desk:</strong> {primaryAttr?.compliance_contact}</div>
-                                        <motion.button
-                                            className="btn btn-rust btn-block"
-                                            style={{ marginTop: 10, fontSize: 12, padding: '9px 10px' }}
-                                            onClick={handleLaunchDispatch}
-                                            whileHover={{ scale: 1.015 }}
-                                            whileTap={{ scale: 0.97 }}
-                                            title={`Dispatch freeze to ${primaryAttr?.compliance_contact}`}
+                        {/* LAYER 1: FORENSICS CANVAS */}
+                        {activeLayer === 'forensics' && (
+                            <motion.div
+                                key="forensics"
+                                style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                                {isMobile && (
+                                    <div className="mobile-tabs">
+                                        <button className={mobileViewTab === 'threat' ? 'active' : ''} onClick={() => setMobileViewTab('threat')}>Threat &amp; case</button>
+                                        <button
+                                            className={mobileViewTab === 'canvas' ? 'active' : ''}
+                                            onClick={() => { setMobileViewTab('canvas'); setTimeout(() => { if (cyRef.current) { cyRef.current.resize(); cyRef.current.fit(undefined, 30); } }, 60); }}
                                         >
-                                            ⚡ Freeze VASP — Dispatch Sec. 91
-                                        </motion.button>
-                                        <div style={{ fontSize: 10, color: '#8b8d9c', textAlign: 'center', marginTop: 6, fontFamily: 'var(--font-mono)' }}>
-                                            Live: {formatISTTime(nowIST)} IST · One-click SAHYOG gateway
-                                        </div>
+                                            Graph canvas
+                                        </button>
+                                        <button className={mobileViewTab === 'inspector' ? 'active' : ''} onClick={() => setMobileViewTab('inspector')}>Inspector &amp; ML</button>
                                     </div>
-                                    ) : (
-                                    <div className="vasp-card neutral">
-                                        <div className="head" style={{ color: '#9aa0b4' }}>No VASP identified — monitoring only</div>
-                                        <div className="name" style={{ color: '#e7e5dd', fontSize: 14 }}>Isolated wallet — no Section 91 target</div>
-                                        <div className="meta">No outgoing hops to exchange/mixer/bridge. Threat LOW — no debit freeze required at this time.</div>
-                                        <div className="contact" style={{ color: '#6d6f7d' }}><strong>Status:</strong> Monitoring · Expand max_depth if new hops appear</div>
-                                    </div>
-                                    )}
+                                )}
 
-                                    {provenance && (
-                                        <div style={{ fontSize: 11, padding: '9px 10px', borderRadius: 4, background: provenance.includes('DEMO_MOCK_DATA') ? 'rgba(217,164,65,0.12)' : 'rgba(76,175,125,0.12)', border: `1px solid ${provenance.includes('DEMO_MOCK_DATA') ? '#d9a441' : '#4caf7d'}`, color: provenance.includes('DEMO_MOCK_DATA') ? '#f0c56e' : '#4caf7d' }}>
-                                            <div style={{ fontWeight: 700, marginBottom: 2 }}>Data provenance</div>
-                                            <div>{provenance.join(', ').replace(/LIVE_/g,'').replace(/DEMO_MOCK_DATA/g,'Demo dataset')} {provenance.includes('DEMO_MOCK_DATA') ? '⚠️ Demo-backed hops' : '✓ Live on-chain'}</div>
+                                <div className="workspace" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
+
+                                    {/* LEFT SIDEBAR */}
+                                    <div className="ws-sidebar" style={{ width: isMobile ? '100%' : 320, display: (!isMobile || mobileViewTab === 'threat') ? 'flex' : 'none' }}>
+                                        {!isIsolated ? (
+                                            <div className={`golden-hour${goldenHourUrgent ? ' golden-hour-urgent' : ''}`}>
+                                                <div className="golden-hour-row">
+                                                    <span className="golden-hour-label">Golden Hour response clock</span>
+                                                    <span className="golden-hour-clock">{formatGoldenHour(secondsRemaining)}</span>
+                                                </div>
+                                                <div className="golden-hour-desc">Critical window to mandate a VASP debit freeze before liquidation.</div>
+                                            </div>
+                                        ) : (
+                                            <div className="ws-panel" style={{ background: 'rgba(107,114,128,0.08)', border: '1px solid #3a3f52', borderLeft: '3px solid #6d6f7d' }}>
+                                                <div style={{ fontSize: 11, fontWeight: 800, color: '#9aa0b4', letterSpacing: '0.04em' }}>Golden Hour — no window</div>
+                                                <div style={{ fontSize: 11, color: '#8b8d9c', marginTop: 4, lineHeight: 1.45 }}>Isolated wallet — no outgoing hops detected. No VASP freeze required; monitoring only. Threat <strong style={{ color: '#6d6f7d' }}>LOW</strong>.</div>
+                                            </div>
+                                        )}
+
+                                        <div className="ws-panel">
+                                            <div className="k">Active docket · {activeDataset.caseMeta.docket_no}</div>
+                                            <div className="v">{activeDataset.caseMeta.victim_name}</div>
+                                            <div style={{ fontSize: 12, color: '#4caf7d', fontWeight: 600, margin: '4px 0' }}>Reported loss: {activeDataset.caseMeta.reported_loss}</div>
+                                            <div style={{ fontSize: 11 }} className="ws-muted"><strong style={{ color: '#e7e5dd' }}>Category:</strong> {activeDataset.caseMeta.category}</div>
                                         </div>
-                                    )}
 
-                                    <div style={{ flex: 1 }}>
-                                        <div className="k" style={{ marginBottom: 8 }}>Detected typologies</div>
-                                        <div className="stack" style={{ gap: 6 }}>
-                                            {risk.detected_patterns?.map((p, idx) => (
-                                                <div key={idx} className="typology-item">{p}</div>
-                                            ))}
+                                        <div className="ws-panel risk-block">
+                                            <RiskRing score={risk.overall_risk_score} />
+                                            <div>
+                                                <div className="k">Threat level</div>
+                                                <div className="v" style={{ color: (risk.risk_rating === 'CRITICAL' || risk.risk_rating === 'HIGH') ? '#e0654a' : '#4caf7d' }}>{risk.risk_rating}</div>
+                                                <div style={{ fontSize: 11 }} className="ws-muted">AI topological risk score</div>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <button
-                                        onClick={() => { setDemoActive(true); setDemoStep(0); setActiveLayer('forensics'); handleSelectChain('ethereum'); }}
-                                        style={{ width: '100%', padding: '9px 10px', borderRadius: 6, background: 'transparent', border: '1px dashed #3a3f5a', color: '#9aa0b4', fontSize: 11, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.02em' }}
-                                        title="Run 5-step guided tour (replaces the old '?' icon)"
-                                    >
-                                        ▶ Guided tour — 5 steps
-                                    </button>
-                                </div>
-
-                                {/* CENTER CANVAS — forensic grid with QoL controls */}
-                                <div className="ws-center" style={{ display: (!isMobile || mobileViewTab === 'canvas') ? 'flex' : 'none' }}>
-                                    <div className="ws-toolbar">
-                                        <div className="chain-tabs" role="tablist" aria-label="Chain selector">
-                                            {CHAIN_TABS.map((c) => (
+                                        {!isIsolated && primaryAttr ? (
+                                            <div className={`vasp-card ${primaryAttr?.category === 'CEX' ? 'hit' : 'warn'}`}>
+                                                <div className="head" style={{ color: primaryAttr?.category === 'CEX' ? '#4caf7d' : '#e0876f' }}>Actionable VASP identified — Section 91 target</div>
+                                                <div className="name">{primaryAttr?.entity_name}</div>
+                                                <div className="meta">Distance: {primaryAttr?.hop_distance} hops · Confidence: {primaryAttr?.confidence_score}% · FIU: {primaryAttr?.fiu_status}</div>
+                                                <div className="contact"><strong>VASP desk:</strong> {primaryAttr?.compliance_contact}</div>
                                                 <motion.button
-                                                    key={c.key}
-                                                    className={selectedChainKey === c.key ? 'active' : ''}
-                                                    onClick={() => handleSelectChain(c.key)}
-                                                    whileTap={{ scale: 0.96 }}
-                                                    title={`Switch to ${c.label}`}
+                                                    className="btn btn-rust btn-block"
+                                                    style={{ marginTop: 10, fontSize: 12, padding: '9px 10px' }}
+                                                    onClick={handleLaunchDispatch}
+                                                    whileHover={{ scale: 1.015 }}
+                                                    whileTap={{ scale: 0.97 }}
+                                                    title={`Dispatch freeze to ${primaryAttr?.compliance_contact}`}
                                                 >
-                                                    {selectedChainKey === c.key && <TabPill layoutId="chainPill" />}
-                                                    <span className="tab-label">{c.label}</span>
+                                                    ⚡ Freeze VASP — Dispatch Sec. 91
+                                                </motion.button>
+                                                <div style={{ fontSize: 10, color: '#8b8d9c', textAlign: 'center', marginTop: 6, fontFamily: 'var(--font-mono)' }}>
+                                                    Live: {formatISTTime(nowIST)} IST · One-click SAHYOG gateway
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="vasp-card neutral">
+                                                <div className="head" style={{ color: '#9aa0b4' }}>No VASP identified — monitoring only</div>
+                                                <div className="name" style={{ color: '#e7e5dd', fontSize: 14 }}>Isolated wallet — no Section 91 target</div>
+                                                <div className="meta">No outgoing hops to exchange/mixer/bridge. Threat LOW — no debit freeze required at this time.</div>
+                                                <div className="contact" style={{ color: '#6d6f7d' }}><strong>Status:</strong> Monitoring · Expand max_depth if new hops appear</div>
+                                            </div>
+                                        )}
+
+                                        {provenance && (
+                                            <div style={{ fontSize: 11, padding: '9px 10px', borderRadius: 4, background: provenance.includes('DEMO_MOCK_DATA') ? 'rgba(217,164,65,0.12)' : 'rgba(76,175,125,0.12)', border: `1px solid ${provenance.includes('DEMO_MOCK_DATA') ? '#d9a441' : '#4caf7d'}`, color: provenance.includes('DEMO_MOCK_DATA') ? '#f0c56e' : '#4caf7d' }}>
+                                                <div style={{ fontWeight: 700, marginBottom: 2 }}>Data provenance</div>
+                                                <div>{provenance.join(', ').replace(/LIVE_/g, '').replace(/DEMO_MOCK_DATA/g, 'Demo dataset')} {provenance.includes('DEMO_MOCK_DATA') ? '⚠️ Demo-backed hops' : '✓ Live on-chain'}</div>
+                                            </div>
+                                        )}
+
+                                        <div style={{ flex: 1 }}>
+                                            <div className="k" style={{ marginBottom: 8 }}>Detected typologies</div>
+                                            <div className="stack" style={{ gap: 6 }}>
+                                                {risk.detected_patterns?.map((p, idx) => (
+                                                    <div key={idx} className="typology-item">{p}</div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => { setDemoActive(true); setDemoStep(0); setActiveLayer('forensics'); handleSelectChain('ethereum'); }}
+                                            style={{ width: '100%', padding: '9px 10px', borderRadius: 6, background: 'transparent', border: '1px dashed #3a3f5a', color: '#9aa0b4', fontSize: 11, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.02em' }}
+                                            title="Run 5-step guided tour (replaces the old '?' icon)"
+                                        >
+                                            ▶ Guided tour — 5 steps
+                                        </button>
+                                    </div>
+
+                                    {/* CENTER CANVAS — forensic grid with QoL controls */}
+                                    <div className="ws-center" style={{ display: (!isMobile || mobileViewTab === 'canvas') ? 'flex' : 'none' }}>
+                                        <div className="ws-toolbar">
+                                            <div className="chain-tabs" role="tablist" aria-label="Chain selector">
+                                                {CHAIN_TABS.map((c) => (
+                                                    <motion.button
+                                                        key={c.key}
+                                                        className={selectedChainKey === c.key ? 'active' : ''}
+                                                        onClick={() => handleSelectChain(c.key)}
+                                                        whileTap={{ scale: 0.96 }}
+                                                        title={`Switch to ${c.label}`}
+                                                    >
+                                                        {selectedChainKey === c.key && <TabPill layoutId="chainPill" />}
+                                                        <span className="tab-label">{c.label}</span>
+                                                    </motion.button>
+                                                ))}
+                                            </div>
+
+                                            <div className="trace-bar">
+                                                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                                    <span style={{ position: 'absolute', left: 9, color: '#6d6f7d', fontSize: 12 }}><SearchTraceIcon size={14} /></span>
+                                                    <input
+                                                        type="text"
+                                                        value={suspectInput}
+                                                        onChange={(e) => setSuspectInput(e.target.value)}
+                                                        placeholder="Wallet (0x…, T…, bc1… )"
+                                                        style={{ width: isMobile ? '100%' : 360, paddingLeft: 28 }}
+                                                        onKeyDown={(e) => { if (e.key === 'Enter') handleTraceWallet(suspectInput); }}
+                                                    />
+                                                </div>
+                                                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }} onClick={() => handleTraceWallet(suspectInput)} disabled={tracingLive} title={authToken ? 'Run authenticated trace (live + demo fallback)' : 'Run trace — login for live attribution'}>
+                                                    {tracingLive ? 'Tracing…' : 'Run trace'}
+                                                </motion.button>
+                                                <motion.button
+                                                    type="button"
+                                                    className="cmdk-trigger"
+                                                    onClick={() => setShowCommandPalette(true)}
+                                                    title="Command palette (Ctrl+K)"
+                                                    whileHover={{ scale: 1.04 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                >
+                                                    <span>Quick actions</span>
+                                                    <kbd>⌘K</kbd>
+                                                </motion.button>
+                                            </div>
+                                        </div>
+
+                                        <div ref={containerRef} className="graph-canvas" />
+                                        <div className="canvas-controls" aria-label="Canvas controls">
+                                            <button onClick={() => { if (cyRef.current) cyRef.current.zoom(cyRef.current.zoom() * 1.22); }} title="Zoom in">＋</button>
+                                            <button onClick={() => { if (cyRef.current) cyRef.current.zoom(cyRef.current.zoom() * 0.82); }} title="Zoom out">－</button>
+                                            <button onClick={() => { if (cyRef.current) { cyRef.current.fit(undefined, 40); cyRef.current.center(); } }} title="Fit to screen">⛶</button>
+                                        </div>
+
+                                        <div className="legend-bar">
+                                            <div className="items">
+                                                <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.rust, boxShadow: `0 0 8px ${GRAPH_COLORS.rust}` }} /> Suspect origin</span>
+                                                <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.slate, boxShadow: `0 0 8px ${GRAPH_COLORS.slate}` }} /> Mule layering</span>
+                                                <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.green, boxShadow: `0 0 8px ${GRAPH_COLORS.green}` }} /> Exchange / VASP</span>
+                                                <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.navy, boxShadow: `0 0 8px ${GRAPH_COLORS.navy}` }} /> Cross-chain bridge</span>
+                                            </div>
+                                            <div style={{ color: '#9db4d8', fontWeight: 600 }}>Live fund-flow animation active</div>
+                                        </div>
+                                    </div>
+
+                                    {/* RIGHT INSPECTOR */}
+                                    <div className="ws-inspector" style={{ width: isMobile ? '100%' : 340, display: (!isMobile || mobileViewTab === 'inspector') ? 'flex' : 'none' }}>
+                                        <div className="inspector-tabs">
+                                            {[
+                                                ['inspector', 'Inspector'],
+                                                ['custody', 'Custody trail'],
+                                                ['ml', 'ML heuristics'],
+                                                ['legal', 'Sec. 91'],
+                                            ].map(([key, label]) => (
+                                                <motion.button
+                                                    key={key}
+                                                    className={activeTab === key ? 'active' : ''}
+                                                    onClick={() => setActiveTab(key)}
+                                                    whileTap={{ scale: 0.96 }}
+                                                >
+                                                    {activeTab === key && <TabPill layoutId="inspectorPill" />}
+                                                    <span className="tab-label">{label}</span>
                                                 </motion.button>
                                             ))}
                                         </div>
 
-                                        <div className="trace-bar">
-                                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                                <span style={{ position: 'absolute', left: 9, color: '#6d6f7d', fontSize: 12 }}><SearchTraceIcon size={14} /></span>
-                                                <input
-                                                    type="text"
-                                                    value={suspectInput}
-                                                    onChange={(e) => setSuspectInput(e.target.value)}
-                                                    placeholder="Wallet (0x…, T…, bc1… )"
-                                                    style={{ width: isMobile ? '100%' : 360, paddingLeft: 28 }}
-                                                    onKeyDown={(e) => { if (e.key === 'Enter') handleTraceWallet(suspectInput); }}
-                                                />
-                                            </div>
-                                            <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }} onClick={() => handleTraceWallet(suspectInput)} disabled={tracingLive} title={authToken ? 'Run authenticated trace (live + demo fallback)' : 'Run trace — login for live attribution'}>
-                                                {tracingLive ? 'Tracing…' : 'Run trace'}
-                                            </motion.button>
-                                            <motion.button
-                                                type="button"
-                                                className="cmdk-trigger"
-                                                onClick={() => setShowCommandPalette(true)}
-                                                title="Command palette (Ctrl+K)"
-                                                whileHover={{ scale: 1.04 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                <span>Quick actions</span>
-                                                <kbd>⌘K</kbd>
-                                            </motion.button>
-                                        </div>
-                                    </div>
-
-                                    <div ref={containerRef} className="graph-canvas" />
-                                    <div className="canvas-controls" aria-label="Canvas controls">
-                                        <button onClick={() => { if (cyRef.current) cyRef.current.zoom(cyRef.current.zoom()*1.22); }} title="Zoom in">＋</button>
-                                        <button onClick={() => { if (cyRef.current) cyRef.current.zoom(cyRef.current.zoom()*0.82); }} title="Zoom out">－</button>
-                                        <button onClick={() => { if (cyRef.current) { cyRef.current.fit(undefined, 40); cyRef.current.center(); } }} title="Fit to screen">⛶</button>
-                                    </div>
-
-                                    <div className="legend-bar">
-                                        <div className="items">
-                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.rust, boxShadow: `0 0 8px ${GRAPH_COLORS.rust}` }} /> Suspect origin</span>
-                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.slate, boxShadow: `0 0 8px ${GRAPH_COLORS.slate}` }} /> Mule layering</span>
-                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.green, boxShadow: `0 0 8px ${GRAPH_COLORS.green}` }} /> Exchange / VASP</span>
-                                            <span className="legend-item"><span className="legend-dot" style={{ background: GRAPH_COLORS.navy, boxShadow: `0 0 8px ${GRAPH_COLORS.navy}` }} /> Cross-chain bridge</span>
-                                        </div>
-                                        <div style={{ color: '#9db4d8', fontWeight: 600 }}>Live fund-flow animation active</div>
-                                    </div>
-                                </div>
-
-                                {/* RIGHT INSPECTOR */}
-                                <div className="ws-inspector" style={{ width: isMobile ? '100%' : 340, display: (!isMobile || mobileViewTab === 'inspector') ? 'flex' : 'none' }}>
-                                    <div className="inspector-tabs">
-                                        {[
-                                            ['inspector', 'Inspector'],
-                                            ['custody', 'Custody trail'],
-                                            ['ml', 'ML heuristics'],
-                                            ['legal', 'Sec. 91'],
-                                        ].map(([key, label]) => (
-                                            <motion.button
-                                                key={key}
-                                                className={activeTab === key ? 'active' : ''}
-                                                onClick={() => setActiveTab(key)}
-                                                whileTap={{ scale: 0.96 }}
-                                            >
-                                                {activeTab === key && <TabPill layoutId="inspectorPill" />}
-                                                <span className="tab-label">{label}</span>
-                                            </motion.button>
-                                        ))}
-                                    </div>
-
-                                    {activeTab === 'inspector' && (
-                                        <div className="inspector-body">
-                                            <div className="eyebrow">Selected wallet entity</div>
-                                            {selectedNode ? (
-                                                <div className="entity-card">
-                                                    <div>
-                                                        <div className="k">Entity name</div>
-                                                        <div className="big">{selectedNode.entity_name}</div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="k">Classification</div>
-                                                        <div style={{ fontSize: 13, fontWeight: 700, color: selectedNode.entity_type === 'CEX' ? '#4caf7d' : (selectedNode.entity_type === 'SUSPECT' ? '#e0654a' : '#9db4d8') }}>
-                                                            {selectedNode.entity_type} ({selectedNode.tag})
+                                        {activeTab === 'inspector' && (
+                                            <div className="inspector-body">
+                                                <div className="eyebrow">Selected wallet entity</div>
+                                                {selectedNode ? (
+                                                    <div className="entity-card">
+                                                        <div>
+                                                            <div className="k">Entity name</div>
+                                                            <div className="big">{selectedNode.entity_name}</div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="k">Classification</div>
+                                                            <div style={{ fontSize: 13, fontWeight: 700, color: selectedNode.entity_type === 'CEX' ? '#4caf7d' : (selectedNode.entity_type === 'SUSPECT' ? '#e0654a' : '#9db4d8') }}>
+                                                                {selectedNode.entity_type} ({selectedNode.tag})
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="k">Hop level</div>
+                                                            <div style={{ fontSize: 13 }}>Hop {selectedNode.hop_level} from origin</div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="k">Wallet address</div>
+                                                            <div className="addr">{selectedNode.full_address}</div>
                                                         </div>
                                                     </div>
-                                                    <div>
-                                                        <div className="k">Hop level</div>
-                                                        <div style={{ fontSize: 13 }}>Hop {selectedNode.hop_level} from origin</div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="k">Wallet address</div>
-                                                        <div className="addr">{selectedNode.full_address}</div>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="empty-note">Click any node on the graph to inspect the wallet entity and risk level.</div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {activeTab === 'custody' && (
-                                        <div className="inspector-body">
-                                            <div className="eyebrow">Transaction hops (audit trail) — Indian ₹</div>
-                                            {provenance && (
-                                                <div style={{ fontSize: 11, padding: '7px 9px', borderRadius: 4, background: provenance.includes('DEMO_MOCK_DATA') ? 'rgba(217,164,65,0.12)' : 'rgba(76,175,125,0.12)', border: `1px solid ${provenance.includes('DEMO_MOCK_DATA') ? '#d9a441' : '#4caf7d'}`, color: provenance.includes('DEMO_MOCK_DATA') ? '#d9a441' : '#4caf7d', marginBottom: 8 }}>
-                                                    Data provenance: {provenance.join(', ').replace(/LIVE_/g,'').replace(/DEMO_MOCK_DATA/g,'Demo dataset')} {provenance.includes('DEMO_MOCK_DATA') ? '— demo trail (court will require live verification)' : '— live on-chain'}
-                                                </div>
-                                            )}
-                                            {activeDataset.custody_trail.map((h, i) => (
-                                                <div key={i} className="hop-card">
-                                                    <div className="top">
-                                                        <span style={{ color: '#9db4d8', fontWeight: 700 }}>Hop #{h.hop}</span>
-                                                        <span style={{ color: '#4caf7d', fontWeight: 700 }}>{h.value_eth} {h.token} (<AnimatedCounter value={h.value_inr} prefix="₹" formatter={(v) => formatInrIndian(Math.round(v))} />)</span>
-                                                    </div>
-                                                    <div className="ws-muted" style={{ fontSize: 11, marginBottom: 2 }}>
-                                                        Target: <strong style={{ color: '#e7e5dd' }}>{h.to_name}</strong> · <span style={{ color: '#a6a397' }}>{h.value_inr_human || formatInrHuman(h.value_inr)}</span>
-                                                    </div>
-                                                    {h.data_source && (
-                                                        <div style={{ fontSize: 10, color: h.data_source === 'DEMO_MOCK_DATA' ? '#d9a441' : '#4caf7d', marginBottom: 4 }}>
-                                                            Source: {h.data_source.replace('LIVE_','').replace('DEMO_MOCK_DATA','Demo dataset')}
-                                                        </div>
-                                                    )}
-                                                    <div className="tx">Tx: {h.tx_hash.slice(0, 24)}...</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {activeTab === 'ml' && (
-                                        <div className="inspector-body">
-                                            <div className="eyebrow">Forensic ML topology analyzer — explainable</div>
-                                            <div className="ws-panel" style={{ borderLeft: '3px solid #3b5a86' }}>
-                                                <div className="k" style={{ marginBottom: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <span>Model architecture</span>
-                                                    <span style={{ fontSize: 10, background: '#0f1117', border: '1px solid #262838', padding: '2px 6px', borderRadius: 4, color: '#9db4d8' }}>GNN · RF</span>
-                                                </div>
-                                                <div style={{ fontSize: 12.5, fontWeight: 700, color: '#9db4d8', margin: '4px 0 10px', lineHeight: 1.35 }}>{mlData.model_name}</div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 8, alignItems: 'center' }}>
-                                                    <span className="ws-muted">Predicted entity</span>
-                                                    <strong style={{ color: '#4caf7d', background: 'rgba(76,175,125,0.12)', border: '1px solid rgba(76,175,125,0.22)', padding: '2px 7px', borderRadius: 4 }}>{mlData.predicted_type}</strong>
-                                                </div>
-                                                <div style={{ marginBottom: 8 }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-                                                        <span className="ws-muted">Inference confidence</span>
-                                                        <strong style={{ color: '#cddcf5' }}>{mlData.confidence}%</strong>
-                                                    </div>
-                                                    <div style={{ height: 6, background: '#0f1117', borderRadius: 999, overflow: 'hidden', border: '1px solid #262838' }}>
-                                                        <div style={{ width: `${mlData.confidence}%`, height: '100%', background: mlData.confidence > 90 ? '#4caf7d' : mlData.confidence > 75 ? '#d9a441' : '#9db4d8', transition: 'width 0.6s ease' }} />
-                                                    </div>
-                                                </div>
-                                                {mlData.laundering_probability && (
-                                                    <div>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-                                                            <span className="ws-muted">Laundering probability</span>
-                                                            <strong style={{ color: '#e0654a' }}>{mlData.laundering_probability}%</strong>
-                                                        </div>
-                                                        <div style={{ height: 6, background: '#0f1117', borderRadius: 999, overflow: 'hidden', border: '1px solid #262838' }}>
-                                                            <div style={{ width: `${mlData.laundering_probability}%`, height: '100%', background: '#e0654a', transition: 'width 0.6s ease' }} />
-                                                        </div>
-                                                    </div>
+                                                ) : (
+                                                    <div className="empty-note">Click any node on the graph to inspect the wallet entity and risk level.</div>
                                                 )}
                                             </div>
+                                        )}
 
-                                            <div className="eyebrow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span>Topological feature vector</span>
-                                                <span style={{ fontSize: 10, color: '#6d6f7d', fontWeight: 600 }}>{mlData.features.length} signals</span>
-                                            </div>
-                                            <div className="stack" style={{ gap: 7 }}>
-                                                {mlData.features.map((f, i) => {
-                                                    const isAlert = f.status === 'ANOMALY' || f.status === 'CRITICAL' || f.status === 'BOT_SCRIPT' || f.status === 'SYBIL';
-                                                    const isWarn = f.status === 'HIGH' || f.status === 'DIRECT' || f.status === 'ACTIVE_HOP';
-                                                    return (
-                                                        <div key={i} className="feature-row" style={{ borderLeft: `3px solid ${isAlert ? '#e0654a' : isWarn ? '#d9a441' : '#3b5a86'}` }}>
-                                                            <div style={{ flex: 1 }}>
-                                                                <div style={{ fontWeight: 700, fontSize: 11.5, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: isAlert ? '#e0654a' : isWarn ? '#d9a441' : '#4caf7d', display: 'inline-block', boxShadow: `0 0 6px ${isAlert ? '#e0654a' : isWarn ? '#d9a441' : '#4caf7d'}` }} />
-                                                                    {f.name}
-                                                                </div>
-                                                                <div style={{ fontSize: 10, marginTop: 2 }} className="ws-muted">Baseline: {f.normal}</div>
+                                        {activeTab === 'custody' && (
+                                            <div className="inspector-body">
+                                                <div className="eyebrow">Transaction hops (audit trail) — Indian ₹</div>
+                                                {provenance && (
+                                                    <div style={{ fontSize: 11, padding: '7px 9px', borderRadius: 4, background: provenance.includes('DEMO_MOCK_DATA') ? 'rgba(217,164,65,0.12)' : 'rgba(76,175,125,0.12)', border: `1px solid ${provenance.includes('DEMO_MOCK_DATA') ? '#d9a441' : '#4caf7d'}`, color: provenance.includes('DEMO_MOCK_DATA') ? '#d9a441' : '#4caf7d', marginBottom: 8 }}>
+                                                        Data provenance: {provenance.join(', ').replace(/LIVE_/g, '').replace(/DEMO_MOCK_DATA/g, 'Demo dataset')} {provenance.includes('DEMO_MOCK_DATA') ? '— demo trail (court will require live verification)' : '— live on-chain'}
+                                                    </div>
+                                                )}
+                                                {activeDataset.custody_trail.map((h, i) => (
+                                                    <div key={i} className="hop-card">
+                                                        <div className="top">
+                                                            <span style={{ color: '#9db4d8', fontWeight: 700 }}>Hop #{h.hop}</span>
+                                                            <span style={{ color: '#4caf7d', fontWeight: 700 }}>{h.value_eth} {h.token} (<AnimatedCounter value={h.value_inr} prefix="₹" formatter={(v) => formatInrIndian(Math.round(v))} />)</span>
+                                                        </div>
+                                                        <div className="ws-muted" style={{ fontSize: 11, marginBottom: 2 }}>
+                                                            Target: <strong style={{ color: '#e7e5dd' }}>{h.to_name}</strong> · <span style={{ color: '#a6a397' }}>{h.value_inr_human || formatInrHuman(h.value_inr)}</span>
+                                                        </div>
+                                                        {h.data_source && (
+                                                            <div style={{ fontSize: 10, color: h.data_source === 'DEMO_MOCK_DATA' ? '#d9a441' : '#4caf7d', marginBottom: 4 }}>
+                                                                Source: {h.data_source.replace('LIVE_', '').replace('DEMO_MOCK_DATA', 'Demo dataset')}
                                                             </div>
-                                                            <div style={{ textAlign: 'right', minWidth: 86 }}>
-                                                                <div style={{ fontWeight: 800, marginBottom: 3, fontSize: 11 }}>{f.value}</div>
-                                                                <span
-                                                                    className="status-tag"
-                                                                    style={{
-                                                                        background: isAlert ? 'rgba(224,101,74,0.18)' : isWarn ? 'rgba(217,164,65,0.18)' : 'rgba(59,90,134,0.18)',
-                                                                        color: isAlert ? '#ff9a7a' : isWarn ? '#f0c56e' : '#9db4d8',
-                                                                        border: `1px solid ${isAlert ? 'rgba(224,101,74,0.28)' : isWarn ? 'rgba(217,164,65,0.28)' : 'rgba(59,90,134,0.28)'}`,
-                                                                        fontSize: 9, letterSpacing: '0.04em'
-                                                                    }}
-                                                                >
-                                                                    {f.status}
-                                                                </span>
+                                                        )}
+                                                        <div className="tx">Tx: {h.tx_hash.slice(0, 24)}...</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'ml' && (
+                                            <div className="inspector-body">
+                                                <div className="eyebrow">Forensic ML topology analyzer — explainable</div>
+                                                <div className="ws-panel" style={{ borderLeft: '3px solid #3b5a86' }}>
+                                                    <div className="k" style={{ marginBottom: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span>Model architecture</span>
+                                                        <span style={{ fontSize: 10, background: '#0f1117', border: '1px solid #262838', padding: '2px 6px', borderRadius: 4, color: '#9db4d8' }}>GNN · RF</span>
+                                                    </div>
+                                                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#9db4d8', margin: '4px 0 10px', lineHeight: 1.35 }}>{mlData.model_name}</div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 8, alignItems: 'center' }}>
+                                                        <span className="ws-muted">Predicted entity</span>
+                                                        <strong style={{ color: '#4caf7d', background: 'rgba(76,175,125,0.12)', border: '1px solid rgba(76,175,125,0.22)', padding: '2px 7px', borderRadius: 4 }}>{mlData.predicted_type}</strong>
+                                                    </div>
+                                                    <div style={{ marginBottom: 8 }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                                                            <span className="ws-muted">Inference confidence</span>
+                                                            <strong style={{ color: '#cddcf5' }}>{mlData.confidence}%</strong>
+                                                        </div>
+                                                        <div style={{ height: 6, background: '#0f1117', borderRadius: 999, overflow: 'hidden', border: '1px solid #262838' }}>
+                                                            <div style={{ width: `${mlData.confidence}%`, height: '100%', background: mlData.confidence > 90 ? '#4caf7d' : mlData.confidence > 75 ? '#d9a441' : '#9db4d8', transition: 'width 0.6s ease' }} />
+                                                        </div>
+                                                    </div>
+                                                    {mlData.laundering_probability && (
+                                                        <div>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                                                                <span className="ws-muted">Laundering probability</span>
+                                                                <strong style={{ color: '#e0654a' }}>{mlData.laundering_probability}%</strong>
+                                                            </div>
+                                                            <div style={{ height: 6, background: '#0f1117', borderRadius: 999, overflow: 'hidden', border: '1px solid #262838' }}>
+                                                                <div style={{ width: `${mlData.laundering_probability}%`, height: '100%', background: '#e0654a', transition: 'width 0.6s ease' }} />
                                                             </div>
                                                         </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
+                                                    )}
+                                                </div>
 
-                                    {activeTab === 'legal' && (
-                                        <div className="inspector-body">
-                                            <div className="eyebrow">Section 91 CrPC statutory notice</div>
-                                            <textarea
-                                                readOnly
-                                                className="legal-textarea"
-                                                value={`STATUTORY DIRECTIVE UNDER SECTION 91 Cr.P.C. / BNSS 2023
+                                                <div className="eyebrow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <span>Topological feature vector</span>
+                                                    <span style={{ fontSize: 10, color: '#6d6f7d', fontWeight: 600 }}>{mlData.features.length} signals</span>
+                                                </div>
+                                                <div className="stack" style={{ gap: 7 }}>
+                                                    {mlData.features.map((f, i) => {
+                                                        const isAlert = f.status === 'ANOMALY' || f.status === 'CRITICAL' || f.status === 'BOT_SCRIPT' || f.status === 'SYBIL';
+                                                        const isWarn = f.status === 'HIGH' || f.status === 'DIRECT' || f.status === 'ACTIVE_HOP';
+                                                        return (
+                                                            <div key={i} className="feature-row" style={{ borderLeft: `3px solid ${isAlert ? '#e0654a' : isWarn ? '#d9a441' : '#3b5a86'}` }}>
+                                                                <div style={{ flex: 1 }}>
+                                                                    <div style={{ fontWeight: 700, fontSize: 11.5, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: isAlert ? '#e0654a' : isWarn ? '#d9a441' : '#4caf7d', display: 'inline-block', boxShadow: `0 0 6px ${isAlert ? '#e0654a' : isWarn ? '#d9a441' : '#4caf7d'}` }} />
+                                                                        {f.name}
+                                                                    </div>
+                                                                    <div style={{ fontSize: 10, marginTop: 2 }} className="ws-muted">Baseline: {f.normal}</div>
+                                                                </div>
+                                                                <div style={{ textAlign: 'right', minWidth: 86 }}>
+                                                                    <div style={{ fontWeight: 800, marginBottom: 3, fontSize: 11 }}>{f.value}</div>
+                                                                    <span
+                                                                        className="status-tag"
+                                                                        style={{
+                                                                            background: isAlert ? 'rgba(224,101,74,0.18)' : isWarn ? 'rgba(217,164,65,0.18)' : 'rgba(59,90,134,0.18)',
+                                                                            color: isAlert ? '#ff9a7a' : isWarn ? '#f0c56e' : '#9db4d8',
+                                                                            border: `1px solid ${isAlert ? 'rgba(224,101,74,0.28)' : isWarn ? 'rgba(217,164,65,0.28)' : 'rgba(59,90,134,0.28)'}`,
+                                                                            fontSize: 9, letterSpacing: '0.04em'
+                                                                        }}
+                                                                    >
+                                                                        {f.status}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'legal' && (
+                                            <div className="inspector-body">
+                                                <div className="eyebrow">Section 91 CrPC statutory notice</div>
+                                                <textarea
+                                                    readOnly
+                                                    className="legal-textarea"
+                                                    value={`STATUTORY DIRECTIVE UNDER SECTION 91 Cr.P.C. / BNSS 2023
 
 TO: Legal & Compliance Department, ${primaryAttr?.entity_name}
 FROM: Investigating Officer, Cyber Crime Police Station (I4C Portal)
@@ -3145,205 +3207,205 @@ You are hereby directed to:
 
 Investigating Officer,
 Cyber Crime Division`}
-                                            />
-                                            <button className="btn btn-navy" onClick={handleCopyNotice}>
-                                                {copiedNotice ? 'Copied to clipboard' : 'Copy notice text'}
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {/* LAYER 2: NATIONAL INTELLIGENCE GRID — backend-backed, ErrorBoundary prevents white-screen */}
-                    {activeLayer === 'dashboard' && (
-                        <motion.div
-                            key="dashboard"
-                            className="intel-grid"
-                            style={{ background: '#0f1117', color: '#e7e5dd' }}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                        >
-                            <ErrorBoundary>
-                            <h2>National Cyber-Forensics Threat Intelligence Grid</h2>
-                            <p>Aggregated telemetry across state cyber cells, NCRP intake, and VASP freeze compliance.</p>
-
-                            {intelLoading && <div style={{ color:'#8b8d9c', fontSize:12, marginBottom:12 }}>Loading live intelligence…</div>}
-                            <div className="stat-grid">
-                                <div className="stat-card">
-                                    <div className="label">Total assets traced (FY 2026)</div>
-                                    <div className="num" style={{ color: '#4caf7d' }}>{intelData?.stats?.total_assets_display || '₹48,87,500'}</div>
-                                    <div className="sub">Across {intelData?.stats?.total_dockets || 142} cybercrime dockets · {intelData?.stats?.active_dockets || 4} active</div>
-                                </div>
-                                <div className="stat-card">
-                                    <div className="label">FIU-IND compliant VASPs</div>
-                                    <div className="num" style={{ color: '#9db4d8' }}>{intelData?.stats?.fiu_vasps_indexed || 28} registered</div>
-                                    <div className="sub">CoinDCX, WazirX, Binance, CoinSwitch · {intelData?.stats?.vasps_total || 30} total indexed</div>
-                                </div>
-                                <div className="stat-card">
-                                    <div className="label">Avg. VASP attribution time</div>
-                                    <div className="num" style={{ color: '#d9a441' }}>1.2 seconds</div>
-                                    <div className="sub">Down from 72 hours of manual search</div>
-                                </div>
-                                <div className="stat-card">
-                                    <div className="label">Asset-freeze success rate</div>
-                                    <div className="num" style={{ color: '#4caf7d' }}>87.4%</div>
-                                    <div className="sub">During Golden Hour window (&lt; 2 hrs)</div>
-                                </div>
-                            </div>
-
-                            <div className="ws-panel" style={{ padding: 20 }}>
-                                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
-                                    <h3 style={{ fontSize: 16, marginBottom:0 }}>Active fraud typologies (NCRP ingestion stream)</h3>
-                                    {intelData?.generated_display && <span style={{ fontSize:11, color:'#8b8d9c' }}>{intelData.generated_display} · Live</span>}
-                                </div>
-                                <div className="typology-grid">
-                                    {(intelData?.typologies?.length ? intelData.typologies : [
-                                        {h:'Telegram part-time job scams', color:'#e0654a', p:'Victims are coerced into sending small sums that escalate, layered via 2–3 burner mules before a Binance/CoinDCX deposit.'},
-                                        {h:'Tron TRC-20 forex fraud', color:'#d9a441', p:'Low-gas USDT transfers designed to evade bank scrutiny, with rapid off-ramping into international exchange deposit pools.'},
-                                        {h:'Cross-chain bridge layering', color:'#9db4d8', p:'Scammers jump funds from Ethereum to Polygon or Arbitrum specifically to sever single-chain investigator trails.'}
-                                    ]).map((typ, idx) => (
-                                        <div key={idx} className="typology-card">
-                                            <div className="h" style={{ color: typ.color }}>{typ.h}</div>
-                                            <p>{typ.p}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                {intelData?.live_queue?.length > 0 && (
-                                    <div style={{ marginTop:16, borderTop:'1px solid #262838', paddingTop:12 }}>
-                                        <div style={{ fontSize:12, fontWeight:700, color:'#8b8d9c', marginBottom:8 }}>Recent NCRP live queue (top 5)</div>
-                                        {intelData.live_queue.map((c, i) => (
-                                            <div key={i} style={{ display:'flex', justifyContent:'space-between', fontSize:11, padding:'6px 0', borderBottom: i < intelData.live_queue.length-1 ? '1px solid #1f2233' : 'none' }}>
-                                                <span style={{ color:'#e7e5dd' }}>{c.docket_no} · {c.victim_name}</span>
-                                                <span style={{ color:'#9db4d8' }}>{c.reported_loss}</span>
+                                                />
+                                                <button className="btn btn-navy" onClick={handleCopyNotice}>
+                                                    {copiedNotice ? 'Copied to clipboard' : 'Copy notice text'}
+                                                </button>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                            </ErrorBoundary>
-                        </motion.div>
-                    )}
-
-                    {/* LAYER 3: COURT EVIDENCE DOSSIER — backend-backed */}
-                    {activeLayer === 'dossier' && (
-                        <motion.div
-                            key="dossier"
-                            className="dossier-shell"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                        >
-                            <ErrorBoundary>
-                            <div className="dossier-page">
-                                {dossierLoading && <div style={{ textAlign:'center', color:'#8b8d9c', fontSize:12, marginBottom:12 }}>Loading live dossier from backend…</div>}
-                                <div style={{ textAlign: 'center', borderBottom: '2px solid #1e3a8a', paddingBottom: 16, marginBottom: 20 }}>
-                                    <div style={{ fontSize: 16, fontWeight: 'bold', color: '#1e3a8a', letterSpacing: 0.5 }}>INDIAN CYBER CRIME COORDINATION CENTRE (I4C)</div>
-                                    <div style={{ fontSize: 13, fontWeight: 'bold' }}>MINISTRY OF HOME AFFAIRS | GOVERNMENT OF INDIA</div>
-                                    <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>STATUTORY BLOCKCHAIN FORENSIC INTELLIGENCE DOSSIER (SIH26183)</div>
                                 </div>
+                            </motion.div>
+                        )}
 
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 20, background: '#f8fafc' }}>
-                                    <tbody>
-                                        <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                            <td style={{ padding: 8, fontWeight: 'bold', width: '25%' }}>NCRP Docket Ref:</td>
-                                            <td style={{ padding: 8, width: '25%' }}>{dossierDocket}</td>
-                                            <td style={{ padding: 8, fontWeight: 'bold', width: '25%' }}>Date of Analysis:</td>
-                                            <td style={{ padding: 8, width: '25%' }}>{currentDateStr()}</td>
-                                        </tr>
-                                        <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                            <td style={{ padding: 8, fontWeight: 'bold' }}>Complainant:</td>
-                                            <td style={{ padding: 8 }}>{dossierVictim}</td>
-                                            <td style={{ padding: 8, fontWeight: 'bold' }}>Reported Loss:</td>
-                                            <td style={{ padding: 8, color: '#dc2626', fontWeight: 'bold' }}>{dossierLoss}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style={{ padding: 8, fontWeight: 'bold' }}>Suspect Origin:</td>
-                                            <td style={{ padding: 8, wordBreak: 'break-all', fontFamily: 'monospace', fontSize: 11 }}>{dossierWallet}</td>
-                                            <td style={{ padding: 8, fontWeight: 'bold' }}>Attributed VASP:</td>
-                                            <td style={{ padding: 8, fontWeight: 'bold', color: '#059669' }}>{dossierVasp} ({dossierVaspHops} Hops)</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        {/* LAYER 2: NATIONAL INTELLIGENCE GRID — backend-backed, ErrorBoundary prevents white-screen */}
+                        {activeLayer === 'dashboard' && (
+                            <motion.div
+                                key="dashboard"
+                                className="intel-grid"
+                                style={{ background: '#0f1117', color: '#e7e5dd' }}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                                <ErrorBoundary>
+                                    <h2>National Cyber-Forensics Threat Intelligence Grid</h2>
+                                    <p>Aggregated telemetry across state cyber cells, NCRP intake, and VASP freeze compliance.</p>
 
-                                <div style={{ fontSize: 13, fontWeight: 'bold', color: '#1e3a8a', marginBottom: 8 }}>1. TRANSACTION CHAIN OF CUSTODY (AUDIT TRAIL) — Amounts in Indian Numbering</div>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 6 }}>
-                                    <thead>
-                                        <tr style={{ background: '#1e3a8a', color: '#ffffff' }}>
-                                            <th style={{ padding: 6, textAlign: 'center' }}>Hop #</th>
-                                            <th style={{ padding: 6, textAlign: 'left' }}>Sender</th>
-                                            <th style={{ padding: 6, textAlign: 'left' }}>Recipient / Entity</th>
-                                            <th style={{ padding: 6, textAlign: 'right' }}>Value</th>
-                                            <th style={{ padding: 6, textAlign: 'right' }}>INR Equivalent</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {dossierTrail.map((h, idx) => (
-                                            <tr key={idx} style={{ borderBottom: '1px solid #cbd5e1', background: idx % 2 === 0 ? '#ffffff' : '#f1f5f9' }}>
-                                                <td style={{ padding: 6, textAlign: 'center', fontWeight: 'bold' }}>{h.hop}</td>
-                                                <td style={{ padding: 6, fontFamily: 'monospace' }}>{h.from_addr.slice(0, 10)}...</td>
-                                                <td style={{ padding: 6, fontWeight: 'bold' }}>{h.to_name}</td>
-                                                <td style={{ padding: 6, textAlign: 'right' }}>{h.value_eth} {h.token}</td>
-                                                <td style={{ padding: 6, textAlign: 'right', fontWeight: 'bold' }}><AnimatedCounter value={h.value_inr} prefix="₹" formatter={(v) => formatInrIndian(Math.round(v))} /> <span style={{ fontWeight: 400, fontSize: 10, color: '#475569' }}>({formatInrHuman(h.value_inr)})</span></td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                {dossierTrail.length > 0 && (
-                                    <div style={{ fontSize: 11, color: '#475569', marginBottom: 10, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                                        <span>Total traced: <strong style={{ color: '#1e293b' }}>{formatInrFull(dossierTrail.reduce((s,h)=>s+(h.value_inr||0),0))}</strong> · {formatInrHuman(dossierTrail.reduce((s,h)=>s+(h.value_inr||0),0))}</span>
-                                        {provenance && <span style={{ color: provenance.includes('DEMO_MOCK_DATA') ? '#8a5a12' : '#21603f', fontWeight: 600 }}>Provenance: {provenance.join(', ').replace(/LIVE_/g,'').replace(/DEMO_MOCK_DATA/g,'Demo dataset')} {provenance.includes('DEMO_MOCK_DATA') ? '⚠️ Demo dataset' : '✓ Live on-chain'}</span>}
-                                    </div>
-                                )}
-
-                                <div style={{ fontSize: 13, fontWeight: 'bold', color: '#1e3a8a', marginBottom: 8 }}>2. STATUTORY DIRECTIVE UNDER SECTION 91 Cr.P.C. / BNSS 2023</div>
-                                <div style={{ fontSize: 11, lineHeight: 1.6, background: '#f8fafc', border: '1px solid #cbd5e1', padding: 12, borderRadius: 4, marginBottom: 30 }}>
-                                    <strong>TO: Compliance Officer, {dossierVasp}</strong><br />
-                                    WHEREAS an official investigation is underway regarding cyber fraud registered under NCRP Docket {dossierDocket}.
-                                    The cryptographic assets listed in Table 1 have been traced as direct proceeds of crime entering your liquidity pool.<br />
-                                    <strong>YOU ARE HEREBY DIRECTED TO:</strong><br />
-                                    1. Immediately FREEZE all internal withdrawal and debit facilities associated with the recipient user account.<br />
-                                    2. Furnish complete subscriber KYC records (Aadhaar/Passport, Registered Mobile, PAN, Bank Off-Ramp) and IP login logs within 24 hours of receipt.
-                                </div>
-
-                                <div style={{ fontSize: 10, color: '#64748b', marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
-                                    <span>Data provenance: <strong>{provenance ? provenance.join(', ').replace(/LIVE_/g,'').replace(/DEMO_MOCK_DATA/g,'Demo dataset') : 'Demo dataset (offline mode)'}</strong> {provenance && provenance.includes('DEMO_MOCK_DATA') ? '— demo-backed trace; live API verification recommended for court' : '— live on-chain verification'}</span>
-                                    <span>INR formatting: Indian system (e.g., {formatInrFull(1212500)} = {formatInrHuman(1212500)})</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: 11, color: '#475569', borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
-                                    <div>
-                                        <div>Generated by: <strong>Automated Blockchain Forensics Grid (SIH26183) · Team CrySec — Project Cyclops</strong></div>
-                                        <div>Report Generated: <strong>{displayDossier?.generated_display || dossierData?.generated_display || new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' }) + ' IST'}</strong> · Dossier: {dossierDocket}</div>
-                                        <div>Hash Verification: <code>0x8f2b...9a12</code> (Tamper-Proof · SHA-256)</div>
-                                    </div>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <div style={{ fontWeight: 'bold' }}>Investigating Officer (Cyber Crime PS)</div>
-                                        <div>Indian Cyber Crime Coordination Centre (I4C)</div>
-                                        <div style={{ fontSize: 10, marginTop: 4, color: '#64748b' }}>Team CrySec · Cyclops v6.4 · RF v2 99.0% synth · Risk: {dossierRisk} {provenance && provenance.includes('DEMO_MOCK_DATA') ? '· Demo' : '· Live'}</div>
-                                        <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                                            <button
-                                                onClick={handleExportPDF}
-                                                style={{ padding: '6px 14px', background: '#059669', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 'bold', cursor: 'pointer' }}
-                                            >
-                                                Download Court PDF
-                                            </button>
-                                            <button
-                                                onClick={() => window.print()}
-                                                style={{ padding: '6px 14px', background: '#1e3a8a', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 'bold', cursor: 'pointer' }}
-                                            >
-                                                Print / Save PDF
-                                            </button>
+                                    {intelLoading && <div style={{ color: '#8b8d9c', fontSize: 12, marginBottom: 12 }}>Loading live intelligence…</div>}
+                                    <div className="stat-grid">
+                                        <div className="stat-card">
+                                            <div className="label">Total assets traced (FY 2026)</div>
+                                            <div className="num" style={{ color: '#4caf7d' }}>{intelData?.stats?.total_assets_display || '₹48,87,500'}</div>
+                                            <div className="sub">Across {intelData?.stats?.total_dockets || 142} cybercrime dockets · {intelData?.stats?.active_dockets || 4} active</div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="label">FIU-IND compliant VASPs</div>
+                                            <div className="num" style={{ color: '#9db4d8' }}>{intelData?.stats?.fiu_vasps_indexed || 28} registered</div>
+                                            <div className="sub">CoinDCX, WazirX, Binance, CoinSwitch · {intelData?.stats?.vasps_total || 30} total indexed</div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="label">Avg. VASP attribution time</div>
+                                            <div className="num" style={{ color: '#d9a441' }}>1.2 seconds</div>
+                                            <div className="sub">Down from 72 hours of manual search</div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="label">Asset-freeze success rate</div>
+                                            <div className="num" style={{ color: '#4caf7d' }}>87.4%</div>
+                                            <div className="sub">During Golden Hour window (&lt; 2 hrs)</div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            </ErrorBoundary>
-                        </motion.div>
-                    )}
+
+                                    <div className="ws-panel" style={{ padding: 20 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                                            <h3 style={{ fontSize: 16, marginBottom: 0 }}>Active fraud typologies (NCRP ingestion stream)</h3>
+                                            {intelData?.generated_display && <span style={{ fontSize: 11, color: '#8b8d9c' }}>{intelData.generated_display} · Live</span>}
+                                        </div>
+                                        <div className="typology-grid">
+                                            {(intelData?.typologies?.length ? intelData.typologies : [
+                                                { h: 'Telegram part-time job scams', color: '#e0654a', p: 'Victims are coerced into sending small sums that escalate, layered via 2–3 burner mules before a Binance/CoinDCX deposit.' },
+                                                { h: 'Tron TRC-20 forex fraud', color: '#d9a441', p: 'Low-gas USDT transfers designed to evade bank scrutiny, with rapid off-ramping into international exchange deposit pools.' },
+                                                { h: 'Cross-chain bridge layering', color: '#9db4d8', p: 'Scammers jump funds from Ethereum to Polygon or Arbitrum specifically to sever single-chain investigator trails.' }
+                                            ]).map((typ, idx) => (
+                                                <div key={idx} className="typology-card">
+                                                    <div className="h" style={{ color: typ.color }}>{typ.h}</div>
+                                                    <p>{typ.p}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {intelData?.live_queue?.length > 0 && (
+                                            <div style={{ marginTop: 16, borderTop: '1px solid #262838', paddingTop: 12 }}>
+                                                <div style={{ fontSize: 12, fontWeight: 700, color: '#8b8d9c', marginBottom: 8 }}>Recent NCRP live queue (top 5)</div>
+                                                {intelData.live_queue.map((c, i) => (
+                                                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, padding: '6px 0', borderBottom: i < intelData.live_queue.length - 1 ? '1px solid #1f2233' : 'none' }}>
+                                                        <span style={{ color: '#e7e5dd' }}>{c.docket_no} · {c.victim_name}</span>
+                                                        <span style={{ color: '#9db4d8' }}>{c.reported_loss}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </ErrorBoundary>
+                            </motion.div>
+                        )}
+
+                        {/* LAYER 3: COURT EVIDENCE DOSSIER — backend-backed */}
+                        {activeLayer === 'dossier' && (
+                            <motion.div
+                                key="dossier"
+                                className="dossier-shell"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                                <ErrorBoundary>
+                                    <div className="dossier-page">
+                                        {dossierLoading && <div style={{ textAlign: 'center', color: '#8b8d9c', fontSize: 12, marginBottom: 12 }}>Loading live dossier from backend…</div>}
+                                        <div style={{ textAlign: 'center', borderBottom: '2px solid #1e3a8a', paddingBottom: 16, marginBottom: 20 }}>
+                                            <div style={{ fontSize: 16, fontWeight: 'bold', color: '#1e3a8a', letterSpacing: 0.5 }}>INDIAN CYBER CRIME COORDINATION CENTRE (I4C)</div>
+                                            <div style={{ fontSize: 13, fontWeight: 'bold' }}>MINISTRY OF HOME AFFAIRS | GOVERNMENT OF INDIA</div>
+                                            <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>STATUTORY BLOCKCHAIN FORENSIC INTELLIGENCE DOSSIER (SIH26183)</div>
+                                        </div>
+
+                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 20, background: '#f8fafc' }}>
+                                            <tbody>
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: 8, fontWeight: 'bold', width: '25%' }}>NCRP Docket Ref:</td>
+                                                    <td style={{ padding: 8, width: '25%' }}>{dossierDocket}</td>
+                                                    <td style={{ padding: 8, fontWeight: 'bold', width: '25%' }}>Date of Analysis:</td>
+                                                    <td style={{ padding: 8, width: '25%' }}>{currentDateStr()}</td>
+                                                </tr>
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: 8, fontWeight: 'bold' }}>Complainant:</td>
+                                                    <td style={{ padding: 8 }}>{dossierVictim}</td>
+                                                    <td style={{ padding: 8, fontWeight: 'bold' }}>Reported Loss:</td>
+                                                    <td style={{ padding: 8, color: '#dc2626', fontWeight: 'bold' }}>{dossierLoss}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style={{ padding: 8, fontWeight: 'bold' }}>Suspect Origin:</td>
+                                                    <td style={{ padding: 8, wordBreak: 'break-all', fontFamily: 'monospace', fontSize: 11 }}>{dossierWallet}</td>
+                                                    <td style={{ padding: 8, fontWeight: 'bold' }}>Attributed VASP:</td>
+                                                    <td style={{ padding: 8, fontWeight: 'bold', color: '#059669' }}>{dossierVasp} ({dossierVaspHops} Hops)</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <div style={{ fontSize: 13, fontWeight: 'bold', color: '#1e3a8a', marginBottom: 8 }}>1. TRANSACTION CHAIN OF CUSTODY (AUDIT TRAIL) — Amounts in Indian Numbering</div>
+                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 6 }}>
+                                            <thead>
+                                                <tr style={{ background: '#1e3a8a', color: '#ffffff' }}>
+                                                    <th style={{ padding: 6, textAlign: 'center' }}>Hop #</th>
+                                                    <th style={{ padding: 6, textAlign: 'left' }}>Sender</th>
+                                                    <th style={{ padding: 6, textAlign: 'left' }}>Recipient / Entity</th>
+                                                    <th style={{ padding: 6, textAlign: 'right' }}>Value</th>
+                                                    <th style={{ padding: 6, textAlign: 'right' }}>INR Equivalent</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {dossierTrail.map((h, idx) => (
+                                                    <tr key={idx} style={{ borderBottom: '1px solid #cbd5e1', background: idx % 2 === 0 ? '#ffffff' : '#f1f5f9' }}>
+                                                        <td style={{ padding: 6, textAlign: 'center', fontWeight: 'bold' }}>{h.hop}</td>
+                                                        <td style={{ padding: 6, fontFamily: 'monospace' }}>{h.from_addr.slice(0, 10)}...</td>
+                                                        <td style={{ padding: 6, fontWeight: 'bold' }}>{h.to_name}</td>
+                                                        <td style={{ padding: 6, textAlign: 'right' }}>{h.value_eth} {h.token}</td>
+                                                        <td style={{ padding: 6, textAlign: 'right', fontWeight: 'bold' }}><AnimatedCounter value={h.value_inr} prefix="₹" formatter={(v) => formatInrIndian(Math.round(v))} /> <span style={{ fontWeight: 400, fontSize: 10, color: '#475569' }}>({formatInrHuman(h.value_inr)})</span></td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        {dossierTrail.length > 0 && (
+                                            <div style={{ fontSize: 11, color: '#475569', marginBottom: 10, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                                                <span>Total traced: <strong style={{ color: '#1e293b' }}>{formatInrFull(dossierTrail.reduce((s, h) => s + (h.value_inr || 0), 0))}</strong> · {formatInrHuman(dossierTrail.reduce((s, h) => s + (h.value_inr || 0), 0))}</span>
+                                                {provenance && <span style={{ color: provenance.includes('DEMO_MOCK_DATA') ? '#8a5a12' : '#21603f', fontWeight: 600 }}>Provenance: {provenance.join(', ').replace(/LIVE_/g, '').replace(/DEMO_MOCK_DATA/g, 'Demo dataset')} {provenance.includes('DEMO_MOCK_DATA') ? '⚠️ Demo dataset' : '✓ Live on-chain'}</span>}
+                                            </div>
+                                        )}
+
+                                        <div style={{ fontSize: 13, fontWeight: 'bold', color: '#1e3a8a', marginBottom: 8 }}>2. STATUTORY DIRECTIVE UNDER SECTION 91 Cr.P.C. / BNSS 2023</div>
+                                        <div style={{ fontSize: 11, lineHeight: 1.6, background: '#f8fafc', border: '1px solid #cbd5e1', padding: 12, borderRadius: 4, marginBottom: 30 }}>
+                                            <strong>TO: Compliance Officer, {dossierVasp}</strong><br />
+                                            WHEREAS an official investigation is underway regarding cyber fraud registered under NCRP Docket {dossierDocket}.
+                                            The cryptographic assets listed in Table 1 have been traced as direct proceeds of crime entering your liquidity pool.<br />
+                                            <strong>YOU ARE HEREBY DIRECTED TO:</strong><br />
+                                            1. Immediately FREEZE all internal withdrawal and debit facilities associated with the recipient user account.<br />
+                                            2. Furnish complete subscriber KYC records (Aadhaar/Passport, Registered Mobile, PAN, Bank Off-Ramp) and IP login logs within 24 hours of receipt.
+                                        </div>
+
+                                        <div style={{ fontSize: 10, color: '#64748b', marginBottom: 8, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                                            <span>Data provenance: <strong>{provenance ? provenance.join(', ').replace(/LIVE_/g, '').replace(/DEMO_MOCK_DATA/g, 'Demo dataset') : 'Demo dataset (offline mode)'}</strong> {provenance && provenance.includes('DEMO_MOCK_DATA') ? '— demo-backed trace; live API verification recommended for court' : '— live on-chain verification'}</span>
+                                            <span>INR formatting: Indian system (e.g., {formatInrFull(1212500)} = {formatInrHuman(1212500)})</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: 11, color: '#475569', borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
+                                            <div>
+                                                <div>Generated by: <strong>Automated Blockchain Forensics Grid (SIH26183) · Team CrySec — Project Cyclops</strong></div>
+                                                <div>Report Generated: <strong>{displayDossier?.generated_display || dossierData?.generated_display || new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' }) + ' IST'}</strong> · Dossier: {dossierDocket}</div>
+                                                <div>Hash Verification: <code>0x8f2b...9a12</code> (Tamper-Proof · SHA-256)</div>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <div style={{ fontWeight: 'bold' }}>Investigating Officer (Cyber Crime PS)</div>
+                                                <div>Indian Cyber Crime Coordination Centre (I4C)</div>
+                                                <div style={{ fontSize: 10, marginTop: 4, color: '#64748b' }}>Team CrySec · Cyclops v6.4 · RF v2 99.0% synth · Risk: {dossierRisk} {provenance && provenance.includes('DEMO_MOCK_DATA') ? '· Demo' : '· Live'}</div>
+                                                <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                                                    <button
+                                                        onClick={handleExportPDF}
+                                                        style={{ padding: '6px 14px', background: '#059669', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 'bold', cursor: 'pointer' }}
+                                                    >
+                                                        Download Court PDF
+                                                    </button>
+                                                    <button
+                                                        onClick={() => window.print()}
+                                                        style={{ padding: '6px 14px', background: '#1e3a8a', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 'bold', cursor: 'pointer' }}
+                                                    >
+                                                        Print / Save PDF
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ErrorBoundary>
+                            </motion.div>
+                        )}
                     </>
                 </>
             )}
